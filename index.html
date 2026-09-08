@@ -153,6 +153,84 @@
         .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
         .form-col { flex: 1; }
         .badge-cotizacion { background: var(--sf-warning); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-aprobada { background: var(--sf-blue); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-en-taller { background: var(--sf-success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-completada { background: var(--sf-gray-40); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-cancelada { background: var(--sf-error); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+
+        /* Kanban */
+        .kanban-board {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .kanban-col {
+            background: var(--sf-gray-10);
+            border-radius: var(--r);
+            min-width: 260px;
+            flex: 1;
+            padding: 12px;
+        }
+        .kanban-col-header {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .kanban-col-header .count {
+            background: var(--sf-white);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+        .kanban-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .kanban-card {
+            background: var(--sf-white);
+            border-radius: var(--r);
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .kanban-card .card-placa {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .kanban-card .card-cliente {
+            font-size: 12px;
+            color: var(--sf-text-secondary);
+            margin: 4px 0;
+        }
+        .kanban-card .card-codigo {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--sf-gray-40);
+            margin-bottom: 8px;
+        }
+        .kanban-card .card-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .mis-tareas-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mis-tarea-item {
+            background: var(--surface);
+            border: 1px solid var(--sf-border);
+            border-radius: var(--r);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -189,6 +267,8 @@
                 <a class="nav-item" data-view="dashboard">Dashboard</a>
                 <a class="nav-item" data-view="nueva-ot">Nueva Cotización</a>
                 <a class="nav-item" data-view="cotizaciones">Cotizaciones</a>
+                <a class="nav-item" data-view="taller" id="nav-taller">Taller (Kanban)</a>
+                <a class="nav-item" data-view="mis-tareas" id="nav-mis-tareas" style="display:none;">Mis Tareas</a>
                 <a class="nav-item" data-view="marcas">Marcas</a>
                 <a class="nav-item" data-view="modelos">Modelos</a>
                 <a class="nav-item" data-view="trabajos">Trabajos</a>
@@ -313,16 +393,45 @@
                     </table>
                 </div>
 
-                <!-- Catálogos restantes (igual que antes) -->
+                <!-- Kanban Taller -->
+                <div id="view-taller" class="view" style="display:none;">
+                    <h2 class="page-title">Taller — Tablero Kanban</h2>
+                    <p class="page-desc">Arrastra mentalmente los autos según su avance. Usa los botones para cambiar de estado.</p>
+                    <div class="kanban-board">
+                        <div class="kanban-col" data-estado="aprobada">
+                            <div class="kanban-col-header">Aprobadas <span class="count" id="count-aprobada">0</span></div>
+                            <div class="kanban-cards" id="cards-aprobada"></div>
+                        </div>
+                        <div class="kanban-col" data-estado="en_taller">
+                            <div class="kanban-col-header">En Taller <span class="count" id="count-en_taller">0</span></div>
+                            <div class="kanban-cards" id="cards-en_taller"></div>
+                        </div>
+                        <div class="kanban-col" data-estado="completada">
+                            <div class="kanban-col-header">Completadas <span class="count" id="count-completada">0</span></div>
+                            <div class="kanban-cards" id="cards-completada"></div>
+                        </div>
+                        <div class="kanban-col" data-estado="cancelada">
+                            <div class="kanban-col-header">Canceladas <span class="count" id="count-cancelada">0</span></div>
+                            <div class="kanban-cards" id="cards-cancelada"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mis Tareas (Técnico) -->
+                <div id="view-mis-tareas" class="view" style="display:none;">
+                    <h2 class="page-title">Mis Tareas</h2>
+                    <p class="page-desc">Estas son las órdenes de trabajo asignadas a ti.</p>
+                    <div id="mis-tareas-list" class="mis-tareas-list"></div>
+                </div>
+
+                <!-- Catálogos (los de siempre) -->
                 <div id="view-marcas" class="view" style="display:none;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="page-title">Marcas</h2>
                         <button class="btn btn-primary" onclick="abrirModal('marca')">+ Nueva Marca</button>
                     </div>
                     <table>
-                        <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="tabla-marcas"></tbody>
                     </table>
                 </div>
@@ -333,9 +442,7 @@
                         <button class="btn btn-primary" onclick="abrirModal('modelo')">+ Nuevo Modelo</button>
                     </div>
                     <table>
-                        <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>Marca</th><th>Estado</th><th>Acciones</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Marca</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="tabla-modelos"></tbody>
                     </table>
                 </div>
@@ -346,9 +453,7 @@
                         <button class="btn btn-primary" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
                     </div>
                     <table>
-                        <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>Precio Base</th><th>Tiempo Est.</th><th>Estado</th><th>Acciones</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Precio Base</th><th>Tiempo Est.</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="tabla-trabajos"></tbody>
                     </table>
                 </div>
@@ -359,9 +464,7 @@
                         <button class="btn btn-primary" onclick="abrirModal('agencia')">+ Nueva Agencia</button>
                     </div>
                     <table>
-                        <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="tabla-agencias"></tbody>
                     </table>
                 </div>
@@ -372,9 +475,7 @@
                         <button class="btn btn-primary" onclick="abrirModal('cliente')">+ Nuevo Cliente</button>
                     </div>
                     <table>
-                        <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="tabla-clientes"></tbody>
                     </table>
                 </div>
@@ -406,6 +507,21 @@
         </div>
     </div>
 
+    <!-- MODAL ASIGNAR TÉCNICO -->
+    <div class="mov" id="mov-asignar">
+        <div class="mo">
+            <div class="moh">Asignar Técnico</div>
+            <div class="mob">
+                <label class="flbl">Selecciona un técnico</label>
+                <select class="inp" id="select-tecnico"></select>
+            </div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarAsignar()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmarAsignacion()">Asignar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast"></div>
 
@@ -417,6 +533,7 @@
         let SESSION = null;
         let PERFIL = null;
         let confirmCallback = null;
+        let otAsignarId = null;
 
         function escHtml(str) {
             if (str === null || str === undefined) return '';
@@ -497,13 +614,31 @@
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
             const rol = PERFIL?.rol;
+            // Configurar visibilidad de navegación según rol
             if (rol === 'tecnico') {
+                // Solo Dashboard y Mis Tareas
                 document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                    if (item.dataset.view !== 'dashboard' && item.dataset.view !== 'nueva-ot' && item.dataset.view !== 'cotizaciones') {
+                    const v = item.dataset.view;
+                    if (v !== 'dashboard' && v !== 'mis-tareas') {
                         item.style.display = 'none';
+                    } else {
+                        item.style.display = 'block';
+                    }
+                });
+                // Mostrar Mis Tareas
+                document.getElementById('nav-mis-tareas').style.display = 'block';
+            } else {
+                // Admin, recepcionista, jefe_taller: mostrar todo excepto Mis Tareas
+                document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+                    const v = item.dataset.view;
+                    if (v === 'mis-tareas') {
+                        item.style.display = 'none';
+                    } else {
+                        item.style.display = 'block';
                     }
                 });
             }
+            // Cargar vista por defecto
             sv('dashboard');
             cargarDashboard();
         }
@@ -522,6 +657,8 @@
             if (view === 'clientes') cargarClientes();
             if (view === 'nueva-ot') cargarDatosNuevaOT();
             if (view === 'cotizaciones') cargarCotizaciones();
+            if (view === 'taller') cargarTaller();
+            if (view === 'mis-tareas') cargarMisTareas();
         }
 
         document.querySelectorAll('.sidebar .nav-item').forEach(item => {
@@ -754,9 +891,7 @@
             );
         }
 
-        // ============================================================
-        // NUEVA COTIZACIÓN (OT) - CON GENERACIÓN DE CÓDIGO
-        // ============================================================
+        // NUEVA COTIZACIÓN (igual que antes, con generación de código)
         async function cargarDatosNuevaOT() {
             const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
             const selMarca = document.getElementById('ot-marca');
@@ -826,7 +961,6 @@
             }
         }
 
-        // Generador de código de cotización
         function generarCodigoOT() {
             const tipoCliente = document.getElementById('ot-tipo-cliente').value;
             let agenciaCodigo = 'PAR';
@@ -836,28 +970,20 @@
                 agenciaCodigo = agenciaNombre.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase();
                 if (agenciaCodigo.length < 3) agenciaCodigo = agenciaCodigo.padEnd(3, 'X');
             }
-
-            // Fecha DDMMAA
             const hoy = new Date();
             const dd = String(hoy.getDate()).padStart(2, '0');
             const mm = String(hoy.getMonth() + 1).padStart(2, '0');
             const aa = String(hoy.getFullYear()).slice(-2);
             const fecha = dd + mm + aa;
-
-            // Marca - 2 primeras letras
             const selMarca = document.getElementById('ot-marca');
             const marcaNombre = selMarca.options[selMarca.selectedIndex]?.dataset?.nombre || '';
             const marcaCodigo = marcaNombre.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
-
-            // Modelo - 2 primeras letras
             const selModelo = document.getElementById('ot-modelo');
             const modeloNombre = selModelo.options[selModelo.selectedIndex]?.dataset?.nombre || '';
             const modeloCodigo = modeloNombre.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
-
             return agenciaCodigo + fecha + marcaCodigo + modeloCodigo;
         }
 
-        // Guardar nueva OT
         document.getElementById('form-nueva-ot').addEventListener('submit', async (e) => {
             e.preventDefault();
             const placa = document.getElementById('ot-placa').value.trim();
@@ -898,7 +1024,6 @@
                 return;
             }
 
-            // Generar código único
             const codigo = generarCodigoOT();
 
             const otData = {
@@ -917,10 +1042,10 @@
             };
 
             try {
-                const { data, error } = await sb.from('ot').insert(otData).select().single();
+                let data;
+                const { data: insertData, error } = await sb.from('ot').insert(otData).select().single();
                 if (error) {
                     if (error.code === '23505') {
-                        // Error de clave duplicada - agregar sufijo numérico
                         const { data: maxOT } = await sb.from('ot').select('codigo').like('codigo', codigo + '%').order('codigo', { ascending: false }).limit(1);
                         let sufijo = 1;
                         if (maxOT && maxOT.length > 0) {
@@ -934,6 +1059,8 @@
                     } else {
                         throw error;
                     }
+                } else {
+                    data = insertData;
                 }
 
                 for (const t of trabajosSeleccionados) {
@@ -952,7 +1079,7 @@
             }
         });
 
-        // LISTADO DE COTIZACIONES (mostrando código)
+        // LISTADO DE COTIZACIONES
         async function cargarCotizaciones() {
             const { data, error } = await sb.from('ot')
                 .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
@@ -1013,6 +1140,159 @@
                     toast('Error: ' + e.message, 'err');
                 }
             }, 'Sí, aprobar todas');
+        }
+
+        // ============================================================
+        // KANBAN TALLER
+        // ============================================================
+        async function cargarTaller() {
+            // Cargar todas las OTs no cotización (aprobada, en_taller, completada, cancelada)
+            const { data, error } = await sb.from('ot')
+                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), perfiles(nombre)')
+                .in('estado', ['aprobada', 'en_taller', 'completada', 'cancelada'])
+                .order('updated_at', { ascending: false });
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+
+            // Limpiar columnas
+            ['aprobada', 'en_taller', 'completada', 'cancelada'].forEach(estado => {
+                document.getElementById('cards-' + estado).innerHTML = '';
+                document.getElementById('count-' + estado).textContent = 0;
+            });
+
+            data.forEach(ot => {
+                const col = document.getElementById('cards-' + ot.estado);
+                if (col) {
+                    col.innerHTML += generarCardKanban(ot);
+                    document.getElementById('count-' + ot.estado).textContent = col.children.length;
+                }
+            });
+        }
+
+        function generarCardKanban(ot) {
+            const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
+            const tecnicoNombre = ot.perfiles?.nombre || 'Sin asignar';
+            let acciones = '';
+            if (ot.estado === 'aprobada') {
+                acciones = `
+                    <button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button>
+                    <button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button>
+                    <button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button>
+                `;
+            } else if (ot.estado === 'en_taller') {
+                acciones = `
+                    <button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button>
+                    <button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button>
+                    <button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button>
+                `;
+            } else if (ot.estado === 'completada') {
+                acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span>`;
+            } else {
+                acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span>`;
+            }
+
+            return `
+                <div class="kanban-card">
+                    <div class="card-placa">${escHtml(ot.placa)}</div>
+                    <div class="card-cliente">${escHtml(clienteNombre)}</div>
+                    <div class="card-codigo">${escHtml(ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>
+                    <div class="card-actions">${acciones}</div>
+                </div>
+            `;
+        }
+
+        // Asignar técnico
+        async function abrirAsignar(otId) {
+            otAsignarId = otId;
+            // Cargar técnicos (perfiles con rol tecnico y activo)
+            const { data: tecnicos } = await sb.from('perfiles').select('*').eq('rol', 'tecnico').eq('activo', true);
+            const select = document.getElementById('select-tecnico');
+            select.innerHTML = '<option value="">Selecciona un técnico...</option>';
+            tecnicos.forEach(t => {
+                select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
+            });
+            document.getElementById('mov-asignar').classList.add('open');
+        }
+
+        function cerrarAsignar() {
+            document.getElementById('mov-asignar').classList.remove('open');
+            otAsignarId = null;
+        }
+
+        async function confirmarAsignacion() {
+            const tecnicoId = document.getElementById('select-tecnico').value;
+            if (!tecnicoId) {
+                toast('Selecciona un técnico', 'err');
+                return;
+            }
+            try {
+                const { error } = await sb.from('ot').update({ tecnico_id: tecnicoId }).eq('id', otAsignarId);
+                if (error) throw error;
+                toast('Técnico asignado ✓', 'ok');
+                cerrarAsignar();
+                cargarTaller();
+            } catch (e) {
+                toast('Error: ' + e.message, 'err');
+            }
+        }
+
+        // Mover OT a otro estado
+        async function moverOT(otId, nuevoEstado) {
+            const acciones = {
+                en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
+                completada: '¿Marcar esta OT como Completada?',
+                cancelada: '¿Cancelar esta OT?'
+            };
+            abrirConfirm(acciones[nuevoEstado] || '¿Cambiar estado?', async () => {
+                try {
+                    const { error } = await sb.from('ot').update({ estado: nuevoEstado }).eq('id', otId);
+                    if (error) throw error;
+                    toast('Estado actualizado ✓', 'ok');
+                    cargarTaller();
+                    cargarDashboard();
+                } catch (e) {
+                    toast('Error: ' + e.message, 'err');
+                }
+            }, 'Sí, cambiar');
+        }
+
+        // ============================================================
+        // MIS TAREAS (Técnico)
+        // ============================================================
+        async function cargarMisTareas() {
+            if (!SESSION?.id) return;
+            // Obtener OTs asignadas al técnico actual con estado en_taller (o aprobada y en_taller?)
+            const { data, error } = await sb.from('ot')
+                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
+                .eq('tecnico_id', SESSION.id)
+                .in('estado', ['aprobada', 'en_taller'])
+                .order('updated_at', { ascending: false });
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+
+            const cont = document.getElementById('mis-tareas-list');
+            cont.innerHTML = '';
+            if (data.length === 0) {
+                cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>';
+                return;
+            }
+
+            data.forEach(ot => {
+                const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
+                let botones = '';
+                if (ot.estado === 'aprobada') {
+                    botones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button>`;
+                } else if (ot.estado === 'en_taller') {
+                    botones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button>`;
+                }
+                cont.innerHTML += `
+                    <div class="mis-tarea-item">
+                        <div>
+                            <strong>${escHtml(ot.placa)}</strong> — ${escHtml(clienteNombre)}<br>
+                            <small class="card-codigo">${escHtml(ot.codigo || '')}</small>
+                        </div>
+                        <div>${botones}</div>
+                    </div>
+                `;
+            });
         }
     </script>
 </body>
