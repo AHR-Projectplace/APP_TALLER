@@ -16,7 +16,6 @@
            DISEÑO BASADO EN SALESFORCE LIGHTNING
            ============================================================ */
         :root {
-            /* Colores principales Salesforce */
             --sf-blue: #0176d3;
             --sf-blue-dark: #014486;
             --sf-blue-light: #eaf5fe;
@@ -29,12 +28,10 @@
             --sf-white: #ffffff;
             --sf-border: #dddbda;
             
-            /* Semánticos */
             --sf-success: #2e844a;
             --sf-warning: #fe9339;
             --sf-error: #ba0517;
             
-            /* Variables para nuestro sistema (reutilizables) */
             --acc: var(--sf-blue);
             --acc2: var(--sf-blue-light);
             --bg: #f3f3f3;
@@ -47,11 +44,7 @@
             --rs: 4px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -61,150 +54,91 @@
             line-height: 1.5;
         }
 
-        /* Botones estilo Salesforce */
+        /* Botones */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 16px;
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            background: var(--sf-white);
-            color: var(--sf-blue);
-            font-weight: 500;
-            cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 16px; border: 1px solid var(--sf-border);
+            border-radius: var(--r); background: var(--sf-white);
+            color: var(--sf-blue); font-weight: 500; cursor: pointer;
             transition: background 0.2s, border-color 0.2s, color 0.2s;
-            font-size: 14px;
-            min-height: 40px;
+            font-size: 14px; min-height: 40px;
         }
-        .btn:hover {
-            background: var(--sf-blue-light);
-            border-color: var(--sf-blue);
-        }
-        .btn-primary {
-            background: var(--sf-blue);
-            color: var(--sf-white);
-            border-color: var(--sf-blue);
-        }
-        .btn-primary:hover {
-            background: var(--sf-blue-dark);
-            border-color: var(--sf-blue-dark);
-        }
-        .btn-block {
-            width: 100%;
-        }
+        .btn:hover { background: var(--sf-blue-light); border-color: var(--sf-blue); }
+        .btn-primary { background: var(--sf-blue); color: var(--sf-white); border-color: var(--sf-blue); }
+        .btn-primary:hover { background: var(--sf-blue-dark); border-color: var(--sf-blue-dark); }
+        .btn-danger { background: var(--sf-error); color: var(--sf-white); border-color: var(--sf-error); }
+        .btn-danger:hover { background: #8e040e; }
+        .btn-block { width: 100%; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; min-height: 32px; }
 
         /* Inputs */
         .inp {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            font-size: 14px;
-            font-family: inherit;
-            background: var(--sf-white);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%; padding: 10px 12px; border: 1px solid var(--sf-border);
+            border-radius: var(--r); font-size: 14px; font-family: inherit;
+            background: var(--sf-white); transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .inp:focus {
-            outline: none;
-            border-color: var(--sf-blue);
-            box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.2);
-        }
+        .inp:focus { outline: none; border-color: var(--sf-blue); box-shadow: 0 0 0 3px rgba(1,118,211,0.2); }
 
-        /* Etiquetas de formulario */
-        .flbl {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: var(--sf-text-secondary);
-        }
+        .flbl { display: block; margin-bottom: 6px; font-weight: 500; color: var(--sf-text-secondary); }
 
         /* Tarjetas */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+        .card { background: var(--surface); border: 1px solid var(--sf-border); border-radius: var(--r); padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
         /* Login */
-        .auth-wrap {
-            display: flex;
-            min-height: 100vh;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%);
-        }
-        .auth-card {
-            width: 100%;
-            max-width: 400px;
-            padding: 32px;
-            background: var(--sf-white);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .auth-logo h1 {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--sf-blue);
-        }
+        .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
+        .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .auth-logo { text-align: center; margin-bottom: 24px; }
+        .auth-logo h1 { font-size: 22px; font-weight: 600; color: var(--sf-blue); }
 
-        /* Ocultar app si no hay sesión */
-        #app {
-            display: none;
-        }
-
-        /* Panel de navegación (placeholder) */
+        /* Aplicación */
+        #app { display: none; }
         .topbar {
-            background: var(--sf-white);
-            border-bottom: 1px solid var(--sf-border);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: var(--sf-white); border-bottom: 1px solid var(--sf-border);
+            padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
         }
-        .topbar .brand {
-            font-weight: 600;
-            font-size: 18px;
-            color: var(--sf-blue);
+        .topbar .brand { font-weight: 600; font-size: 18px; color: var(--sf-blue); }
+        .topbar .user { font-size: 13px; color: var(--sf-text-secondary); }
+
+        .layout { display: flex; min-height: calc(100vh - 60px); }
+        .sidebar {
+            width: 220px; background: var(--sf-white); border-right: 1px solid var(--sf-border);
+            padding: 20px 0; flex-shrink: 0;
         }
-        .topbar .user {
-            font-size: 13px;
-            color: var(--sf-text-secondary);
+        .sidebar .nav-item {
+            display: block; padding: 10px 20px; color: var(--sf-text-secondary);
+            text-decoration: none; transition: background 0.2s; font-weight: 500;
+            cursor: pointer;
         }
-        .container {
-            padding: 24px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            padding: 16px;
-        }
-        .stat-card .label {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--sf-text-secondary);
-        }
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-            margin-top: 8px;
-            color: var(--sf-blue);
-        }
+        .sidebar .nav-item:hover { background: var(--sf-blue-light); color: var(--sf-blue); }
+        .sidebar .nav-item.active { background: var(--sf-blue-light); color: var(--sf-blue); border-right: 3px solid var(--sf-blue); }
+
+        .main { flex: 1; padding: 24px; overflow-x: auto; }
+        .page-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; }
+        .page-desc { color: var(--sf-text-secondary); margin-bottom: 20px; }
+
+        /* Tablas */
+        table { width: 100%; border-collapse: collapse; background: var(--sf-white); border-radius: var(--r); overflow: hidden; }
+        th { background: var(--sf-gray-10); text-align: left; padding: 12px 16px; font-weight: 600; color: var(--sf-text); border-bottom: 1px solid var(--sf-border); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--sf-border); }
+        tr:last-child td { border-bottom: none; }
+
+        /* Modales */
+        .mov { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .mov.open { display: flex; }
+        .mo { background: var(--sf-white); border-radius: 12px; width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .moh { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .mob { margin-bottom: 20px; }
+        .mof { display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 9999; }
+        #toast.show { opacity: 1; }
+
+        /* Utilidades */
+        .text-right { text-align: right; }
+        .mt-2 { margin-top: 20px; }
+        .mb-2 { margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -230,84 +164,574 @@
         </div>
     </div>
 
-    <!-- APLICACIÓN (oculta hasta login) -->
+    <!-- APLICACIÓN -->
     <div id="app">
         <div class="topbar">
             <div class="brand">Taller H&P</div>
             <div class="user" id="user-info">Usuario: —</div>
         </div>
-        <div class="container">
-            <h2>Dashboard</h2>
-            <p>Bienvenido al sistema de gestión del taller.</p>
-            <div class="stat-grid">
-                <div class="stat-card">
-                    <div class="label">Autos en taller</div>
-                    <div class="value">0</div>
+        <div class="layout">
+            <aside class="sidebar" id="sidebar">
+                <!-- Navegación dinámica según rol -->
+                <a class="nav-item" data-view="dashboard">Dashboard</a>
+                <a class="nav-item" data-view="marcas">Marcas</a>
+                <a class="nav-item" data-view="modelos">Modelos</a>
+                <a class="nav-item" data-view="trabajos">Trabajos</a>
+                <a class="nav-item" data-view="agencias">Agencias</a>
+                <a class="nav-item" data-view="clientes">Clientes</a>
+                <!-- (Más vistas en próximos bloques) -->
+            </aside>
+            <main class="main">
+                <div id="view-dashboard" class="view">
+                    <h2 class="page-title">Dashboard</h2>
+                    <p class="page-desc">Resumen operativo del taller.</p>
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="label">Autos en taller</div>
+                            <div class="value" id="stat-taller">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Entregas hoy</div>
+                            <div class="value" id="stat-entregas">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Facturas pendientes</div>
+                            <div class="value" id="stat-facturas">0</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="label">Entregas hoy</div>
-                    <div class="value">0</div>
+
+                <!-- Vista Marcas -->
+                <div id="view-marcas" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Marcas</h2>
+                        <button class="btn btn-primary" onclick="abrirModal('marca')">+ Nueva Marca</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tabla-marcas"></tbody>
+                    </table>
                 </div>
-                <div class="stat-card">
-                    <div class="label">Facturas pendientes</div>
-                    <div class="value">0</div>
+
+                <!-- Vista Modelos -->
+                <div id="view-modelos" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Modelos</h2>
+                        <button class="btn btn-primary" onclick="abrirModal('modelo')">+ Nuevo Modelo</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Marca</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tabla-modelos"></tbody>
+                    </table>
                 </div>
-            </div>
-            <!-- Aquí irán las vistas de los módulos (Kanban, cotizaciones, etc.) -->
+
+                <!-- Vista Trabajos -->
+                <div id="view-trabajos" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Trabajos</h2>
+                        <button class="btn btn-primary" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Precio Base</th><th>Tiempo Est.</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tabla-trabajos"></tbody>
+                    </table>
+                </div>
+
+                <!-- Vista Agencias -->
+                <div id="view-agencias" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Agencias</h2>
+                        <button class="btn btn-primary" onclick="abrirModal('agencia')">+ Nueva Agencia</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tabla-agencias"></tbody>
+                    </table>
+                </div>
+
+                <!-- Vista Clientes -->
+                <div id="view-clientes" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Clientes</h2>
+                        <button class="btn btn-primary" onclick="abrirModal('cliente')">+ Nuevo Cliente</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tabla-clientes"></tbody>
+                    </table>
+                </div>
+            </main>
         </div>
     </div>
 
-    <!-- TOAST (notificaciones) -->
-    <div id="toast" style="position:fixed; bottom:20px; right:20px; background:#333; color:#fff; padding:12px 20px; border-radius:8px; opacity:0; transition:opacity 0.3s; z-index:9999;"></div>
+    <!-- MODAL GENÉRICO PARA CRUD -->
+    <div class="mov" id="mov-crud">
+        <div class="mo">
+            <div class="moh" id="crud-title">Nuevo registro</div>
+            <div class="mob" id="crud-body"></div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-primary" id="crud-save">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN -->
+    <div class="mov" id="mov-confirm">
+        <div class="mo">
+            <div class="moh">Confirmar</div>
+            <div class="mob" id="confirm-msg"></div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarConfirm()">Cancelar</button>
+                <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
 
     <script>
         // ============================================================
-        // CONFIGURACIÓN SUPABASE
+        // CONFIGURACIÓN SUPABASE (ya con tus credenciales)
         // ============================================================
         const SUPABASE_URL = 'https://jcknyppkhorqgoieafkh.supabase.co';
         const SUPABASE_ANON = 'sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
-
-        // Inicializar cliente
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
         // ============================================================
-        // SIMULACIÓN DE LOGIN (por ahora solo visual)
+        // ESTADO GLOBAL
         // ============================================================
+        let SESSION = null;
+        let PERFIL = null;
+        let confirmCallback = null;
+
+        // ============================================================
+        // UTILIDADES
+        // ============================================================
+        function escHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function toast(msg, tipo = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'show' + (tipo ? ' ' + tipo : '');
+            if (tipo === 'err') t.style.background = '#ba0517';
+            else if (tipo === 'ok') t.style.background = '#2e844a';
+            else t.style.background = '#333';
+            setTimeout(() => { t.className = ''; }, 3000);
+        }
+
+        function abrirConfirm(msg, callback, btnLabel = 'Confirmar') {
+            confirmCallback = callback;
+            document.getElementById('confirm-msg').textContent = msg;
+            document.getElementById('confirm-ok').textContent = btnLabel;
+            document.getElementById('mov-confirm').classList.add('open');
+        }
+        function cerrarConfirm() {
+            document.getElementById('mov-confirm').classList.remove('open');
+            confirmCallback = null;
+        }
+        function ejecutarConfirm() {
+            if (confirmCallback) confirmCallback();
+            cerrarConfirm();
+        }
+        document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
+
+        // ============================================================
+        // AUTH Y SESIÓN
+        // ============================================================
+        async function initSession(userId) {
+            const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
+            if (error) { toast('Error al cargar perfil: ' + error.message, 'err'); return; }
+            PERFIL = data;
+            SESSION = { id: userId, email: data.email, rol: data.rol };
+            mostrarApp();
+        }
+
+        (async function boot() {
+            sb.auth.onAuthStateChange(async (event, session) => {
+                if (session?.user && !SESSION) {
+                    await initSession(session.user.id);
+                } else if (!session && event === 'SIGNED_OUT') {
+                    SESSION = null;
+                    PERFIL = null;
+                    document.getElementById('app').style.display = 'none';
+                    document.getElementById('login-wrap').style.display = 'flex';
+                }
+            });
+            // Comprobar sesión existente al recargar
+            const { data: { session } } = await sb.auth.getSession();
+            if (session?.user) {
+                await initSession(session.user.id);
+            }
+        })();
+
+        // Login
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
-            if (!sb) {
-                toast('⚠️ Configura tus credenciales de Supabase en el código.', 'err');
-                return;
-            }
-
             try {
-                // Autenticación real con Supabase
                 const { data, error } = await sb.auth.signInWithPassword({ email, password });
                 if (error) throw error;
-                
-                mostrarApp(email);
-                toast('✅ Inicio de sesión exitoso');
-            } catch(err) {
+                // El onAuthStateChange se encarga de llamar initSession
+                toast('✅ Sesión iniciada', 'ok');
+            } catch (err) {
                 toast('❌ Error: ' + err.message, 'err');
             }
         });
 
-        function mostrarApp(email) {
+        // ============================================================
+        // NAVEGACIÓN Y ROLES
+        // ============================================================
+        function mostrarApp() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
-            document.getElementById('user-info').textContent = 'Usuario: ' + email;
+            document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
+            // Configurar navegación según rol
+            const rol = PERFIL?.rol;
+            // Los catálogos son visibles para todos (lectura), pero los botones de escritura se ocultan según rol
+            // Por ahora mostramos todas las opciones; el backend RLS se encargará de validar
+            if (rol === 'tecnico') {
+                // En MVP1, técnico solo ve Dashboard (y más adelante Mis Tareas)
+                document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+                    if (item.dataset.view !== 'dashboard') item.style.display = 'none';
+                });
+            }
+            // Cambiar a la vista por defecto
+            sv('dashboard');
+            cargarDashboard();
         }
 
-        // Función de toast (simple)
-        function toast(msg, tipo = '') {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.opacity = '1';
-            t.style.background = tipo === 'err' ? '#ba0517' : '#2e844a';
-            setTimeout(() => { t.style.opacity = '0'; }, 3000);
+        function sv(view) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
+            const target = document.getElementById('view-' + view);
+            if (target) target.style.display = 'block';
+            const nav = document.querySelector('.sidebar .nav-item[data-view="' + view + '"]');
+            if (nav) nav.classList.add('active');
+            // Cargar datos según vista
+            if (view === 'marcas') cargarMarcas();
+            if (view === 'modelos') cargarModelos();
+            if (view === 'trabajos') cargarTrabajos();
+            if (view === 'agencias') cargarAgencias();
+            if (view === 'clientes') cargarClientes();
+        }
+
+        // Añadir listeners a los nav-items
+        document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+            item.addEventListener('click', () => sv(item.dataset.view));
+        });
+
+        // ============================================================
+        // DASHBOARD
+        // ============================================================
+        async function cargarDashboard() {
+            // Autos en taller
+            const { count: taller } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
+            document.getElementById('stat-taller').textContent = taller || 0;
+
+            // Entregas hoy (OT completadas hoy)
+            const hoy = new Date().toISOString().split('T')[0];
+            const { count: entregas } = await sb.from('ot').select('*', { count: 'exact', head: true })
+                .eq('estado', 'completada')
+                .gte('updated_at', hoy + 'T00:00:00')
+                .lt('updated_at', hoy + 'T23:59:59');
+            document.getElementById('stat-entregas').textContent = entregas || 0;
+
+            // Facturas pendientes (aún sin tabla, dejamos 0)
+            document.getElementById('stat-facturas').textContent = 0;
+        }
+
+        // ============================================================
+        // CRUD GENÉRICO
+        // ============================================================
+        // Configuración de campos por entidad
+        const configs = {
+            marca: {
+                tabla: 'marcas',
+                title: 'Marca',
+                fields: [
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true }
+                ]
+            },
+            modelo: {
+                tabla: 'modelos',
+                title: 'Modelo',
+                fields: [
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' }
+                ]
+            },
+            trabajo: {
+                tabla: 'trabajos',
+                title: 'Trabajo',
+                fields: [
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' },
+                    { name: 'tiempo_est', label: 'Tiempo Est. (min)', type: 'number' }
+                ]
+            },
+            agencia: {
+                tabla: 'agencias',
+                title: 'Agencia',
+                fields: [
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'rfc', label: 'RFC', type: 'text' },
+                    { name: 'contacto', label: 'Contacto', type: 'text' }
+                ]
+            },
+            cliente: {
+                tabla: 'clientes',
+                title: 'Cliente',
+                fields: [
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' }
+                ]
+            }
+        };
+
+        let currentModal = null;
+        let currentEditId = null;
+
+        async function abrirModal(tipo, id = null) {
+            const config = configs[tipo];
+            if (!config) return;
+            currentModal = tipo;
+            currentEditId = id;
+            document.getElementById('crud-title').textContent = id ? 'Editar ' + config.title : 'Nuevo ' + config.title;
+
+            // Construir formulario
+            let html = '';
+            for (const field of config.fields) {
+                html += `<div style="margin-bottom:12px;">
+                    <label class="flbl">${field.label}</label>`;
+                if (field.type === 'select') {
+                    html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}>`;
+                    html += `<option value="">Selecciona...</option>`;
+                    // Se llenarán dinámicamente después
+                    html += `</select>`;
+                } else if (field.type === 'number') {
+                    html += `<input class="inp" type="number" name="${field.name}" ${field.step ? 'step="' + field.step + '"' : ''} ${field.required ? 'required' : ''}>`;
+                } else {
+                    html += `<input class="inp" type="${field.type || 'text'}" name="${field.name}" ${field.required ? 'required' : ''}>`;
+                }
+                html += `</div>`;
+            }
+            document.getElementById('crud-body').innerHTML = html;
+
+            // Si es edición, cargar datos existentes
+            if (id) {
+                const { data, error } = await sb.from(config.tabla).select('*').eq('id', id).single();
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                // Llenar inputs
+                for (const field of config.fields) {
+                    const input = document.querySelector(`#crud-body input[name="${field.name}"], #crud-body select[name="${field.name}"]`);
+                    if (input) input.value = data[field.name] || '';
+                }
+            }
+
+            // Cargar opciones para selects (marcas, etc.)
+            if (tipo === 'modelo') {
+                const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true);
+                const select = document.querySelector(`#crud-body select[name="marca_id"]`);
+                if (select && marcas) {
+                    marcas.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.id;
+                        opt.textContent = m.nombre;
+                        select.appendChild(opt);
+                    });
+                }
+            }
+
+            document.getElementById('mov-crud').classList.add('open');
+        }
+
+        function cerrarModal() {
+            document.getElementById('mov-crud').classList.remove('open');
+            currentModal = null;
+            currentEditId = null;
+        }
+
+        // Guardar (crear o actualizar)
+        document.getElementById('crud-save').addEventListener('click', async () => {
+            if (!currentModal) return;
+            const config = configs[currentModal];
+            // Recolectar datos del formulario
+            const form = document.getElementById('crud-body');
+            const datos = {};
+            for (const field of config.fields) {
+                const input = form.querySelector(`input[name="${field.name}"], select[name="${field.name}"]`);
+                datos[field.name] = input ? input.value : '';
+            }
+
+            // Validar campos requeridos
+            for (const field of config.fields) {
+                if (field.required && !datos[field.name]) {
+                    toast('Campo ' + field.label + ' es obligatorio', 'err');
+                    return;
+                }
+            }
+
+            try {
+                if (currentEditId) {
+                    // Actualizar
+                    const { error } = await sb.from(config.tabla).update(datos).eq('id', currentEditId);
+                    if (error) throw error;
+                    toast('Actualizado ✓', 'ok');
+                } else {
+                    // Crear
+                    const { error } = await sb.from(config.tabla).insert(datos);
+                    if (error) throw error;
+                    toast('Creado ✓', 'ok');
+                }
+                cerrarModal();
+                sv(currentModal === 'marca' ? 'marcas' : currentModal); // recargar vista
+            } catch (e) {
+                toast('Error: ' + e.message, 'err');
+            }
+        });
+
+        // ============================================================
+        // FUNCIONES DE CARGA POR ENTIDAD
+        // ============================================================
+        async function cargarMarcas() {
+            const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-marcas');
+            tbody.innerHTML = '';
+            data.forEach(m => {
+                tbody.innerHTML += `<tr>
+                    <td>${m.id}</td>
+                    <td>${escHtml(m.nombre)}</td>
+                    <td>${m.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function cargarModelos() {
+            const { data, error } = await sb.from('modelos').select('*, marcas(nombre)').eq('activo', true).order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-modelos');
+            tbody.innerHTML = '';
+            data.forEach(m => {
+                tbody.innerHTML += `<tr>
+                    <td>${m.id}</td>
+                    <td>${escHtml(m.nombre)}</td>
+                    <td>${escHtml(m.marcas?.nombre || '')}</td>
+                    <td>${m.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function cargarTrabajos() {
+            const { data, error } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-trabajos');
+            tbody.innerHTML = '';
+            data.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.id}</td>
+                    <td>${escHtml(t.nombre)}</td>
+                    <td>$${t.precio_base || 0}</td>
+                    <td>${t.tiempo_est || 0} min</td>
+                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function cargarAgencias() {
+            const { data, error } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-agencias');
+            tbody.innerHTML = '';
+            data.forEach(a => {
+                tbody.innerHTML += `<tr>
+                    <td>${a.id}</td>
+                    <td>${escHtml(a.nombre)}</td>
+                    <td>${escHtml(a.rfc || '')}</td>
+                    <td>${escHtml(a.contacto || '')}</td>
+                    <td>${a.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function cargarClientes() {
+            const { data, error } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-clientes');
+            tbody.innerHTML = '';
+            data.forEach(c => {
+                tbody.innerHTML += `<tr>
+                    <td>${c.id}</td>
+                    <td>${escHtml(c.nombre)}</td>
+                    <td>${escHtml(c.telefono || '')}</td>
+                    <td>${escHtml(c.email || '')}</td>
+                    <td>${c.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        // ============================================================
+        // ELIMINAR (BORRADO LÓGICO)
+        // ============================================================
+        async function eliminarRegistro(tabla, id, descripcion) {
+            abrirConfirm(
+                `¿Eliminar "${descripcion}"?`,
+                async () => {
+                    try {
+                        const { error } = await sb.from(tabla).update({ activo: false }).eq('id', id);
+                        if (error) throw error;
+                        toast('Eliminado ✓', 'ok');
+                        // Recargar la vista actual
+                        const vistaActual = document.querySelector('.sidebar .nav-item.active')?.dataset.view;
+                        if (vistaActual) sv(vistaActual);
+                    } catch (e) {
+                        toast('Error: ' + e.message, 'err');
+                    }
+                },
+                'Sí, eliminar'
+            );
         }
     </script>
 </body>
