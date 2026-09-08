@@ -201,7 +201,7 @@
                 <input class="inp" type="email" id="email" placeholder="nombre@taller.com" required>
                 <br><br>
                 <label class="flbl" for="password">Contraseña</label>
-                <input class="inp" type="password" id="password" placeholder="••••••••" required>
+                <input class="inp" type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
                 <br><br>
                 <button class="btn btn-primary btn-block" type="submit">Iniciar sesión</button>
             </form>
@@ -255,8 +255,6 @@
                 <div id="view-dashboard" class="view">
                     <h2 class="page-title">Dashboard</h2>
                     <p class="page-desc">Resumen operativo con indicadores de entrega.</p>
-                    
-                    <!-- Filtros -->
                     <div class="filtro-dashboard">
                         <div>
                             <label class="flbl">Agencia</label>
@@ -283,8 +281,6 @@
                         </div>
                         <button class="btn btn-sm" onclick="limpiarFiltrosDashboard()">Limpiar</button>
                     </div>
-
-                    <!-- Tarjetas principales -->
                     <div class="stat-grid">
                         <div class="stat-card">
                             <div class="label">Autos en taller</div>
@@ -299,8 +295,6 @@
                             <div class="value" id="stat-facturas">0</div>
                         </div>
                     </div>
-
-                    <!-- Tarjetas de entrega -->
                     <div class="stat-grid">
                         <div class="stat-card warning">
                             <div class="label">Próximos a entregar</div>
@@ -315,8 +309,6 @@
                             <div class="value" id="stat-entregados-hoy">0</div>
                         </div>
                     </div>
-
-                    <!-- KPIs -->
                     <div class="stat-grid">
                         <div class="stat-card">
                             <div class="label">Tasa de retraso</div>
@@ -331,8 +323,6 @@
                             <div class="value" id="kpi-dias-promedio">0</div>
                         </div>
                     </div>
-
-                    <!-- Tabla de OTs filtradas -->
                     <div class="card mt-2">
                         <h3>Órdenes de trabajo (según filtros)</h3>
                         <table id="tabla-dashboard">
@@ -382,8 +372,6 @@
                                     </select>
                                 </div>
                             </div>
-
-                            <!-- NUEVOS CAMPOS DE ENTREGA -->
                             <h3 style="margin:20px 0 12px;">Tiempos de entrega</h3>
                             <div class="form-row">
                                 <div class="form-col">
@@ -396,7 +384,6 @@
                                     <small style="color:var(--sf-text-secondary);">Si se deja vacío, se calcula con la suma de trabajos.</small>
                                 </div>
                             </div>
-
                             <h3 style="margin:20px 0 12px;">Cliente</h3>
                             <div class="form-row">
                                 <div class="form-col">
@@ -419,10 +406,8 @@
                                     </select>
                                 </div>
                             </div>
-
                             <h3 style="margin:20px 0 12px;">Trabajos a realizar</h3>
                             <div id="lista-trabajos"></div>
-
                             <div style="margin-top:20px; text-align:right;">
                                 <strong>Costo Total Estimado: </strong>
                                 <span style="font-size:20px; font-weight:700; color:var(--sf-blue);" id="ot-total">$0.00</span>
@@ -697,27 +682,29 @@
     <div class="mov" id="mov-usuario">
         <div class="mo">
             <div class="moh">Nuevo Usuario</div>
-            <div class="mob">
-                <label class="flbl">Nombre completo</label>
-                <input class="inp" type="text" id="usu-nombre" placeholder="María López">
-                <br><br>
-                <label class="flbl">Correo electrónico</label>
-                <input class="inp" type="email" id="usu-email" placeholder="maria@taller.com">
-                <br><br>
-                <label class="flbl">Contraseña temporal</label>
-                <input class="inp" type="password" id="usu-pass" placeholder="Mínimo 8 caracteres">
-                <br><br>
-                <label class="flbl">Rol</label>
-                <select class="inp" id="usu-rol">
-                    <option value="admin">Administrador</option>
-                    <option value="recepcionista">Recepcionista</option>
-                    <option value="jefe_taller">Jefe de Taller</option>
-                </select>
-            </div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
-            </div>
+            <form onsubmit="return false;">
+                <div class="mob">
+                    <label class="flbl">Nombre completo</label>
+                    <input class="inp" type="text" id="usu-nombre" placeholder="María López">
+                    <br><br>
+                    <label class="flbl">Correo electrónico</label>
+                    <input class="inp" type="email" id="usu-email" placeholder="maria@taller.com">
+                    <br><br>
+                    <label class="flbl">Contraseña temporal</label>
+                    <input class="inp" type="password" id="usu-pass" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                    <br><br>
+                    <label class="flbl">Rol</label>
+                    <select class="inp" id="usu-rol">
+                        <option value="admin">Administrador</option>
+                        <option value="recepcionista">Recepcionista</option>
+                        <option value="jefe_taller">Jefe de Taller</option>
+                    </select>
+                </div>
+                <div class="mof">
+                    <button type="button" class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -763,7 +750,6 @@
         let detalleOTActual = null;
         let otEditarFlujoId = null;
 
-        // ============ UTILIDADES ============
         function escHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
@@ -795,7 +781,6 @@
         }
         document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
 
-        // ============ AUTENTICACIÓN ============
         async function initSession(userId) {
             try {
                 const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
@@ -803,14 +788,15 @@
                 PERFIL = data;
                 SESSION = { id: userId, email: data.email, rol: data.rol };
                 await cargarConfiguracion();
-                mostrarApp();
+                setTimeout(() => mostrarApp(), 100);
             } catch (e) { toast('Error al iniciar sesión: ' + e.message, 'err'); }
         }
 
         (async function boot() {
             sb.auth.onAuthStateChange(async (event, session) => {
-                if (session?.user && !SESSION) await initSession(session.user.id);
-                else if (!session && event === 'SIGNED_OUT') {
+                if (session?.user && !SESSION) {
+                    await initSession(session.user.id);
+                } else if (!session && event === 'SIGNED_OUT') {
                     SESSION = null; PERFIL = null; CONFIG = {};
                     document.getElementById('app').style.display = 'none';
                     document.getElementById('login-wrap').style.display = 'flex';
@@ -831,7 +817,6 @@
             } catch (err) { toast('❌ Error: ' + err.message, 'err'); }
         });
 
-        // ============ CONFIGURACIÓN ============
         async function cargarConfiguracion() {
             try {
                 const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
@@ -873,7 +858,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ NAVEGACIÓN ============
         function mostrarApp() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
@@ -902,10 +886,8 @@
             item.addEventListener('click', () => sv(item.dataset.view));
         });
 
-        // ============ DASHBOARD (con filtros e indicadores) ============
         async function cargarDashboard() {
             try {
-                // Cargar selects de filtros
                 const [agencias, clientes] = await Promise.all([
                     sb.from('agencias').select('*').eq('activo', true).order('nombre'),
                     sb.from('clientes').select('*').eq('activo', true).order('nombre')
@@ -916,7 +898,6 @@
                 const selCliente = document.getElementById('filtro-cliente');
                 selCliente.innerHTML = '<option value="">Todos</option>';
                 clientes.data.forEach(c => selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
-                
                 await aplicarFiltrosDashboard();
             } catch (e) { console.warn('Dashboard error:', e.message); }
         }
@@ -937,24 +918,20 @@
                 const hoy = new Date();
                 const hoyISO = hoy.toISOString().split('T')[0];
 
-                // Autos en taller (sin filtro)
                 const { count: tallerCount } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
                 document.getElementById('stat-taller').textContent = tallerCount || 0;
 
-                // Entregas hoy (sin filtro)
                 const { count: entregasHoy } = await sb.from('ot').select('*', { count: 'exact', head: true })
                     .eq('estado', 'completada')
                     .gte('updated_at', hoyISO + 'T00:00:00')
                     .lt('updated_at', hoyISO + 'T23:59:59');
                 document.getElementById('stat-entregas').textContent = entregasHoy || 0;
 
-                // Facturas pendientes
                 const { count: factPend } = await sb.from('ot').select('*', { count: 'exact', head: true })
                     .eq('estado', 'completada')
                     .is('factura_id', null);
                 document.getElementById('stat-facturas').textContent = factPend || 0;
 
-                // Próximos a entregar (entre hoy y +2 días, estados aprobada/en_taller)
                 const proximos = ots.filter(ot => {
                     if (!ot.fecha_entrega) return false;
                     const fecha = new Date(ot.fecha_entrega);
@@ -963,7 +940,6 @@
                 });
                 document.getElementById('stat-proximos').textContent = proximos.length;
 
-                // Retrasados
                 const retrasados = ots.filter(ot => {
                     if (!ot.fecha_entrega) return false;
                     const fecha = new Date(ot.fecha_entrega);
@@ -971,18 +947,15 @@
                 });
                 document.getElementById('stat-retrasados').textContent = retrasados.length;
 
-                // Entregados hoy
                 const entregadosHoy = ots.filter(ot => {
                     return ot.estado === 'completada' && ot.fecha_entrega === hoyISO;
                 });
                 document.getElementById('stat-entregados-hoy').textContent = entregadosHoy.length;
 
-                // KPI Tasa de retraso
                 const totalEnProceso = ots.filter(ot => ['aprobada','en_taller'].includes(ot.estado) && ot.fecha_entrega).length;
                 const tasa = totalEnProceso > 0 ? Math.round((retrasados.length / totalEnProceso) * 100) : 0;
                 document.getElementById('kpi-tasa-retraso').textContent = tasa + '%';
 
-                // KPI Técnico del mes
                 const { data: tecnicos } = await sb.from('tecnicos').select('*').order('nombre');
                 let maxTecnico = '—';
                 let maxCount = 0;
@@ -996,7 +969,6 @@
                 }
                 document.getElementById('kpi-tecnico-mes').textContent = maxTecnico;
 
-                // KPI Días promedio por agencia (corregido)
                 let totalDias = 0;
                 let totalOTs = 0;
                 const { data: agenciasData } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
@@ -1019,7 +991,6 @@
                 const promedio = totalOTs > 0 ? (totalDias / totalOTs).toFixed(1) : 0;
                 document.getElementById('kpi-dias-promedio').textContent = promedio;
 
-                // Poblar tabla dashboard
                 const tbody = document.getElementById('tbody-dashboard');
                 tbody.innerHTML = '';
                 ots.forEach(ot => {
@@ -1048,7 +1019,6 @@
             aplicarFiltrosDashboard();
         }
 
-        // ============ CRUD GENÉRICO ============
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
@@ -1126,7 +1096,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         });
 
-        // ============ CARGAR CATÁLOGOS ============
         async function cargarMarcas() {
             try {
                 const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
@@ -1188,7 +1157,6 @@
             }, 'Sí, eliminar');
         }
 
-        // ============ ADMINISTRACIÓN ============
         async function cargarAdmin() {
             const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'marcas';
             await Promise.all([cargarMarcas(), cargarModelos(), cargarTrabajos(), cargarAgencias(), cargarClientes(), cargarTecnicos(), cargarUsuarios()]);
@@ -1204,7 +1172,6 @@
             if (content) content.classList.add('active');
         }
 
-        // ============ TÉCNICOS ============
         async function cargarTecnicos() {
             try {
                 const { data, error } = await sb.from('tecnicos').select('*').order('nombre');
@@ -1261,7 +1228,6 @@
             }, 'Sí, cambiar');
         }
 
-        // ============ USUARIOS ============
         async function cargarUsuarios() {
             try {
                 const { data, error } = await sb.from('perfiles').select('*').order('nombre');
@@ -1330,7 +1296,6 @@
             }, 'Sí, cambiar');
         }
 
-        // ============ NUEVA COTIZACIÓN ============
         async function cargarDatosNuevaOT() {
             try {
                 const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
@@ -1381,8 +1346,6 @@
                 tiempoDias += parseFloat(chk.dataset.tiempo || 0);
             });
             document.getElementById('ot-total').textContent = '$' + total.toFixed(2);
-            // Opcional: mostrar un indicador de días (no obligatorio)
-            // Si el campo manual está vacío, podemos mostrar el automático en un texto
         }
 
         function cambiarTipoCliente() {
@@ -1438,14 +1401,13 @@
                 document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
                     const precio = parseFloat(chk.dataset.precio || 0);
                     const tiempo = parseFloat(chk.dataset.tiempo || 0);
-                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: precio, tiempo: tiempo });
+                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: precio });
                     costoTotal += precio;
                     tiempoTotalDias += tiempo;
                 });
 
                 if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
 
-                // Generar código base y evitar duplicados
                 const codigoBase = generarCodigoOT();
                 const { data: existentes } = await sb.from('ot').select('codigo').like('codigo', codigoBase + '%').order('codigo', { ascending: false }).limit(1);
                 let codigo = codigoBase;
@@ -1457,7 +1419,6 @@
 
                 const numero = 'CT-' + codigo;
                 const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
-                // Determinar días estimados: si manual > 0, usar manual; si no, suma de tiempos
                 const diasEstimados = diasManual > 0 ? diasManual : (tiempoTotalDias || 1);
 
                 const otData = {
@@ -1466,9 +1427,9 @@
                     agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
                     cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
                     costo_total: costoTotal,
-                    tiempo_est: tiempoTotalDias, // guardamos la suma de días (referencia)
-                    dias_estimados: diasEstimados, // el que mandará (manual o automático)
-                    fecha_entrega: fechaEntrega, // si se capturó
+                    tiempo_est: tiempoTotalDias,
+                    dias_estimados: diasEstimados,
+                    fecha_entrega: fechaEntrega,
                     estado: 'cotizacion',
                     flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
                     numero: numero,
@@ -1490,7 +1451,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ COTIZACIONES ============
         async function cargarCotizaciones() {
             try {
                 const { data, error } = await sb.from('ot')
@@ -1530,7 +1490,6 @@
                     const { data: otActual } = await sb.from('ot').select('*').eq('id', id).single();
                     const nuevoNumero = 'OT-' + (otActual.codigo || '');
                     const fechaAprobacion = new Date().toISOString();
-                    // Si no se definió fecha_entrega, calcular con dias_estimados
                     let fechaEntrega = otActual.fecha_entrega;
                     if (!fechaEntrega) {
                         const dias = otActual.dias_estimados || 1;
@@ -1580,7 +1539,6 @@
             }, 'Sí, aprobar todas');
         }
 
-        // ============ KANBAN TALLER ============
         async function cargarTaller() {
             try {
                 const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
@@ -1648,7 +1606,6 @@
             </div>`;
         }
 
-        // ============ DRAG & DROP ============
         document.addEventListener('dragstart', (e) => {
             const card = e.target.closest('.kanban-card');
             if (!card) return;
@@ -1753,7 +1710,6 @@
 
         function imprimirCotizacionDesdeDetalle() { if (detalleOTActual) imprimirCotizacion(detalleOTActual.id); }
 
-        // ============ EDITAR FLUJO POST-APROBACIÓN ============
         function abrirEditarFlujo(otId) {
             otEditarFlujoId = otId;
             sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId).then(async ({ data: otTrabajos, error }) => {
@@ -1795,7 +1751,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ FACTURACIÓN ============
         async function cargarAgenciasFactura() {
             const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
             const select = document.getElementById('factura-agencia');
@@ -1891,7 +1846,6 @@
             XLSX.writeFile(wb, `conciliacion_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // ============ PDF ============
         function numeroALetras(numero) {
             const unidades = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
             const decenas = ['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
@@ -1965,7 +1919,6 @@
                 doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
                 finalY = boxY + 35;
 
-                // Datos del vehículo
                 doc.setFillColor(240, 240, 240); doc.rect(M, finalY, 180, 7, 'F');
                 doc.setFontSize(8); doc.setFont('helvetica', 'bold');
                 doc.text('DATOS DEL VEHÍCULO', M + 2, finalY + 5); finalY += 11;
@@ -1996,7 +1949,6 @@
             } catch (e) { toast('Error generando PDF: ' + e.message, 'err'); }
         }
 
-        // ============ WHATSAPP ============
         function copiarResumenWhatsApp() {
             if (!detalleOTActual) return;
             const ot = detalleOTActual;
@@ -2010,7 +1962,6 @@
             toast('Resumen copiado ✓', 'ok');
         }
 
-        // ============ CONSULTA PÚBLICA PARA TÉCNICO ============
         async function abrirConsultaTecnico() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('consulta-tecnico-wrap').style.display = 'block';
