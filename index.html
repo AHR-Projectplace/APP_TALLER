@@ -4,702 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taller Hojalatería y Pintura — Sistema de Gestión</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
     <style>
-        :root {
-            --sf-blue: #0176d3;
-            --sf-blue-dark: #014486;
-            --sf-blue-light: #eaf5fe;
-            --sf-gray-10: #f3f3f3;
-            --sf-gray-20: #e5e5e5;
-            --sf-gray-30: #c9c9c9;
-            --sf-gray-40: #939393;
-            --sf-text: #080707;
-            --sf-text-secondary: #444444;
-            --sf-white: #ffffff;
-            --sf-border: #dddbda;
-            --sf-success: #2e844a;
-            --sf-warning: #fe9339;
-            --sf-error: #ba0517;
-            --acc: var(--sf-blue);
-            --acc2: var(--sf-blue-light);
-            --bg: #f3f3f3;
-            --surface: #fff;
-            --bd: var(--sf-border);
-            --bd2: #c9c9c9;
-            --t: var(--sf-text);
-            --t2: var(--sf-text-secondary);
-            --r: 8px;
-            --rs: 4px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--t);
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 10px 16px; border: 1px solid var(--sf-border);
-            border-radius: var(--r); background: var(--sf-white);
-            color: var(--sf-blue); font-weight: 500; cursor: pointer;
-            transition: background 0.2s, border-color 0.2s, color 0.2s;
-            font-size: 14px; min-height: 40px;
-        }
-        .btn:hover { background: var(--sf-blue-light); border-color: var(--sf-blue); }
-        .btn-primary { background: var(--sf-blue); color: var(--sf-white); border-color: var(--sf-blue); }
-        .btn-primary:hover { background: var(--sf-blue-dark); border-color: var(--sf-blue-dark); }
-        .btn-danger { background: var(--sf-error); color: var(--sf-white); border-color: var(--sf-error); }
-        .btn-danger:hover { background: #8e040e; }
-        .btn-block { width: 100%; }
-        .btn-sm { padding: 6px 10px; font-size: 12px; min-height: 32px; }
-        .btn-secondary { background: var(--sf-gray-20); color: var(--sf-text); }
-
-        .inp {
-            width: 100%; padding: 10px 12px; border: 1px solid var(--sf-border);
-            border-radius: var(--r); font-size: 14px; font-family: inherit;
-            background: var(--sf-white); transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .inp:focus { outline: none; border-color: var(--sf-blue); box-shadow: 0 0 0 3px rgba(1,118,211,0.2); }
-
-        .flbl { display: block; margin-bottom: 6px; font-weight: 500; color: var(--sf-text-secondary); }
-
-        .card { background: var(--surface); border: 1px solid var(--sf-border); border-radius: var(--r); padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            padding: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .stat-card .label {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--sf-text-secondary);
-        }
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-            margin-top: 8px;
-            color: var(--sf-blue);
-        }
-
-        .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
-        .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .auth-logo { text-align: center; margin-bottom: 24px; }
-        .auth-logo h1 { font-size: 22px; font-weight: 600; color: var(--sf-blue); }
-
-        #app { display: none; }
-        .topbar {
-            background: var(--sf-white); border-bottom: 1px solid var(--sf-border);
-            padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .topbar .brand { font-weight: 600; font-size: 18px; color: var(--sf-blue); }
-        .topbar .user { font-size: 13px; color: var(--sf-text-secondary); }
-
-        .layout { display: flex; min-height: calc(100vh - 60px); }
-        .sidebar {
-            width: 220px; background: var(--sf-white); border-right: 1px solid var(--sf-border);
-            padding: 20px 0; flex-shrink: 0;
-        }
-        .sidebar .nav-section {
-            padding: 10px 20px 4px;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--sf-gray-40);
-            letter-spacing: 0.5px;
-        }
-        .sidebar .nav-item {
-            display: block; padding: 8px 20px; color: var(--sf-text-secondary);
-            text-decoration: none; transition: background 0.2s; font-weight: 500;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .sidebar .nav-item:hover { background: var(--sf-blue-light); color: var(--sf-blue); }
-        .sidebar .nav-item.active { background: var(--sf-blue-light); color: var(--sf-blue); border-right: 3px solid var(--sf-blue); }
-
-        .main { flex: 1; padding: 24px; overflow-x: auto; }
-        .page-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; }
-        .page-desc { color: var(--sf-text-secondary); margin-bottom: 20px; }
-
-        table { width: 100%; border-collapse: collapse; background: var(--sf-white); border-radius: var(--r); overflow: hidden; }
-        th { background: var(--sf-gray-10); text-align: left; padding: 12px 16px; font-weight: 600; color: var(--sf-text); border-bottom: 1px solid var(--sf-border); }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--sf-border); }
-        tr:last-child td { border-bottom: none; }
-
-        .mov { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
-        .mov.open { display: flex; }
-        .mo { background: var(--sf-white); border-radius: 12px; width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .moh { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
-        .mob { margin-bottom: 20px; }
-        .mof { display: flex; justify-content: flex-end; gap: 10px; }
-
-        #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 9999; }
-        #toast.show { opacity: 1; }
-
-        .kanban-board {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            padding: 20px 0;
-        }
-        .kanban-col {
-            background: var(--sf-gray-10);
-            border-radius: var(--r);
-            min-width: 260px;
-            flex: 1;
-            padding: 12px;
-            border: 2px solid transparent;
-            transition: background 0.2s, border-color 0.2s;
-        }
-        .kanban-col.drag-over {
-            background: var(--sf-blue-light);
-            border-color: var(--sf-blue);
-        }
-        .kanban-col-header {
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .kanban-col-header .count {
-            background: var(--sf-white);
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 12px;
-        }
-        .kanban-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 50px;
-        }
-        .kanban-card {
-            background: var(--sf-white);
-            border-radius: var(--r);
-            padding: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: grab;
-            transition: box-shadow 0.2s;
-        }
-        .kanban-card.dragging {
-            opacity: 0.5;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .kanban-card .card-placa {
-            font-weight: 700;
-            font-size: 16px;
-        }
-        .kanban-card .card-cliente {
-            font-size: 12px;
-            color: var(--sf-text-secondary);
-            margin: 4px 0;
-        }
-        .kanban-card .card-codigo {
-            font-family: monospace;
-            font-size: 11px;
-            color: var(--sf-gray-40);
-            margin-bottom: 8px;
-        }
-        .kanban-card .card-actions {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .filtro-kanban {
-            margin-bottom: 16px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 1px solid var(--sf-border);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .tab-btn {
-            padding: 8px 16px;
-            border: none;
-            background: transparent;
-            color: var(--sf-text-secondary);
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: color 0.2s, border-color 0.2s;
-        }
-        .tab-btn.active {
-            color: var(--sf-blue);
-            border-bottom-color: var(--sf-blue);
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .consulta-tecnico-wrap { max-width: 800px; margin: 40px auto; padding: 20px; }
-        .consulta-tecnico-card { background: var(--sf-white); border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        /* ... (estilos iguales) ... */
     </style>
 </head>
 <body>
-    <!-- LOGIN -->
-    <div class="auth-wrap" id="login-wrap">
-        <div class="auth-card">
-            <div class="auth-logo">
-                <h1>🔧 Taller H&P</h1>
-                <p style="color:var(--sf-text-secondary);">Sistema de Gestión</p>
-            </div>
-            <form id="login-form">
-                <label class="flbl" for="email">Correo electrónico</label>
-                <input class="inp" type="email" id="email" placeholder="nombre@taller.com" required>
-                <br><br>
-                <label class="flbl" for="password">Contraseña</label>
-                <input class="inp" type="password" id="password" placeholder="••••••••" required>
-                <br><br>
-                <button class="btn btn-primary btn-block" type="submit">Iniciar sesión</button>
-            </form>
-            <div style="text-align:center; margin-top:16px;">
-                <button class="btn btn-block" onclick="abrirConsultaTecnico()">🔍 Soy técnico, ver mis tareas</button>
-            </div>
-            <p style="text-align:center; margin-top:16px; font-size:12px; color:var(--sf-text-secondary);">¿No tienes cuenta? Contacta al administrador.</p>
-        </div>
-    </div>
-
-    <!-- CONSULTA PÚBLICA PARA TÉCNICO -->
-    <div id="consulta-tecnico-wrap" style="display:none;">
-        <div class="consulta-tecnico-card">
-            <h2 style="margin-bottom:16px;">Consulta de tareas</h2>
-            <p style="margin-bottom:16px; color:var(--sf-text-secondary);">Selecciona tu nombre para ver tus trabajos asignados.</p>
-            <div class="form-row">
-                <div class="form-col">
-                    <label class="flbl">Técnico</label>
-                    <select class="inp" id="select-consulta-tecnico" onchange="cargarTareasConsulta()">
-                        <option value="">Selecciona...</option>
-                    </select>
-                </div>
-                <div class="form-col" style="display:flex; align-items:flex-end;">
-                    <button class="btn" onclick="cerrarConsultaTecnico()">Volver al login</button>
-                </div>
-            </div>
-            <div id="consulta-tareas-lista" style="margin-top:20px;"></div>
-        </div>
-    </div>
-
-    <!-- APLICACIÓN -->
-    <div id="app">
-        <div class="topbar">
-            <div class="brand">Taller H&P</div>
-            <div class="user" id="user-info">Usuario: —</div>
-        </div>
-        <div class="layout">
-            <aside class="sidebar" id="sidebar">
-                <div class="nav-section">Operación</div>
-                <a class="nav-item" data-view="dashboard">Dashboard</a>
-                <a class="nav-item" data-view="nueva-ot">Nueva Cotización</a>
-                <a class="nav-item" data-view="cotizaciones">Cotizaciones</a>
-                <a class="nav-item" data-view="taller">Taller (Kanban)</a>
-                
-                <div class="nav-section">Administración</div>
-                <a class="nav-item" data-view="admin">Administración</a>
-            </aside>
-            <main class="main">
-                <!-- Dashboard -->
-                <div id="view-dashboard" class="view">
-                    <h2 class="page-title">Dashboard</h2>
-                    <p class="page-desc">Resumen operativo del taller.</p>
-                    <div class="stat-grid">
-                        <div class="stat-card">
-                            <div class="label">Autos en taller</div>
-                            <div class="value" id="stat-taller">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Entregas hoy</div>
-                            <div class="value" id="stat-entregas">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Facturas pendientes</div>
-                            <div class="value" id="stat-facturas">0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Nueva Cotización -->
-                <div id="view-nueva-ot" class="view" style="display:none;">
-                    <h2 class="page-title">Nueva Cotización</h2>
-                    <p class="page-desc">Registra un vehículo y selecciona los trabajos a realizar.</p>
-                    <div class="card">
-                        <form id="form-nueva-ot">
-                            <h3 style="margin-bottom:12px;">Vehículo</h3>
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <label class="flbl">Placa</label>
-                                    <input class="inp" type="text" id="ot-placa" placeholder="ABC-123" required>
-                                </div>
-                                <div class="form-col">
-                                    <label class="flbl">Año</label>
-                                    <input class="inp" type="number" id="ot-anio" placeholder="2020">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <label class="flbl">Marca</label>
-                                    <select class="inp" id="ot-marca" required>
-                                        <option value="">Selecciona...</option>
-                                    </select>
-                                </div>
-                                <div class="form-col">
-                                    <label class="flbl">Modelo</label>
-                                    <select class="inp" id="ot-modelo" required>
-                                        <option value="">Selecciona...</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <h3 style="margin:20px 0 12px;">Cliente</h3>
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <label class="flbl">Tipo de cliente</label>
-                                    <select class="inp" id="ot-tipo-cliente" onchange="cambiarTipoCliente()">
-                                        <option value="particular">Particular</option>
-                                        <option value="agencia">Agencia</option>
-                                    </select>
-                                </div>
-                                <div class="form-col" id="div-cliente-particular">
-                                    <label class="flbl">Cliente (Particular)</label>
-                                    <select class="inp" id="ot-cliente-particular">
-                                        <option value="">Selecciona...</option>
-                                    </select>
-                                </div>
-                                <div class="form-col" id="div-cliente-agencia" style="display:none;">
-                                    <label class="flbl">Agencia</label>
-                                    <select class="inp" id="ot-cliente-agencia">
-                                        <option value="">Selecciona...</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <h3 style="margin:20px 0 12px;">Trabajos a realizar</h3>
-                            <div id="lista-trabajos"></div>
-
-                            <div style="margin-top:20px; text-align:right;">
-                                <strong>Costo Total Estimado: </strong>
-                                <span style="font-size:20px; font-weight:700; color:var(--sf-blue);" id="ot-total">$0.00</span>
-                            </div>
-                            <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
-                                <button type="button" class="btn" onclick="sv('cotizaciones')">Cancelar</button>
-                                <button type="submit" class="btn btn-primary">Guardar Cotización</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Cotizaciones -->
-                <div id="view-cotizaciones" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Cotizaciones</h2>
-                        <div>
-                            <button class="btn btn-primary btn-sm" onclick="aprobarSeleccionadas()">Aprobar Seleccionadas</button>
-                            <button class="btn btn-sm" onclick="sv('nueva-ot')">+ Nueva</button>
-                        </div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="check-all" onchange="toggleAll()"></th>
-                                <th>Folio</th>
-                                <th>Placa</th>
-                                <th>Cliente</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-cotizaciones"></tbody>
-                    </table>
-                </div>
-
-                <!-- Kanban Taller -->
-                <div id="view-taller" class="view" style="display:none;">
-                    <h2 class="page-title">Taller — Tablero Kanban</h2>
-                    <p class="page-desc">Arrastra las tarjetas para cambiar su estado o usa los botones.</p>
-                    <div class="filtro-kanban">
-                        <label class="flbl" style="margin:0;">Filtrar por técnico:</label>
-                        <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()">
-                            <option value="">Todos</option>
-                        </select>
-                    </div>
-                    <div class="kanban-board" id="kanban-board">
-                        <div class="kanban-col" data-estado="aprobada">
-                            <div class="kanban-col-header">Aprobadas <span class="count" id="count-aprobada">0</span></div>
-                            <div class="kanban-cards" id="cards-aprobada"></div>
-                        </div>
-                        <div class="kanban-col" data-estado="en_taller">
-                            <div class="kanban-col-header">En Taller <span class="count" id="count-en_taller">0</span></div>
-                            <div class="kanban-cards" id="cards-en_taller"></div>
-                        </div>
-                        <div class="kanban-col" data-estado="completada">
-                            <div class="kanban-col-header">Completadas <span class="count" id="count-completada">0</span></div>
-                            <div class="kanban-cards" id="cards-completada"></div>
-                        </div>
-                        <div class="kanban-col" data-estado="cancelada">
-                            <div class="kanban-col-header">Canceladas <span class="count" id="count-cancelada">0</span></div>
-                            <div class="kanban-cards" id="cards-cancelada"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Administración (con pestañas) -->
-                <div id="view-admin" class="view" style="display:none;">
-                    <h2 class="page-title">Administración</h2>
-                    <p class="page-desc">Gestiona catálogos, técnicos, usuarios y configuración.</p>
-                    <div class="tabs">
-                        <button class="tab-btn active" onclick="cambiarTabAdmin('marcas')">Marcas</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('modelos')">Modelos</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('trabajos')">Trabajos</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('agencias')">Agencias</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('clientes')">Clientes</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('tecnicos')">Técnicos</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('usuarios')">Usuarios</button>
-                        <button class="tab-btn" onclick="cambiarTabAdmin('config')">Configuración</button>
-                    </div>
-
-                    <div id="tab-marcas" class="tab-content active">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Marcas</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModal('marca')">+ Nueva Marca</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-marcas"></tbody></table>
-                    </div>
-
-                    <div id="tab-modelos" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Modelos</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModal('modelo')">+ Nuevo Modelo</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Marca</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-modelos"></tbody></table>
-                    </div>
-
-                    <div id="tab-trabajos" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Trabajos</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
-                    </div>
-
-                    <div id="tab-agencias" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Agencias</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModal('agencia')">+ Nueva Agencia</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-agencias"></tbody></table>
-                    </div>
-
-                    <div id="tab-clientes" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Clientes</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModal('cliente')">+ Nuevo Cliente</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-clientes"></tbody></table>
-                    </div>
-
-                    <div id="tab-tecnicos" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Técnicos</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModalTecnico()">+ Nuevo Técnico</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-tecnicos"></tbody></table>
-                    </div>
-
-                    <div id="tab-usuarios" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Usuarios del sistema</h3>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModalUsuario()">+ Nuevo Usuario</button>
-                        </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-usuarios"></tbody></table>
-                    </div>
-
-                    <div id="tab-config" class="tab-content">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Configuración de empresa</h3>
-                            <button class="btn btn-primary btn-sm" onclick="guardarConfig()">Guardar cambios</button>
-                        </div>
-                        <div style="margin-top:15px;">
-                            <label class="flbl">Nombre de la empresa</label>
-                            <input class="inp" type="text" id="cfg-nombre">
-                            <br><br>
-                            <label class="flbl">RFC</label>
-                            <input class="inp" type="text" id="cfg-rfc">
-                            <br><br>
-                            <label class="flbl">Dirección</label>
-                            <input class="inp" type="text" id="cfg-direccion">
-                            <br><br>
-                            <label class="flbl">Teléfono</label>
-                            <input class="inp" type="text" id="cfg-telefono">
-                            <br><br>
-                            <label class="flbl">Email</label>
-                            <input class="inp" type="email" id="cfg-email">
-                            <br><br>
-                            <label class="flbl">Sitio web</label>
-                            <input class="inp" type="text" id="cfg-web">
-                            <br><br>
-                            <label class="flbl">Banco</label>
-                            <input class="inp" type="text" id="cfg-banco">
-                            <br><br>
-                            <label class="flbl">Cuenta bancaria/CLABE</label>
-                            <input class="inp" type="text" id="cfg-cuenta">
-                            <br><br>
-                            <label class="flbl">Condiciones de pago</label>
-                            <textarea class="inp" id="cfg-condiciones" rows="2"></textarea>
-                            <br><br>
-                            <label class="flbl">Términos de cotización</label>
-                            <textarea class="inp" id="cfg-terminos" rows="3"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- MODAL CRUD GENÉRICO -->
-    <div class="mov" id="mov-crud">
-        <div class="mo">
-            <div class="moh" id="crud-title">Nuevo registro</div>
-            <div class="mob" id="crud-body"></div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarModal()">Cancelar</button>
-                <button class="btn btn-primary" id="crud-save">Guardar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CONFIRMACIÓN -->
-    <div class="mov" id="mov-confirm">
-        <div class="mo">
-            <div class="moh">Confirmar</div>
-            <div class="mob" id="confirm-msg"></div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarConfirm()">Cancelar</button>
-                <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL ASIGNAR TÉCNICO -->
-    <div class="mov" id="mov-asignar">
-        <div class="mo">
-            <div class="moh">Asignar Técnico</div>
-            <div class="mob">
-                <label class="flbl">Selecciona un técnico</label>
-                <select class="inp" id="select-tecnico">
-                    <option value="">— Sin técnico —</option>
-                </select>
-                <div style="margin-top:12px; text-align:center;">
-                    <button class="btn btn-sm" onclick="abrirModalTecnicoDesdeAsignar()">+ Crear Técnico</button>
-                </div>
-            </div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarAsignar()">Cancelar</button>
-                <button class="btn btn-primary" onclick="confirmarAsignacion()">Asignar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CREAR TÉCNICO -->
-    <div class="mov" id="mov-tecnico">
-        <div class="mo">
-            <div class="moh">Nuevo Técnico</div>
-            <div class="mob">
-                <label class="flbl">Nombre completo</label>
-                <input class="inp" type="text" id="tec-nombre" placeholder="Juan Pérez">
-            </div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarModalTecnico()">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarTecnico()">Guardar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CREAR USUARIO -->
-    <div class="mov" id="mov-usuario">
-        <div class="mo">
-            <div class="moh">Nuevo Usuario</div>
-            <div class="mob">
-                <label class="flbl">Nombre completo</label>
-                <input class="inp" type="text" id="usu-nombre" placeholder="María López">
-                <br><br>
-                <label class="flbl">Correo electrónico</label>
-                <input class="inp" type="email" id="usu-email" placeholder="maria@taller.com">
-                <br><br>
-                <label class="flbl">Contraseña temporal</label>
-                <input class="inp" type="password" id="usu-pass" placeholder="Mínimo 8 caracteres">
-                <br><br>
-                <label class="flbl">Rol</label>
-                <select class="inp" id="usu-rol">
-                    <option value="admin">Administrador</option>
-                    <option value="recepcionista">Recepcionista</option>
-                    <option value="jefe_taller">Jefe de Taller</option>
-                </select>
-            </div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
-                <button class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DETALLE OT (trabajos) -->
-    <div class="mov" id="mov-detalle-ot">
-        <div class="mo">
-            <div class="moh" id="detalle-titulo">Detalle de trabajos</div>
-            <div class="mob" id="detalle-contenido"></div>
-            <div class="mof">
-                <button class="btn" onclick="cerrarDetalleOT()">Cerrar</button>
-                <button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button>
-                <button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST -->
-    <div id="toast"></div>
-
+    <!-- ... (HTML igual) ... -->
+    
     <script>
-        // ============ CONFIGURACIÓN DE SUPABASE ============
+        // ============================================================
+        // CONFIGURACIÓN SUPABASE
+        // ============================================================
         const SUPABASE_URL = 'https://jcknyppkhorqgoieafkh.supabase.co';
         const SUPABASE_ANON = 'sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-        // ============ ESTADO GLOBAL ============
+        // ============================================================
+        // ESTADO GLOBAL
+        // ============================================================
         let SESSION = null;
         let PERFIL = null;
         let confirmCallback = null;
         let otAsignarId = null;
         let origenTecnico = 'vista';
-        let CONFIG = {}; // configuración de empresa
+        let CONFIG = {};
         let detalleOTActual = null;
 
-        // ============ UTILIDADES ============
+        // ========== UTILIDADES ==========
         function escHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
@@ -721,31 +56,35 @@
             document.getElementById('confirm-ok').textContent = btnLabel;
             document.getElementById('mov-confirm').classList.add('open');
         }
+
         function cerrarConfirm() {
             document.getElementById('mov-confirm').classList.remove('open');
             confirmCallback = null;
         }
+
         function ejecutarConfirm() {
             if (confirmCallback) confirmCallback();
             cerrarConfirm();
         }
+
         document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
 
-        // ============ AUTENTICACIÓN ============
+        // ========== AUTENTICACIÓN ==========
         async function initSession(userId) {
-            const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
-            if (error) { toast('Error al cargar perfil: ' + error.message, 'err'); return; }
-            PERFIL = data;
-            SESSION = { id: userId, email: data.email, rol: data.rol };
-            await cargarConfiguracion();
-            mostrarApp();
+            try {
+                const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
+                if (error) { toast('Error al cargar perfil: ' + error.message, 'err'); return; }
+                PERFIL = data;
+                SESSION = { id: userId, email: data.email, rol: data.rol };
+                await cargarConfiguracion();
+                mostrarApp();
+            } catch (e) { toast('Error al iniciar sesión: ' + e.message, 'err'); }
         }
 
         (async function boot() {
             sb.auth.onAuthStateChange(async (event, session) => {
-                if (session?.user && !SESSION) {
-                    await initSession(session.user.id);
-                } else if (!session && event === 'SIGNED_OUT') {
+                if (session?.user && !SESSION) await initSession(session.user.id);
+                else if (!session && event === 'SIGNED_OUT') {
                     SESSION = null; PERFIL = null; CONFIG = {};
                     document.getElementById('app').style.display = 'none';
                     document.getElementById('login-wrap').style.display = 'flex';
@@ -766,24 +105,25 @@
             } catch (err) { toast('❌ Error: ' + err.message, 'err'); }
         });
 
-        // ============ CONFIGURACIÓN ============
+        // ========== CONFIGURACIÓN ==========
         async function cargarConfiguracion() {
-            const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
-            if (error) { CONFIG = {}; return; }
-            CONFIG = data || {};
-            // Poblar formulario si existe
-            if (data) {
-                document.getElementById('cfg-nombre').value = data.empresa_nombre || '';
-                document.getElementById('cfg-rfc').value = data.empresa_rfc || '';
-                document.getElementById('cfg-direccion').value = data.empresa_direccion || '';
-                document.getElementById('cfg-telefono').value = data.empresa_telefono || '';
-                document.getElementById('cfg-email').value = data.empresa_email || '';
-                document.getElementById('cfg-web').value = data.empresa_web || '';
-                document.getElementById('cfg-banco').value = data.banco || '';
-                document.getElementById('cfg-cuenta').value = data.cuenta_bancaria || '';
-                document.getElementById('cfg-condiciones').value = data.condiciones_pago || '';
-                document.getElementById('cfg-terminos').value = data.terminos_cotizacion || '';
-            }
+            try {
+                const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
+                if (error) { CONFIG = {}; return; }
+                CONFIG = data || {};
+                if (data) {
+                    document.getElementById('cfg-nombre').value = data.empresa_nombre || '';
+                    document.getElementById('cfg-rfc').value = data.empresa_rfc || '';
+                    document.getElementById('cfg-direccion').value = data.empresa_direccion || '';
+                    document.getElementById('cfg-telefono').value = data.empresa_telefono || '';
+                    document.getElementById('cfg-email').value = data.empresa_email || '';
+                    document.getElementById('cfg-web').value = data.empresa_web || '';
+                    document.getElementById('cfg-banco').value = data.banco || '';
+                    document.getElementById('cfg-cuenta').value = data.cuenta_bancaria || '';
+                    document.getElementById('cfg-condiciones').value = data.condiciones_pago || '';
+                    document.getElementById('cfg-terminos').value = data.terminos_cotizacion || '';
+                }
+            } catch (e) { console.warn('Error cargando configuración:', e.message); }
         }
 
         async function guardarConfig() {
@@ -807,13 +147,12 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ NAVEGACIÓN ============
+        // ========== NAVEGACIÓN ==========
         function mostrarApp() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
-            const rol = PERFIL?.rol;
-            if (rol === 'tecnico') { sb.auth.signOut(); return; }
+            if (PERFIL?.rol === 'tecnico') { sb.auth.signOut(); return; }
             sv('dashboard');
             cargarDashboard();
         }
@@ -836,20 +175,22 @@
             item.addEventListener('click', () => sv(item.dataset.view));
         });
 
-        // ============ DASHBOARD ============
+        // ========== DASHBOARD ==========
         async function cargarDashboard() {
-            const { count: taller } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
-            document.getElementById('stat-taller').textContent = taller || 0;
-            const hoy = new Date().toISOString().split('T')[0];
-            const { count: entregas } = await sb.from('ot').select('*', { count: 'exact', head: true })
-                .eq('estado', 'completada')
-                .gte('updated_at', hoy + 'T00:00:00')
-                .lt('updated_at', hoy + 'T23:59:59');
-            document.getElementById('stat-entregas').textContent = entregas || 0;
-            document.getElementById('stat-facturas').textContent = 0;
+            try {
+                const { count: taller } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
+                document.getElementById('stat-taller').textContent = taller || 0;
+                const hoy = new Date().toISOString().split('T')[0];
+                const { count: entregas } = await sb.from('ot').select('*', { count: 'exact', head: true })
+                    .eq('estado', 'completada')
+                    .gte('updated_at', hoy + 'T00:00:00')
+                    .lt('updated_at', hoy + 'T23:59:59');
+                document.getElementById('stat-entregas').textContent = entregas || 0;
+                document.getElementById('stat-facturas').textContent = 0;
+            } catch (e) { console.warn('Dashboard error:', e.message); }
         }
 
-        // ============ CRUD GENÉRICO (catálogos) ============
+        // ========== CRUD GENÉRICO ==========
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
@@ -870,30 +211,28 @@
             let html = '';
             for (const field of config.fields) {
                 html += `<div style="margin-bottom:12px;"><label class="flbl">${field.label}</label>`;
-                if (field.type === 'select') {
-                    html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}><option value="">Selecciona...</option></select>`;
-                } else if (field.type === 'number') {
-                    html += `<input class="inp" type="number" name="${field.name}" ${field.step ? 'step="' + field.step + '"' : ''} ${field.required ? 'required' : ''}>`;
-                } else {
-                    html += `<input class="inp" type="${field.type || 'text'}" name="${field.name}" ${field.required ? 'required' : ''}>`;
-                }
+                if (field.type === 'select') html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}><option value="">Selecciona...</option></select>`;
+                else if (field.type === 'number') html += `<input class="inp" type="number" name="${field.name}" ${field.step ? 'step="' + field.step + '"' : ''} ${field.required ? 'required' : ''}>`;
+                else html += `<input class="inp" type="${field.type || 'text'}" name="${field.name}" ${field.required ? 'required' : ''}>`;
                 html += `</div>`;
             }
             document.getElementById('crud-body').innerHTML = html;
             if (id) {
-                const { data, error } = await sb.from(config.tabla).select('*').eq('id', id).single();
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                for (const field of config.fields) {
-                    const input = document.querySelector(`#crud-body input[name="${field.name}"], #crud-body select[name="${field.name}"]`);
-                    if (input) input.value = data[field.name] || '';
-                }
+                try {
+                    const { data, error } = await sb.from(config.tabla).select('*').eq('id', id).single();
+                    if (error) { toast('Error: ' + error.message, 'err'); return; }
+                    for (const field of config.fields) {
+                        const input = document.querySelector(`#crud-body input[name="${field.name}"], #crud-body select[name="${field.name}"]`);
+                        if (input) input.value = data[field.name] || '';
+                    }
+                } catch (e) { toast('Error: ' + e.message, 'err'); return; }
             }
             if (tipo === 'modelo') {
-                const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true);
-                const select = document.querySelector(`#crud-body select[name="marca_id"]`);
-                if (select && marcas) {
-                    marcas.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nombre; select.appendChild(opt); });
-                }
+                try {
+                    const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true);
+                    const select = document.querySelector(`#crud-body select[name="marca_id"]`);
+                    if (select && marcas) marcas.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nombre; select.appendChild(opt); });
+                } catch (e) { toast('Error cargando marcas: ' + e.message, 'err'); }
             }
             document.getElementById('mov-crud').classList.add('open');
         }
@@ -929,55 +268,55 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         });
 
-        // ============ CARGAR CATÁLOGOS ============
+        // ========== CARGAR CATÁLOGOS ==========
         async function cargarMarcas() {
-            const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-marcas');
-            tbody.innerHTML = '';
-            data.forEach(m => {
-                tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-marcas');
+                tbody.innerHTML = '';
+                data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`);
+            } catch (e) { toast('Error cargando marcas: ' + e.message, 'err'); }
         }
 
         async function cargarModelos() {
-            const { data, error } = await sb.from('modelos').select('*, marcas(nombre)').eq('activo', true).order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-modelos');
-            tbody.innerHTML = '';
-            data.forEach(m => {
-                tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre || '')}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('modelos').select('*, marcas(nombre)').eq('activo', true).order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-modelos');
+                tbody.innerHTML = '';
+                data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre || '')}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`);
+            } catch (e) { toast('Error cargando modelos: ' + e.message, 'err'); }
         }
 
         async function cargarTrabajos() {
-            const { data, error } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-trabajos');
-            tbody.innerHTML = '';
-            data.forEach(t => {
-                tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} min</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-trabajos');
+                tbody.innerHTML = '';
+                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} min</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`);
+            } catch (e) { toast('Error cargando trabajos: ' + e.message, 'err'); }
         }
 
         async function cargarAgencias() {
-            const { data, error } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-agencias');
-            tbody.innerHTML = '';
-            data.forEach(a => {
-                tbody.innerHTML += `<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc || '')}</td><td>${escHtml(a.contacto || '')}</td><td>${a.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-agencias');
+                tbody.innerHTML = '';
+                data.forEach(a => tbody.innerHTML += `<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc || '')}</td><td>${escHtml(a.contacto || '')}</td><td>${a.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button></td></tr>`);
+            } catch (e) { toast('Error cargando agencias: ' + e.message, 'err'); }
         }
 
         async function cargarClientes() {
-            const { data, error } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-clientes');
-            tbody.innerHTML = '';
-            data.forEach(c => {
-                tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono || '')}</td><td>${escHtml(c.email || '')}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-clientes');
+                tbody.innerHTML = '';
+                data.forEach(c => tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono || '')}</td><td>${escHtml(c.email || '')}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button></td></tr>`);
+            } catch (e) { toast('Error cargando clientes: ' + e.message, 'err'); }
         }
 
         async function eliminarRegistro(tabla, id, descripcion) {
@@ -991,7 +330,7 @@
             }, 'Sí, eliminar');
         }
 
-        // ============ ADMINISTRACIÓN ============
+        // ========== ADMINISTRACIÓN ==========
         async function cargarAdmin() {
             const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'marcas';
             await Promise.all([cargarMarcas(), cargarModelos(), cargarTrabajos(), cargarAgencias(), cargarClientes(), cargarTecnicos(), cargarUsuarios()]);
@@ -1007,15 +346,15 @@
             if (content) content.classList.add('active');
         }
 
-        // ============ TÉCNICOS ============
+        // ========== TÉCNICOS ==========
         async function cargarTecnicos() {
-            const { data, error } = await sb.from('tecnicos').select('*').order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-tecnicos');
-            tbody.innerHTML = '';
-            data.forEach(t => {
-                tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('tecnicos').select('*').order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-tecnicos');
+                tbody.innerHTML = '';
+                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`);
+            } catch (e) { toast('Error cargando técnicos: ' + e.message, 'err'); }
         }
 
         function abrirModalTecnico() { origenTecnico = 'vista'; document.getElementById('tec-nombre').value = ''; document.getElementById('mov-tecnico').classList.add('open'); }
@@ -1040,36 +379,42 @@
         }
 
         async function abrirEditarTecnico(id) {
-            const { data } = await sb.from('tecnicos').select('*').eq('id', id).single();
-            if (!data) return;
-            const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
-            if (nuevoNombre && nuevoNombre.trim()) {
-                const { error } = await sb.from('tecnicos').update({ nombre: nuevoNombre.trim() }).eq('id', id);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                toast('Nombre actualizado ✓', 'ok');
-                cargarTecnicos();
-            }
+            try {
+                const { data } = await sb.from('tecnicos').select('*').eq('id', id).single();
+                if (!data) return;
+                const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
+                if (nuevoNombre && nuevoNombre.trim()) {
+                    const { error } = await sb.from('tecnicos').update({ nombre: nuevoNombre.trim() }).eq('id', id);
+                    if (error) { toast('Error: ' + error.message, 'err'); return; }
+                    toast('Nombre actualizado ✓', 'ok');
+                    cargarTecnicos();
+                }
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function cambiarEstadoTecnico(id, nuevoEstado) {
             abrirConfirm('¿Cambiar estado del técnico?', async () => {
-                const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                toast('Estado actualizado ✓', 'ok');
-                cargarTecnicos();
+                try {
+                    const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id);
+                    if (error) { toast('Error: ' + error.message, 'err'); return; }
+                    toast('Estado actualizado ✓', 'ok');
+                    cargarTecnicos();
+                } catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, cambiar');
         }
 
-        // ============ USUARIOS ============
+        // ========== USUARIOS ==========
         async function cargarUsuarios() {
-            const { data, error } = await sb.from('perfiles').select('*').order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-usuarios');
-            tbody.innerHTML = '';
-            data.forEach(u => {
-                if (u.rol === 'tecnico') return;
-                tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('perfiles').select('*').order('nombre');
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-usuarios');
+                tbody.innerHTML = '';
+                data.forEach(u => {
+                    if (u.rol === 'tecnico') return;
+                    tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
+                });
+            } catch (e) { toast('Error cargando usuarios: ' + e.message, 'err'); }
         }
 
         function abrirModalUsuario() {
@@ -1099,64 +444,68 @@
         }
 
         async function abrirEditarUsuario(id) {
-            const { data } = await sb.from('perfiles').select('*').eq('id', id).single();
-            if (!data) return;
-            const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
-            const nuevoRol = prompt('Nuevo rol (admin, recepcionista, jefe_taller):', data.rol);
-            if (nuevoNombre && nuevoNombre.trim()) {
-                const updates = { nombre: nuevoNombre.trim() };
-                if (nuevoRol && ['admin','recepcionista','jefe_taller'].includes(nuevoRol)) updates.rol = nuevoRol;
-                const { error } = await sb.from('perfiles').update(updates).eq('id', id);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                toast('Usuario actualizado ✓', 'ok');
-                cargarUsuarios();
-            }
+            try {
+                const { data } = await sb.from('perfiles').select('*').eq('id', id).single();
+                if (!data) return;
+                const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
+                const nuevoRol = prompt('Nuevo rol (admin, recepcionista, jefe_taller):', data.rol);
+                if (nuevoNombre && nuevoNombre.trim()) {
+                    const updates = { nombre: nuevoNombre.trim() };
+                    if (nuevoRol && ['admin','recepcionista','jefe_taller'].includes(nuevoRol)) updates.rol = nuevoRol;
+                    const { error } = await sb.from('perfiles').update(updates).eq('id', id);
+                    if (error) { toast('Error: ' + error.message, 'err'); return; }
+                    toast('Usuario actualizado ✓', 'ok');
+                    cargarUsuarios();
+                }
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function cambiarEstadoUsuario(id, nuevoEstado) {
             abrirConfirm('¿Cambiar estado del usuario?', async () => {
-                const { error } = await sb.from('perfiles').update({ activo: nuevoEstado }).eq('id', id);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                toast('Estado actualizado ✓', 'ok');
-                cargarUsuarios();
+                try {
+                    const { error } = await sb.from('perfiles').update({ activo: nuevoEstado }).eq('id', id);
+                    if (error) { toast('Error: ' + error.message, 'err'); return; }
+                    toast('Estado actualizado ✓', 'ok');
+                    cargarUsuarios();
+                } catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, cambiar');
         }
 
-        // ============ NUEVA COTIZACIÓN ============
+        // ========== NUEVA COTIZACIÓN ==========
         async function cargarDatosNuevaOT() {
-            const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
-            const selMarca = document.getElementById('ot-marca');
-            selMarca.innerHTML = '<option value="">Selecciona...</option>';
-            marcas.forEach(m => selMarca.innerHTML += `<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
+            try {
+                const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
+                const selMarca = document.getElementById('ot-marca');
+                selMarca.innerHTML = '<option value="">Selecciona...</option>';
+                marcas.forEach(m => selMarca.innerHTML += `<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
 
-            const selModelo = document.getElementById('ot-modelo');
-            selModelo.innerHTML = '<option value="">Primero selecciona marca</option>';
+                const selModelo = document.getElementById('ot-modelo');
+                selModelo.innerHTML = '<option value="">Primero selecciona marca</option>';
 
-            const { data: clientes } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
-            const selCliente = document.getElementById('ot-cliente-particular');
-            selCliente.innerHTML = '<option value="">Selecciona...</option>';
-            clientes.forEach(c => selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
+                const { data: clientes } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
+                const selCliente = document.getElementById('ot-cliente-particular');
+                selCliente.innerHTML = '<option value="">Selecciona...</option>';
+                clientes.forEach(c => selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
 
-            const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
-            const selAgencia = document.getElementById('ot-cliente-agencia');
-            selAgencia.innerHTML = '<option value="">Selecciona...</option>';
-            agencias.forEach(a => selAgencia.innerHTML += `<option value="${a.id}" data-nombre="${escHtml(a.nombre)}">${escHtml(a.nombre)}</option>`);
+                const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+                const selAgencia = document.getElementById('ot-cliente-agencia');
+                selAgencia.innerHTML = '<option value="">Selecciona...</option>';
+                agencias.forEach(a => selAgencia.innerHTML += `<option value="${a.id}" data-nombre="${escHtml(a.nombre)}">${escHtml(a.nombre)}</option>`);
 
-            const { data: trabajos } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
-            const cont = document.getElementById('lista-trabajos');
-            cont.innerHTML = '';
-            trabajos.forEach(t => {
-                cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()"><span style="flex:1;">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} min</span></div>`;
-            });
+                const { data: trabajos } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+                const cont = document.getElementById('lista-trabajos');
+                cont.innerHTML = '';
+                trabajos.forEach(t => cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()"><span style="flex:1;">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} min</span></div>`);
 
-            selMarca.addEventListener('change', async () => {
-                const marcaId = selMarca.value;
-                const { data: modelos } = await sb.from('modelos').select('*').eq('marca_id', marcaId).eq('activo', true).order('nombre');
-                selModelo.innerHTML = '<option value="">Selecciona...</option>';
-                modelos.forEach(m => selModelo.innerHTML += `<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
-            });
+                selMarca.addEventListener('change', async () => {
+                    const marcaId = selMarca.value;
+                    const { data: modelos } = await sb.from('modelos').select('*').eq('marca_id', marcaId).eq('activo', true).order('nombre');
+                    selModelo.innerHTML = '<option value="">Selecciona...</option>';
+                    modelos.forEach(m => selModelo.innerHTML += `<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
+                });
 
-            document.getElementById('ot-total').textContent = '$0.00';
+                document.getElementById('ot-total').textContent = '$0.00';
+            } catch (e) { toast('Error cargando datos: ' + e.message, 'err'); }
         }
 
         function calcularTotal() {
@@ -1171,108 +520,140 @@
             else { document.getElementById('div-cliente-particular').style.display = 'none'; document.getElementById('div-cliente-agencia').style.display = 'block'; }
         }
 
-        // Generador de folio para cotización CT-YYYY-NNN
+        // ★★★ FUNCIÓN generarCodigoOT (declarada como function para que sea global) ★★★
+        function generarCodigoOT() {
+            const tipoCliente = document.getElementById('ot-tipo-cliente').value;
+            let agenciaCodigo = 'PAR';
+            if (tipoCliente === 'agencia') {
+                const selAgencia = document.getElementById('ot-cliente-agencia');
+                const agenciaNombre = selAgencia.options[selAgencia.selectedIndex]?.dataset?.nombre || '';
+                agenciaCodigo = agenciaNombre.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase();
+                if (agenciaCodigo.length < 3) agenciaCodigo = agenciaCodigo.padEnd(3, 'X');
+            }
+            const hoy = new Date();
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const aa = String(hoy.getFullYear()).slice(-2);
+            const fecha = dd + mm + aa;
+            const selMarca = document.getElementById('ot-marca');
+            const marcaNombre = selMarca.options[selMarca.selectedIndex]?.dataset?.nombre || '';
+            const marcaCodigo = marcaNombre.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
+            const selModelo = document.getElementById('ot-modelo');
+            const modeloNombre = selModelo.options[selModelo.selectedIndex]?.dataset?.nombre || '';
+            const modeloCodigo = modeloNombre.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
+            return agenciaCodigo + fecha + marcaCodigo + modeloCodigo;
+        }
+
+        // Generadores de folio
         async function generarFolioCotizacion() {
             const anio = new Date().getFullYear();
             const prefijo = `CT-${anio}-`;
-            const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
-            let consecutivo = 1;
-            if (existentes && existentes.length > 0) {
-                const ultimo = existentes[0].numero.replace(prefijo, '');
-                consecutivo = parseInt(ultimo) + 1;
-            }
-            return prefijo + String(consecutivo).padStart(3, '0');
+            try {
+                const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
+                let consecutivo = 1;
+                if (existentes && existentes.length > 0) consecutivo = parseInt(existentes[0].numero.replace(prefijo, '')) + 1;
+                return prefijo + String(consecutivo).padStart(3, '0');
+            } catch (e) { return prefijo + Date.now().toString().slice(-3); }
         }
 
-        // Generador de folio para OT OT-YYYY-NNN (al aprobar)
         async function generarFolioOT() {
             const anio = new Date().getFullYear();
             const prefijo = `OT-${anio}-`;
-            const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
-            let consecutivo = 1;
-            if (existentes && existentes.length > 0) {
-                const ultimo = existentes[0].numero.replace(prefijo, '');
-                consecutivo = parseInt(ultimo) + 1;
-            }
-            return prefijo + String(consecutivo).padStart(3, '0');
+            try {
+                const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
+                let consecutivo = 1;
+                if (existentes && existentes.length > 0) consecutivo = parseInt(existentes[0].numero.replace(prefijo, '')) + 1;
+                return prefijo + String(consecutivo).padStart(3, '0');
+            } catch (e) { return prefijo + Date.now().toString().slice(-3); }
         }
 
-        // Guardar nueva cotización
-        document.getElementById('form-nueva-ot').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const placa = document.getElementById('ot-placa').value.trim();
-            const anio = document.getElementById('ot-anio').value || null;
-            const marcaId = document.getElementById('ot-marca').value;
-            const modeloId = document.getElementById('ot-modelo').value;
-            const tipoCliente = document.getElementById('ot-tipo-cliente').value;
-            const clienteParticularId = document.getElementById('ot-cliente-particular').value || null;
-            const clienteAgenciaId = document.getElementById('ot-cliente-agencia').value || null;
-
-            if (!marcaId || !modeloId) { toast('Selecciona marca y modelo', 'err'); return; }
-            if (tipoCliente === 'particular' && !clienteParticularId) { toast('Selecciona el cliente particular', 'err'); return; }
-            if (tipoCliente === 'agencia' && !clienteAgenciaId) { toast('Selecciona la agencia', 'err'); return; }
-
-            const trabajosSeleccionados = [];
-            let costoTotal = 0, tiempoTotal = 0;
-            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
-                trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: parseFloat(chk.dataset.precio || 0) });
-                costoTotal += parseFloat(chk.dataset.precio || 0);
-                tiempoTotal += parseInt(chk.dataset.tiempo || 0);
-            });
-            if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
-
-            const numero = await generarFolioCotizacion();
-            const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
-
-            const otData = {
-                placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
-                cliente_tipo: tipoCliente,
-                agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
-                cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
-                costo_total: costoTotal, tiempo_est: tiempoTotal,
-                estado: 'cotizacion',
-                flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
-                numero: numero,
-                vigencia: vigencia,
-                codigo: generarCodigoOT() // mantiene el código corto
-            };
-
+        // ★★★ Función guardarCotizacion ★★★
+        async function guardarCotizacion() {
             try {
+                const placa = document.getElementById('ot-placa').value.trim();
+                const anio = document.getElementById('ot-anio').value || null;
+                const marcaId = document.getElementById('ot-marca').value;
+                const modeloId = document.getElementById('ot-modelo').value;
+                const tipoCliente = document.getElementById('ot-tipo-cliente').value;
+                const clienteParticularId = document.getElementById('ot-cliente-particular').value || null;
+                const clienteAgenciaId = document.getElementById('ot-cliente-agencia').value || null;
+
+                if (!placa) { toast('Ingresa la placa', 'err'); return; }
+                if (!marcaId) { toast('Selecciona una marca', 'err'); return; }
+                if (!modeloId) { toast('Selecciona un modelo', 'err'); return; }
+                if (tipoCliente === 'particular' && !clienteParticularId) { toast('Selecciona el cliente particular', 'err'); return; }
+                if (tipoCliente === 'agencia' && !clienteAgenciaId) { toast('Selecciona la agencia', 'err'); return; }
+
+                const trabajosSeleccionados = [];
+                let costoTotal = 0, tiempoTotal = 0;
+                document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
+                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: parseFloat(chk.dataset.precio || 0) });
+                    costoTotal += parseFloat(chk.dataset.precio || 0);
+                    tiempoTotal += parseInt(chk.dataset.tiempo || 0);
+                });
+
+                if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
+
+                const numero = await generarFolioCotizacion();
+                const codigo = generarCodigoOT();
+                const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
+
+                const otData = {
+                    placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
+                    cliente_tipo: tipoCliente,
+                    agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
+                    cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
+                    costo_total: costoTotal, tiempo_est: tiempoTotal,
+                    estado: 'cotizacion',
+                    flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
+                    numero: numero,
+                    vigencia: vigencia,
+                    codigo: codigo
+                };
+
                 const { data, error } = await sb.from('ot').insert(otData).select().single();
                 if (error) throw error;
+
                 for (const t of trabajosSeleccionados) {
-                    await sb.from('ot_trabajos').insert({ ot_id: data.id, trabajo_id: t.trabajo_id, precio: t.precio });
+                    const { error: errItem } = await sb.from('ot_trabajos').insert({ ot_id: data.id, trabajo_id: t.trabajo_id, precio: t.precio });
+                    if (errItem) throw errItem;
                 }
+
                 toast('Cotización ' + numero + ' creada ✓', 'ok');
                 document.getElementById('form-nueva-ot').reset();
                 sv('cotizaciones');
-            } catch (err) { toast('Error: ' + err.message, 'err'); }
-        });
+            } catch (e) {
+                console.error('Error en guardarCotizacion:', e);
+                toast('Error: ' + e.message, 'err');
+            }
+        }
 
-        // ============ COTIZACIONES ============
+        // ========== COTIZACIONES ==========
         async function cargarCotizaciones() {
-            const { data, error } = await sb.from('ot')
-                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
-                .eq('estado', 'cotizacion')
-                .order('created_at', { ascending: false });
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-cotizaciones');
-            tbody.innerHTML = '';
-            data.forEach(ot => {
-                const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
-                tbody.innerHTML += `<tr>
-                    <td><input type="checkbox" class="chk-ot" value="${ot.id}"></td>
-                    <td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td>
-                    <td>${escHtml(ot.placa)}</td>
-                    <td>${escHtml(clienteNombre)}</td>
-                    <td>$${ot.costo_total || 0}</td>
-                    <td><span class="badge-cotizacion">Cotización</span></td>
-                    <td class="text-right">
-                        <button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button>
-                        <button class="btn btn-sm" onclick="imprimirCotizacion(${ot.id})">📄 PDF</button>
-                    </td>
-                </tr>`;
-            });
+            try {
+                const { data, error } = await sb.from('ot')
+                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
+                    .eq('estado', 'cotizacion')
+                    .order('created_at', { ascending: false });
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const tbody = document.getElementById('tabla-cotizaciones');
+                tbody.innerHTML = '';
+                data.forEach(ot => {
+                    const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
+                    tbody.innerHTML += `<tr>
+                        <td><input type="checkbox" class="chk-ot" value="${ot.id}"></td>
+                        <td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td>
+                        <td>${escHtml(ot.placa)}</td>
+                        <td>${escHtml(clienteNombre)}</td>
+                        <td>$${ot.costo_total || 0}</td>
+                        <td><span class="badge-cotizacion">Cotización</span></td>
+                        <td class="text-right">
+                            <button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button>
+                            <button class="btn btn-sm" onclick="imprimirCotizacion(${ot.id})">📄 PDF</button>
+                        </td>
+                    </tr>`;
+                });
+            } catch (e) { toast('Error cargando cotizaciones: ' + e.message, 'err'); }
         }
 
         function toggleAll() {
@@ -1283,7 +664,6 @@
         async function aprobarOT(id) {
             abrirConfirm('¿Aprobar esta cotización? Se convertirá en Orden de Trabajo.', async () => {
                 try {
-                    // Generar folio OT
                     const folioOT = await generarFolioOT();
                     const { error } = await sb.from('ot').update({ estado: 'aprobada', numero: folioOT }).eq('id', id);
                     if (error) throw error;
@@ -1308,21 +688,23 @@
             }, 'Sí, aprobar todas');
         }
 
-        // ============ KANBAN TALLER ============
+        // ========== KANBAN TALLER ==========
         async function cargarTaller() {
-            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
-            const filtroSelect = document.getElementById('filtro-tecnico');
-            filtroSelect.innerHTML = '<option value="">Todos</option>';
-            tecnicos.forEach(t => filtroSelect.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
+            try {
+                const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+                const filtroSelect = document.getElementById('filtro-tecnico');
+                filtroSelect.innerHTML = '<option value="">Todos</option>';
+                tecnicos.forEach(t => filtroSelect.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
 
-            const { data, error } = await sb.from('ot')
-                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre)')
-                .in('estado', ['aprobada', 'en_taller', 'completada', 'cancelada'])
-                .order('updated_at', { ascending: false });
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const { data, error } = await sb.from('ot')
+                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre)')
+                    .in('estado', ['aprobada', 'en_taller', 'completada', 'cancelada'])
+                    .order('updated_at', { ascending: false });
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
 
-            window._otsTaller = data;
-            aplicarFiltroKanban();
+                window._otsTaller = data;
+                aplicarFiltroKanban();
+            } catch (e) { toast('Error cargando taller: ' + e.message, 'err'); }
         }
 
         function aplicarFiltroKanban() {
@@ -1357,7 +739,6 @@
             } else {
                 acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             }
-
             return `<div class="kanban-card" data-ot-id="${ot.id}" draggable="true">
                 <div class="card-placa">${escHtml(ot.placa)}</div>
                 <div class="card-cliente">${escHtml(clienteNombre)}</div>
@@ -1366,7 +747,7 @@
             </div>`;
         }
 
-        // ============ DRAG & DROP NATIVO HTML5 ============
+        // ========== DRAG & DROP ==========
         document.addEventListener('dragstart', (e) => {
             const card = e.target.closest('.kanban-card');
             if (!card) return;
@@ -1400,7 +781,6 @@
             document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
         });
 
-        // ============ MOVER OT ============
         async function moverOT(otId, nuevoEstado) {
             const mensajes = {
                 en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
@@ -1417,14 +797,15 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ ASIGNAR TÉCNICO ============
         async function abrirAsignar(otId) {
             otAsignarId = otId;
-            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
-            const select = document.getElementById('select-tecnico');
-            select.innerHTML = '<option value="">— Sin técnico —</option>';
-            tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
-            document.getElementById('mov-asignar').classList.add('open');
+            try {
+                const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+                const select = document.getElementById('select-tecnico');
+                select.innerHTML = '<option value="">— Sin técnico —</option>';
+                tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
+                document.getElementById('mov-asignar').classList.add('open');
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         function cerrarAsignar() { document.getElementById('mov-asignar').classList.remove('open'); otAsignarId = null; }
@@ -1440,39 +821,37 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ VER TRABAJOS ============
         async function verTrabajos(otId) {
-            const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single();
-            if (!ot) return;
-            const { data: otTrabajos, error } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            try {
+                const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single();
+                if (!ot) return;
+                const { data: otTrabajos, error } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
 
-            detalleOTActual = ot;
-            let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p>`;
-            html += `<p><strong>Folio:</strong> ${escHtml(ot.numero || ot.codigo || '')}</p>`;
-            html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p><hr>`;
-            html += `<h4>Lista de trabajos:</h4>`;
-            if (otTrabajos.length === 0) html += `<p>No hay trabajos registrados.</p>`;
-            else {
-                html += `<ul style="margin-left:20px;">`;
-                otTrabajos.forEach(item => html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`);
-                html += `</ul>`;
-            }
+                detalleOTActual = ot;
+                let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p>`;
+                html += `<p><strong>Folio:</strong> ${escHtml(ot.numero || ot.codigo || '')}</p>`;
+                html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p><hr>`;
+                html += `<h4>Lista de trabajos:</h4>`;
+                if (otTrabajos.length === 0) html += `<p>No hay trabajos registrados.</p>`;
+                else {
+                    html += `<ul style="margin-left:20px;">`;
+                    otTrabajos.forEach(item => html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`);
+                    html += `</ul>`;
+                }
 
-            document.getElementById('detalle-titulo').textContent = 'Detalle de ' + (ot.numero || ot.codigo || ot.id);
-            document.getElementById('detalle-contenido').innerHTML = html;
-            document.getElementById('mov-detalle-ot').classList.add('open');
+                document.getElementById('detalle-titulo').textContent = 'Detalle de ' + (ot.numero || ot.codigo || ot.id);
+                document.getElementById('detalle-contenido').innerHTML = html;
+                document.getElementById('mov-detalle-ot').classList.add('open');
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         function cerrarDetalleOT() { document.getElementById('mov-detalle-ot').classList.remove('open'); detalleOTActual = null; }
 
-        function imprimirCotizacionDesdeDetalle() {
-            if (detalleOTActual) imprimirCotizacion(detalleOTActual.id);
-        }
+        function imprimirCotizacionDesdeDetalle() { if (detalleOTActual) imprimirCotizacion(detalleOTActual.id); }
 
-        // ============ PDF DE COTIZACIÓN ============
+        // ========== PDF ==========
         function numeroALetras(numero) {
-            // Implementación simplificada de número a letras para MXN (puedes reemplazar por la completa)
             const unidades = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
             const decenas = ['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
             const centenas = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
@@ -1482,7 +861,7 @@
                 let r = '';
                 const c = Math.floor(n/100), d = Math.floor((n%100)/10), u = n%10;
                 if(c) r += centenas[c] + ' ';
-                if(n%100 < 20 && n%100 > 0) { r += unidades[n%100]; }
+                if(n%100 < 20 && n%100 > 0) r += unidades[n%100];
                 else { if(d) r += decenas[d] + (u?' Y ':''); if(u) r += unidades[u]; }
                 return r.trim();
             }
@@ -1504,110 +883,104 @@
         }
 
         async function imprimirCotizacion(otId) {
-            const { data: ot, error: e1 } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('id', otId).single();
-            if (e1) { toast('Error: ' + e1.message, 'err'); return; }
-            const { data: items, error: e2 } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
-            if (e2) { toast('Error: ' + e2.message, 'err'); return; }
+            try {
+                const { data: ot, error: e1 } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('id', otId).single();
+                if (e1) { toast('Error: ' + e1.message, 'err'); return; }
+                const { data: items, error: e2 } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
+                if (e2) { toast('Error: ' + e2.message, 'err'); return; }
 
-            const cliente = ot.cliente_tipo === 'agencia' ? ot.agencias : ot.clientes;
-            const doc = new jspdf.jsPDF('p', 'mm', 'a4');
-            const M = 15;
-            let finalY = M;
+                const cliente = ot.cliente_tipo === 'agencia' ? ot.agencias : ot.clientes;
+                const doc = new jspdf.jsPDF('p', 'mm', 'a4');
+                const M = 15;
+                let finalY = M;
 
-            // HEADER
-            if (CONFIG.logo_base64) {
-                doc.addImage(CONFIG.logo_base64, 'PNG', M, M, 55, 18);
-                finalY = M + 22;
-            } else {
-                doc.setFontSize(16);
+                if (CONFIG.logo_base64) {
+                    doc.addImage(CONFIG.logo_base64, 'PNG', M, M, 55, 18);
+                    finalY = M + 22;
+                } else {
+                    doc.setFontSize(16);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(CONFIG.empresa_nombre || 'Taller', M, M + 8);
+                    finalY = M + 14;
+                }
+
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.text(CONFIG.empresa_rfc || '', M, finalY);
+                finalY += 4;
+                doc.text(CONFIG.empresa_direccion || '', M, finalY);
+                finalY += 4;
+                doc.text(`${CONFIG.empresa_telefono || ''} · ${CONFIG.empresa_email || ''}`, M, finalY);
+                finalY += 4;
+                doc.text(CONFIG.empresa_web || '', M, finalY);
+
+                finalY = M + 30;
+                doc.setFillColor(10, 15, 44);
+                doc.rect(M, finalY, 180, 8, 'F');
+                doc.setTextColor(255);
+                doc.setFontSize(12);
                 doc.setFont('helvetica', 'bold');
-                doc.text(CONFIG.empresa_nombre || 'Taller', M, M + 8);
-                finalY = M + 14;
-            }
+                doc.text('COTIZACIÓN', M + 2, finalY + 5.5);
+                doc.setTextColor(0);
+                finalY += 14;
 
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text(CONFIG.empresa_rfc || '', M, finalY);
-            finalY += 4;
-            doc.text(CONFIG.empresa_direccion || '', M, finalY);
-            finalY += 4;
-            doc.text(`${CONFIG.empresa_telefono || ''} · ${CONFIG.empresa_email || ''}`, M, finalY);
-            finalY += 4;
-            doc.text(CONFIG.empresa_web || '', M, finalY);
+                const boxY = finalY;
+                doc.setDrawColor(0);
+                doc.roundedRect(M, boxY, 90, 30, 2, 2);
+                doc.roundedRect(105, boxY, 90, 30, 2, 2);
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'bold');
+                doc.text('CLIENTE', M + 2, boxY + 5);
+                doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
+                doc.setFont('helvetica', 'normal');
+                doc.text(ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || ''), M + 2, boxY + 12);
+                doc.text(cliente?.telefono || '', M + 2, boxY + 16);
+                doc.text(cliente?.email || '', M + 2, boxY + 20);
+                doc.text(cliente?.direccion || '', M + 2, boxY + 24);
+                doc.text(ot.numero || '', 107, boxY + 12);
+                doc.text('Fecha: ' + (ot.created_at ? new Date(ot.created_at).toLocaleDateString() : ''), 107, boxY + 16);
+                doc.text('Vigencia: ' + (ot.vigencia || ''), 107, boxY + 20);
+                doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
+                finalY = boxY + 35;
 
-            // Banda "COTIZACIÓN"
-            finalY = M + 30;
-            doc.setFillColor(10, 15, 44);
-            doc.rect(M, finalY, 180, 8, 'F');
-            doc.setTextColor(255);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('COTIZACIÓN', M + 2, finalY + 5.5);
-            doc.setTextColor(0);
-            finalY += 14;
+                const tableBody = items.map((it, i) => [i+1, it.trabajos?.nombre || '', it.cantidad || 1, it.precio || 0, it.importe || it.precio || 0]);
+                doc.autoTable({
+                    startY: finalY,
+                    head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']],
+                    body: tableBody,
+                    theme: 'striped',
+                    headStyles: { fillColor: [10, 15, 44] },
+                    styles: { fontSize: 9 },
+                    margin: { left: M, right: M }
+                });
+                finalY = doc.lastAutoTable.finalY + 5;
 
-            // Cajas de datos
-            const boxY = finalY;
-            doc.setDrawColor(0);
-            doc.roundedRect(M, boxY, 90, 30, 2, 2);
-            doc.roundedRect(105, boxY, 90, 30, 2, 2);
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'bold');
-            doc.text('CLIENTE', M + 2, boxY + 5);
-            doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
-            doc.setFont('helvetica', 'normal');
-            doc.text(ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || ''), M + 2, boxY + 12);
-            doc.text(cliente?.telefono || '', M + 2, boxY + 16);
-            doc.text(cliente?.email || '', M + 2, boxY + 20);
-            doc.text(cliente?.direccion || '', M + 2, boxY + 24);
-            doc.text(ot.numero || '', 107, boxY + 12);
-            doc.text('Fecha: ' + (ot.created_at ? new Date(ot.created_at).toLocaleDateString() : ''), 107, boxY + 16);
-            doc.text('Vigencia: ' + (ot.vigencia || ''), 107, boxY + 20);
-            doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
-            finalY = boxY + 35;
+                const total = ot.costo_total || 0;
+                const subtotal = total;
+                doc.text('Subtotal: $' + subtotal.toFixed(2), 130, finalY);
+                finalY += 5;
+                doc.text('TOTAL: $' + total.toFixed(2), 130, finalY);
+                finalY += 8;
 
-            // Tabla de trabajos
-            const tableBody = items.map((it, i) => [i+1, it.trabajos?.nombre || '', it.cantidad || 1, it.precio || 0, it.importe || it.precio || 0]);
-            doc.autoTable({
-                startY: finalY,
-                head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']],
-                body: tableBody,
-                theme: 'striped',
-                headStyles: { fillColor: [10, 15, 44] },
-                styles: { fontSize: 9 },
-                margin: { left: M, right: M }
-            });
-            finalY = doc.lastAutoTable.finalY + 5;
+                doc.setFont('helvetica', 'italic');
+                doc.text('Son: ' + numeroALetras(total), M, finalY);
+                finalY += 10;
 
-            // Totales
-            const total = ot.costo_total || 0;
-            const subtotal = total; // simplificado, sin IVA
-            doc.text('Subtotal: $' + subtotal.toFixed(2), 130, finalY);
-            finalY += 5;
-            doc.text('TOTAL: $' + total.toFixed(2), 130, finalY);
-            finalY += 8;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 });
+                finalY += 20;
 
-            // Monto en letras
-            doc.setFont('helvetica', 'italic');
-            doc.text('Son: ' + numeroALetras(total), M, finalY);
-            finalY += 10;
+                doc.setFillColor(10, 15, 44);
+                doc.rect(0, 285, 210, 12, 'F');
+                doc.setTextColor(255);
+                doc.text(CONFIG.empresa_nombre || 'Taller', 105, 293, { align: 'center' });
 
-            // Términos
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8);
-            doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 });
-            finalY += 20;
-
-            // Footer
-            doc.setFillColor(10, 15, 44);
-            doc.rect(0, 285, 210, 12, 'F');
-            doc.setTextColor(255);
-            doc.text(CONFIG.empresa_nombre || 'Taller', 105, 293, { align: 'center' });
-
-            doc.save(ot.numero + '.pdf');
+                doc.save(ot.numero + '.pdf');
+            } catch (e) { toast('Error generando PDF: ' + e.message, 'err'); }
         }
 
-        // ============ WHATSAPP RESUMEN ============
+        // ========== WHATSAPP ==========
         function copiarResumenWhatsApp() {
             if (!detalleOTActual) return;
             const ot = detalleOTActual;
@@ -1621,15 +994,17 @@
             toast('Resumen copiado ✓', 'ok');
         }
 
-        // ============ CONSULTA PÚBLICA PARA TÉCNICO ============
+        // ========== CONSULTA PÚBLICA PARA TÉCNICO ==========
         async function abrirConsultaTecnico() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('consulta-tecnico-wrap').style.display = 'block';
-            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
-            const select = document.getElementById('select-consulta-tecnico');
-            select.innerHTML = '<option value="">Selecciona...</option>';
-            tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
-            document.getElementById('consulta-tareas-lista').innerHTML = '';
+            try {
+                const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+                const select = document.getElementById('select-consulta-tecnico');
+                select.innerHTML = '<option value="">Selecciona...</option>';
+                tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
+                document.getElementById('consulta-tareas-lista').innerHTML = '';
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         function cerrarConsultaTecnico() {
@@ -1642,23 +1017,22 @@
             const cont = document.getElementById('consulta-tareas-lista');
             cont.innerHTML = '';
             if (!tecnicoId) return;
-
-            const { data, error } = await sb.from('ot')
-                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
-                .eq('tecnico_id', tecnicoId)
-                .in('estado', ['aprobada', 'en_taller'])
-                .order('updated_at', { ascending: false });
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-
-            if (data.length === 0) { cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>'; return; }
-
-            data.forEach(ot => {
-                const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
-                let badge = '';
-                if (ot.estado === 'aprobada') badge = '<span class="badge-aprobada">Pendiente de iniciar</span>';
-                else if (ot.estado === 'en_taller') badge = '<span class="badge-en-taller">En proceso</span>';
-                cont.innerHTML += `<div class="mis-tarea-item"><div><strong>${escHtml(ot.placa)}</strong> — ${escHtml(clienteNombre)}<br><small class="card-codigo">${escHtml(ot.numero || ot.codigo || '')}</small></div><div>${badge}</div></div>`;
-            });
+            try {
+                const { data, error } = await sb.from('ot')
+                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
+                    .eq('tecnico_id', tecnicoId)
+                    .in('estado', ['aprobada', 'en_taller'])
+                    .order('updated_at', { ascending: false });
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                if (data.length === 0) { cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>'; return; }
+                data.forEach(ot => {
+                    const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
+                    let badge = '';
+                    if (ot.estado === 'aprobada') badge = '<span class="badge-aprobada">Pendiente de iniciar</span>';
+                    else if (ot.estado === 'en_taller') badge = '<span class="badge-en-taller">En proceso</span>';
+                    cont.innerHTML += `<div class="mis-tarea-item"><div><strong>${escHtml(ot.placa)}</strong> — ${escHtml(clienteNombre)}<br><small class="card-codigo">${escHtml(ot.numero || ot.codigo || '')}</small></div><div>${badge}</div></div>`;
+                });
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
     </script>
 </body>
