@@ -781,15 +781,41 @@
         }
         document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
 
+        // ============ AUTH Y SESIÓN (CON FALLBACK) ============
         async function initSession(userId) {
             try {
+                // Intentar obtener el perfil
                 const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
-                if (error) { toast('Error al cargar perfil: ' + error.message, 'err'); return; }
-                PERFIL = data;
-                SESSION = { id: userId, email: data.email, rol: data.rol };
+
+                if (error) {
+                    // Si no existe, intentar crearlo manualmente (por si el trigger no corrió)
+                    const { data: userData } = await sb.auth.getUser();
+                    const nuevoPerfil = {
+                        id: userId,
+                        nombre: userData?.user_metadata?.nombre || 'Sin nombre',
+                        email: userData?.email || '',
+                        rol: userData?.user_metadata?.rol || 'recepcionista',
+                        activo: true
+                    };
+                    const { error: insertError } = await sb.from('perfiles').insert(nuevoPerfil);
+                    if (insertError) {
+                        toast('Error al crear perfil: ' + insertError.message, 'err');
+                        return;
+                    }
+                    // Reintentar obtener el perfil
+                    const { data: perfilCreado, error: error2 } = await sb.from('perfiles').select('*').eq('id', userId).single();
+                    if (error2) { toast('Error al cargar perfil: ' + error2.message, 'err'); return; }
+                    PERFIL = perfilCreado;
+                } else {
+                    PERFIL = data;
+                }
+
+                SESSION = { id: userId, email: PERFIL.email, rol: PERFIL.rol };
                 await cargarConfiguracion();
                 setTimeout(() => mostrarApp(), 100);
-            } catch (e) { toast('Error al iniciar sesión: ' + e.message, 'err'); }
+            } catch (e) {
+                toast('Error al iniciar sesión: ' + e.message, 'err');
+            }
         }
 
         (async function boot() {
@@ -817,6 +843,7 @@
             } catch (err) { toast('❌ Error: ' + err.message, 'err'); }
         });
 
+        // ============ CONFIGURACIÓN ============
         async function cargarConfiguracion() {
             try {
                 const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
@@ -858,6 +885,7 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
+        // ============ NAVEGACIÓN ============
         function mostrarApp() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
@@ -886,6 +914,7 @@
             item.addEventListener('click', () => sv(item.dataset.view));
         });
 
+        // ============ DASHBOARD ============
         async function cargarDashboard() {
             try {
                 const [agencias, clientes] = await Promise.all([
@@ -1228,6 +1257,7 @@
             }, 'Sí, cambiar');
         }
 
+        // ============ USUARIOS (con metadatos de rol) ============
         async function cargarUsuarios() {
             try {
                 const { data, error } = await sb.from('perfiles').select('*').order('nombre');
@@ -1254,17 +1284,25 @@
             const email = document.getElementById('usu-email').value.trim();
             const pass = document.getElementById('usu-pass').value;
             const rol = document.getElementById('usu-rol').value;
+
             if (!nombre || !email || !pass) { toast('Todos los campos son obligatorios', 'err'); return; }
             if (pass.length < 8) { toast('La contraseña debe tener al menos 8 caracteres', 'err'); return; }
+
             try {
-                const { data: user, error: errAuth } = await sb.auth.signUp({ email, password: pass, options: { data: { nombre } } });
+                // Crear usuario con nombre y rol en metadatos
+                const { data: user, error: errAuth } = await sb.auth.signUp({
+                    email,
+                    password: pass,
+                    options: {
+                        data: { nombre, rol }
+                    }
+                });
                 if (errAuth) throw errAuth;
                 if (!user?.id) throw new Error('No se pudo crear el usuario');
-                const { error: errPerfil } = await sb.from('perfiles').insert({ id: user.id, nombre, email, rol, activo: true });
-                if (errPerfil) throw errPerfil;
+
                 toast('Usuario creado ✓', 'ok');
                 cerrarModalUsuario();
-                cargarUsuarios();
+                cargarUsuarios(); // El trigger crea el perfil automáticamente
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
@@ -1296,6 +1334,7 @@
             }, 'Sí, cambiar');
         }
 
+        // ============ NUEVA COTIZACIÓN ============
         async function cargarDatosNuevaOT() {
             try {
                 const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
