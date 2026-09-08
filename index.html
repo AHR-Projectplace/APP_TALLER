@@ -1584,8 +1584,16 @@
         function exportarConciliacion() {
             const rows = [];
             document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr => {
-                const cells = Array.from(tr.children).map(td => td.textContent);
-                rows.push({ Agencia: cells[0], Facturado: cells[1], Pendiente: cells[2], Total: cells[3] });
+                const cells = Array.from(tr.children).map(td => td.textContent.trim());
+                rows.push({
+                    Agencia: cells[0],
+                    Folio: cells[1],
+                    Placa: cells[2],
+                    'Marca/Modelo': cells[3],
+                    Estado: cells[4],
+                    Total: cells[5],
+                    Factura: cells[6]
+                });
             });
             const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
