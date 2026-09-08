@@ -186,6 +186,25 @@
         .consulta-tecnico-card { background: var(--sf-white); border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 
         .chk-flujo-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+        
+        /* Estilos para carriles de categoría */
+        .kanban-carril {
+            background: rgba(255,255,255,0.6);
+            border-radius: 8px;
+            padding: 6px;
+            margin-bottom: 8px;
+        }
+        .kanban-carril-titulo {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--sf-text-secondary);
+            margin-bottom: 6px;
+            padding: 4px 8px;
+            background: var(--sf-gray-20);
+            border-radius: 4px;
+        }
+        .chk-categoria { display:flex; align-items:center; gap:6px; padding:4px 0; }
     </style>
 </head>
 <body>
@@ -449,29 +468,33 @@
                 <!-- Kanban Taller -->
                 <div id="view-taller" class="view" style="display:none;">
                     <h2 class="page-title">Taller — Tablero Kanban</h2>
-                    <p class="page-desc">Arrastra las tarjetas para cambiar su estado o usa los botones.</p>
+                    <p class="page-desc">Arrastra las tarjetas para cambiar su estado. Cada columna está subdividida por categoría.</p>
                     <div class="filtro-kanban">
                         <label class="flbl" style="margin:0;">Filtrar por técnico:</label>
                         <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()">
                             <option value="">Todos</option>
                         </select>
+                        <label class="flbl" style="margin:0;">Filtrar por categoría:</label>
+                        <select class="inp" id="filtro-categoria" onchange="aplicarFiltroKanban()">
+                            <option value="">Todas</option>
+                        </select>
                     </div>
                     <div class="kanban-board" id="kanban-board">
                         <div class="kanban-col" data-estado="aprobada">
                             <div class="kanban-col-header">Aprobadas <span class="count" id="count-aprobada">0</span></div>
-                            <div class="kanban-cards" id="cards-aprobada"></div>
+                            <div id="carriles-aprobada"></div>
                         </div>
                         <div class="kanban-col" data-estado="en_taller">
                             <div class="kanban-col-header">En Taller <span class="count" id="count-en_taller">0</span></div>
-                            <div class="kanban-cards" id="cards-en_taller"></div>
+                            <div id="carriles-en_taller"></div>
                         </div>
                         <div class="kanban-col" data-estado="completada">
                             <div class="kanban-col-header">Completadas <span class="count" id="count-completada">0</span></div>
-                            <div class="kanban-cards" id="cards-completada"></div>
+                            <div id="carriles-completada"></div>
                         </div>
                         <div class="kanban-col" data-estado="cancelada">
                             <div class="kanban-col-header">Canceladas <span class="count" id="count-cancelada">0</span></div>
-                            <div class="kanban-cards" id="cards-cancelada"></div>
+                            <div id="carriles-cancelada"></div>
                         </div>
                     </div>
                 </div>
@@ -518,6 +541,7 @@
                         <button class="tab-btn" onclick="cambiarTabAdmin('clientes')">Clientes</button>
                         <button class="tab-btn" onclick="cambiarTabAdmin('tecnicos')">Técnicos</button>
                         <button class="tab-btn" onclick="cambiarTabAdmin('usuarios')">Usuarios</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('categorias')">Categorías</button>
                         <button class="tab-btn" onclick="cambiarTabAdmin('config')">Configuración</button>
                     </div>
 
@@ -542,7 +566,7 @@
                             <h3>Trabajos</h3>
                             <button class="btn btn-primary btn-sm" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
                         </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo (días)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
+                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo (días)</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
                     </div>
 
                     <div id="tab-agencias" class="tab-content">
@@ -575,6 +599,14 @@
                             <button class="btn btn-primary btn-sm" onclick="abrirModalUsuario()">+ Nuevo Usuario</button>
                         </div>
                         <table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-usuarios"></tbody></table>
+                    </div>
+
+                    <div id="tab-categorias" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Categorías</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalCategoria()">+ Nueva Categoría</button>
+                        </div>
+                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-categorias"></tbody></table>
                     </div>
 
                     <div id="tab-config" class="tab-content">
@@ -708,6 +740,21 @@
         </div>
     </div>
 
+    <!-- MODAL CATEGORÍA -->
+    <div class="mov" id="mov-categoria">
+        <div class="mo">
+            <div class="moh">Nueva Categoría</div>
+            <div class="mob">
+                <label class="flbl">Nombre</label>
+                <input class="inp" type="text" id="cat-nombre" placeholder="Ej. Acabados">
+            </div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarModalCategoria()">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarCategoria()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETALLE OT -->
     <div class="mov" id="mov-detalle-ot">
         <div class="mo">
@@ -749,6 +796,7 @@
         let CONFIG = {};
         let detalleOTActual = null;
         let otEditarFlujoId = null;
+        let categoriasCache = [];
 
         function escHtml(str) {
             if (str === null || str === undefined) return '';
@@ -781,14 +829,10 @@
         }
         document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
 
-        // ============ AUTH Y SESIÓN (CON FALLBACK) ============
         async function initSession(userId) {
             try {
-                // Intentar obtener el perfil
                 const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
-
                 if (error) {
-                    // Si no existe, intentar crearlo manualmente (por si el trigger no corrió)
                     const { data: userData } = await sb.auth.getUser();
                     const nuevoPerfil = {
                         id: userId,
@@ -798,11 +842,7 @@
                         activo: true
                     };
                     const { error: insertError } = await sb.from('perfiles').insert(nuevoPerfil);
-                    if (insertError) {
-                        toast('Error al crear perfil: ' + insertError.message, 'err');
-                        return;
-                    }
-                    // Reintentar obtener el perfil
+                    if (insertError) { toast('Error al crear perfil: ' + insertError.message, 'err'); return; }
                     const { data: perfilCreado, error: error2 } = await sb.from('perfiles').select('*').eq('id', userId).single();
                     if (error2) { toast('Error al cargar perfil: ' + error2.message, 'err'); return; }
                     PERFIL = perfilCreado;
@@ -812,17 +852,15 @@
 
                 SESSION = { id: userId, email: PERFIL.email, rol: PERFIL.rol };
                 await cargarConfiguracion();
+                await cargarCategorias();
                 setTimeout(() => mostrarApp(), 100);
-            } catch (e) {
-                toast('Error al iniciar sesión: ' + e.message, 'err');
-            }
+            } catch (e) { toast('Error al iniciar sesión: ' + e.message, 'err'); }
         }
 
         (async function boot() {
             sb.auth.onAuthStateChange(async (event, session) => {
-                if (session?.user && !SESSION) {
-                    await initSession(session.user.id);
-                } else if (!session && event === 'SIGNED_OUT') {
+                if (session?.user && !SESSION) await initSession(session.user.id);
+                else if (!session && event === 'SIGNED_OUT') {
                     SESSION = null; PERFIL = null; CONFIG = {};
                     document.getElementById('app').style.display = 'none';
                     document.getElementById('login-wrap').style.display = 'flex';
@@ -843,7 +881,67 @@
             } catch (err) { toast('❌ Error: ' + err.message, 'err'); }
         });
 
-        // ============ CONFIGURACIÓN ============
+        // ============ CATEGORÍAS ============
+        async function cargarCategorias() {
+            const { data, error } = await sb.from('categorias').select('*').eq('activo', true).order('nombre');
+            if (error) { toast('Error cargando categorías: ' + error.message, 'err'); return []; }
+            categoriasCache = data || [];
+            return categoriasCache;
+        }
+
+        async function cargarCategoriasAdmin() {
+            const { data, error } = await sb.from('categorias').select('*').order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-categorias');
+            tbody.innerHTML = '';
+            data.forEach(c => {
+                tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right">
+                    <button class="btn btn-sm" onclick="editarCategoria(${c.id})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="cambiarEstadoCategoria(${c.id}, ${!c.activo})">${c.activo ? 'Desactivar' : 'Activar'}</button>
+                </td></tr>`;
+            });
+        }
+
+        function abrirModalCategoria() {
+            document.getElementById('cat-nombre').value = '';
+            document.getElementById('mov-categoria').classList.add('open');
+        }
+
+        function cerrarModalCategoria() {
+            document.getElementById('mov-categoria').classList.remove('open');
+        }
+
+        async function guardarCategoria() {
+            const nombre = document.getElementById('cat-nombre').value.trim();
+            if (!nombre) { toast('El nombre es obligatorio', 'err'); return; }
+            try {
+                const { error } = await sb.from('categorias').insert({ nombre, activo: true });
+                if (error) throw error;
+                toast('Categoría creada ✓', 'ok');
+                cerrarModalCategoria();
+                cargarCategoriasAdmin();
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
+        }
+
+        async function editarCategoria(id) {
+            const { data } = await sb.from('categorias').select('*').eq('id', id).single();
+            if (!data) return;
+            const nuevoNombre = prompt('Nuevo nombre para ' + data.nombre, data.nombre);
+            if (nuevoNombre && nuevoNombre.trim()) {
+                const { error } = await sb.from('categorias').update({ nombre: nuevoNombre.trim() }).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Categoría actualizada ✓', 'ok');
+                cargarCategoriasAdmin();
+            }
+        }
+
+        async function cambiarEstadoCategoria(id, nuevoEstado) {
+            const { error } = await sb.from('categorias').update({ activo: nuevoEstado }).eq('id', id);
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            toast('Estado actualizado ✓', 'ok');
+            cargarCategoriasAdmin();
+        }
+
         async function cargarConfiguracion() {
             try {
                 const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
@@ -885,7 +983,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ NAVEGACIÓN ============
         function mostrarApp() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
@@ -914,7 +1011,6 @@
             item.addEventListener('click', () => sv(item.dataset.view));
         });
 
-        // ============ DASHBOARD ============
         async function cargarDashboard() {
             try {
                 const [agencias, clientes] = await Promise.all([
@@ -936,107 +1032,50 @@
                 const agenciaId = document.getElementById('filtro-agencia').value;
                 const clienteId = document.getElementById('filtro-cliente').value;
                 const estado = document.getElementById('filtro-estado').value;
-
                 let query = sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)');
                 if (agenciaId) query = query.eq('agencia_id', agenciaId);
                 if (clienteId) query = query.eq('cliente_id', clienteId);
                 if (estado) query = query.eq('estado', estado);
                 const { data: ots, error } = await query.order('created_at', { ascending: false });
                 if (error) throw error;
-
                 const hoy = new Date();
                 const hoyISO = hoy.toISOString().split('T')[0];
-
                 const { count: tallerCount } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
                 document.getElementById('stat-taller').textContent = tallerCount || 0;
-
-                const { count: entregasHoy } = await sb.from('ot').select('*', { count: 'exact', head: true })
-                    .eq('estado', 'completada')
-                    .gte('updated_at', hoyISO + 'T00:00:00')
-                    .lt('updated_at', hoyISO + 'T23:59:59');
+                const { count: entregasHoy } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'completada').gte('updated_at', hoyISO + 'T00:00:00').lt('updated_at', hoyISO + 'T23:59:59');
                 document.getElementById('stat-entregas').textContent = entregasHoy || 0;
-
-                const { count: factPend } = await sb.from('ot').select('*', { count: 'exact', head: true })
-                    .eq('estado', 'completada')
-                    .is('factura_id', null);
+                const { count: factPend } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'completada').is('factura_id', null);
                 document.getElementById('stat-facturas').textContent = factPend || 0;
-
-                const proximos = ots.filter(ot => {
-                    if (!ot.fecha_entrega) return false;
-                    const fecha = new Date(ot.fecha_entrega);
-                    const diff = (fecha - hoy) / (1000*60*60*24);
-                    return diff >= 0 && diff <= 2 && ['aprobada','en_taller'].includes(ot.estado);
-                });
+                const proximos = ots.filter(ot => { if (!ot.fecha_entrega) return false; const fecha = new Date(ot.fecha_entrega); const diff = (fecha - hoy) / (1000*60*60*24); return diff >= 0 && diff <= 2 && ['aprobada','en_taller'].includes(ot.estado); });
                 document.getElementById('stat-proximos').textContent = proximos.length;
-
-                const retrasados = ots.filter(ot => {
-                    if (!ot.fecha_entrega) return false;
-                    const fecha = new Date(ot.fecha_entrega);
-                    return fecha < hoy && ['aprobada','en_taller'].includes(ot.estado);
-                });
+                const retrasados = ots.filter(ot => { if (!ot.fecha_entrega) return false; const fecha = new Date(ot.fecha_entrega); return fecha < hoy && ['aprobada','en_taller'].includes(ot.estado); });
                 document.getElementById('stat-retrasados').textContent = retrasados.length;
-
-                const entregadosHoy = ots.filter(ot => {
-                    return ot.estado === 'completada' && ot.fecha_entrega === hoyISO;
-                });
+                const entregadosHoy = ots.filter(ot => { return ot.estado === 'completada' && ot.fecha_entrega === hoyISO; });
                 document.getElementById('stat-entregados-hoy').textContent = entregadosHoy.length;
-
                 const totalEnProceso = ots.filter(ot => ['aprobada','en_taller'].includes(ot.estado) && ot.fecha_entrega).length;
                 const tasa = totalEnProceso > 0 ? Math.round((retrasados.length / totalEnProceso) * 100) : 0;
                 document.getElementById('kpi-tasa-retraso').textContent = tasa + '%';
-
                 const { data: tecnicos } = await sb.from('tecnicos').select('*').order('nombre');
-                let maxTecnico = '—';
-                let maxCount = 0;
+                let maxTecnico = '—'; let maxCount = 0;
                 for (const tec of tecnicos || []) {
-                    const { count } = await sb.from('ot')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('tecnico_id', tec.id)
-                        .eq('estado', 'completada')
-                        .gte('updated_at', hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01T00:00:00');
+                    const { count } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('tecnico_id', tec.id).eq('estado', 'completada').gte('updated_at', hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01T00:00:00');
                     if (count > maxCount) { maxCount = count; maxTecnico = tec.nombre; }
                 }
                 document.getElementById('kpi-tecnico-mes').textContent = maxTecnico;
-
-                let totalDias = 0;
-                let totalOTs = 0;
+                let totalDias = 0; let totalOTs = 0;
                 const { data: agenciasData } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
                 for (const ag of agenciasData || []) {
-                    const { data: agOTs } = await sb.from('ot')
-                        .select('fecha_aprobacion, updated_at')
-                        .eq('agencia_id', ag.id)
-                        .eq('estado', 'completada')
-                        .not('fecha_aprobacion', 'is', null);
-                    if (agOTs) {
-                        agOTs.forEach(ot => {
-                            if (ot.fecha_aprobacion && ot.updated_at) {
-                                const diff = (new Date(ot.updated_at) - new Date(ot.fecha_aprobacion)) / (1000*60*60*24);
-                                totalDias += diff;
-                                totalOTs++;
-                            }
-                        });
-                    }
+                    const { data: agOTs } = await sb.from('ot').select('fecha_aprobacion, updated_at').eq('agencia_id', ag.id).eq('estado', 'completada').not('fecha_aprobacion', 'is', null);
+                    if (agOTs) agOTs.forEach(ot => { if (ot.fecha_aprobacion && ot.updated_at) { const diff = (new Date(ot.updated_at) - new Date(ot.fecha_aprobacion)) / (1000*60*60*24); totalDias += diff; totalOTs++; } });
                 }
                 const promedio = totalOTs > 0 ? (totalDias / totalOTs).toFixed(1) : 0;
                 document.getElementById('kpi-dias-promedio').textContent = promedio;
-
-                const tbody = document.getElementById('tbody-dashboard');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tbody-dashboard'); tbody.innerHTML = '';
                 ots.forEach(ot => {
                     const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
                     let diasRestantes = '—';
-                    if (ot.fecha_entrega) {
-                        const diff = Math.ceil((new Date(ot.fecha_entrega) - hoy) / (1000*60*60*24));
-                        diasRestantes = diff < 0 ? `<span style="color:red;">${diff} días</span>` : `${diff} días`;
-                    }
-                    tbody.innerHTML += `<tr>
-                        <td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td>
-                        <td>${escHtml(ot.placa)}</td>
-                        <td>${escHtml(clienteNombre)}</td>
-                        <td>${escHtml(ot.estado || '')}</td>
-                        <td>${ot.fecha_entrega || '—'}</td>
-                        <td>${diasRestantes}</td>
-                    </tr>`;
+                    if (ot.fecha_entrega) { const diff = Math.ceil((new Date(ot.fecha_entrega) - hoy) / (1000*60*60*24)); diasRestantes = diff < 0 ? `<span style="color:red;">${diff} días</span>` : `${diff} días`; }
+                    tbody.innerHTML += `<tr><td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td><td>${escHtml(ot.placa)}</td><td>${escHtml(clienteNombre)}</td><td>${escHtml(ot.estado || '')}</td><td>${ot.fecha_entrega || '—'}</td><td>${diasRestantes}</td></tr>`;
                 });
             } catch (e) { toast('Error en dashboard: ' + e.message, 'err'); }
         }
@@ -1051,7 +1090,12 @@
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
-            trabajo: { tabla: 'trabajos', title: 'Trabajo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' }, { name: 'tiempo_est', label: 'Tiempo (días)', type: 'number', step: '0.25' } ] },
+            trabajo: { tabla: 'trabajos', title: 'Trabajo', fields: [ 
+                { name: 'nombre', label: 'Nombre', type: 'text', required: true }, 
+                { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' }, 
+                { name: 'tiempo_est', label: 'Tiempo (días)', type: 'number', step: '0.25' },
+                { name: 'categoria_id', label: 'Categoría', type: 'select', options: 'categorias' }
+            ] },
             agencia: { tabla: 'agencias', title: 'Agencia', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'rfc', label: 'RFC', type: 'text' }, { name: 'contacto', label: 'Contacto', type: 'text' } ] },
             cliente: { tabla: 'clientes', title: 'Cliente', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'telefono', label: 'Teléfono', type: 'text' }, { name: 'email', label: 'Email', type: 'email' } ] }
         };
@@ -1091,6 +1135,11 @@
                     if (select && marcas) marcas.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nombre; select.appendChild(opt); });
                 } catch (e) { toast('Error cargando marcas: ' + e.message, 'err'); }
             }
+            if (tipo === 'trabajo') {
+                const { data: categorias } = await sb.from('categorias').select('*').eq('activo', true).order('nombre');
+                const select = document.querySelector(`#crud-body select[name="categoria_id"]`);
+                if (select && categorias) categorias.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.nombre; select.appendChild(opt); });
+            }
             document.getElementById('mov-crud').classList.add('open');
         }
 
@@ -1105,21 +1154,12 @@
                 const input = form.querySelector(`input[name="${field.name}"], select[name="${field.name}"]`);
                 datos[field.name] = input ? input.value : '';
             }
-            for (const field of config.fields) {
-                if (field.required && !datos[field.name]) { toast('Campo ' + field.label + ' es obligatorio', 'err'); return; }
-            }
+            for (const field of config.fields) { if (field.required && !datos[field.name]) { toast('Campo ' + field.label + ' es obligatorio', 'err'); return; } }
             const vistaActual = currentModal;
             const vistaMap = { 'marca': 'marcas', 'modelo': 'modelos', 'trabajo': 'trabajos', 'agencia': 'agencias', 'cliente': 'clientes' };
             try {
-                if (currentEditId) {
-                    const { error } = await sb.from(config.tabla).update(datos).eq('id', currentEditId);
-                    if (error) throw error;
-                    toast('Actualizado ✓', 'ok');
-                } else {
-                    const { error } = await sb.from(config.tabla).insert(datos);
-                    if (error) throw error;
-                    toast('Creado ✓', 'ok');
-                }
+                if (currentEditId) { const { error } = await sb.from(config.tabla).update(datos).eq('id', currentEditId); if (error) throw error; toast('Actualizado ✓', 'ok'); }
+                else { const { error } = await sb.from(config.tabla).insert(datos); if (error) throw error; toast('Creado ✓', 'ok'); }
                 cerrarModal();
                 if (document.getElementById('view-admin').style.display !== 'none') cargarAdmin(); else sv(vistaMap[vistaActual] || vistaActual);
             } catch (e) { toast('Error: ' + e.message, 'err'); }
@@ -1129,8 +1169,7 @@
             try {
                 const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-marcas');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-marcas'); tbody.innerHTML = '';
                 data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando marcas: ' + e.message, 'err'); }
         }
@@ -1139,19 +1178,17 @@
             try {
                 const { data, error } = await sb.from('modelos').select('*, marcas(nombre)').eq('activo', true).order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-modelos');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-modelos'); tbody.innerHTML = '';
                 data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre || '')}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando modelos: ' + e.message, 'err'); }
         }
 
         async function cargarTrabajos() {
             try {
-                const { data, error } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+                const { data, error } = await sb.from('trabajos').select('*, categorias(nombre)').eq('activo', true).order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-trabajos');
-                tbody.innerHTML = '';
-                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} días</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`);
+                const tbody = document.getElementById('tabla-trabajos'); tbody.innerHTML = '';
+                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} días</td><td>${escHtml(t.categorias?.nombre || 'Sin categoría')}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando trabajos: ' + e.message, 'err'); }
         }
 
@@ -1159,8 +1196,7 @@
             try {
                 const { data, error } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-agencias');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-agencias'); tbody.innerHTML = '';
                 data.forEach(a => tbody.innerHTML += `<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc || '')}</td><td>${escHtml(a.contacto || '')}</td><td>${a.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando agencias: ' + e.message, 'err'); }
         }
@@ -1169,26 +1205,21 @@
             try {
                 const { data, error } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-clientes');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-clientes'); tbody.innerHTML = '';
                 data.forEach(c => tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono || '')}</td><td>${escHtml(c.email || '')}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando clientes: ' + e.message, 'err'); }
         }
 
         async function eliminarRegistro(tabla, id, descripcion) {
             abrirConfirm(`¿Eliminar "${descripcion}"?`, async () => {
-                try {
-                    const { error } = await sb.from(tabla).update({ activo: false }).eq('id', id);
-                    if (error) throw error;
-                    toast('Eliminado ✓', 'ok');
-                    cargarAdmin();
-                } catch (e) { toast('Error: ' + e.message, 'err'); }
+                try { const { error } = await sb.from(tabla).update({ activo: false }).eq('id', id); if (error) throw error; toast('Eliminado ✓', 'ok'); cargarAdmin(); }
+                catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, eliminar');
         }
 
         async function cargarAdmin() {
             const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'marcas';
-            await Promise.all([cargarMarcas(), cargarModelos(), cargarTrabajos(), cargarAgencias(), cargarClientes(), cargarTecnicos(), cargarUsuarios()]);
+            await Promise.all([cargarMarcas(), cargarModelos(), cargarTrabajos(), cargarAgencias(), cargarClientes(), cargarTecnicos(), cargarUsuarios(), cargarCategoriasAdmin()]);
             cambiarTabAdmin(activeTab);
         }
 
@@ -1199,14 +1230,14 @@
             if (btn) btn.classList.add('active');
             const content = document.getElementById('tab-' + tab);
             if (content) content.classList.add('active');
+            if (tab === 'categorias') cargarCategoriasAdmin();
         }
 
         async function cargarTecnicos() {
             try {
                 const { data, error } = await sb.from('tecnicos').select('*').order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-tecnicos');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-tecnicos'); tbody.innerHTML = '';
                 data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`);
             } catch (e) { toast('Error cargando técnicos: ' + e.message, 'err'); }
         }
@@ -1240,34 +1271,27 @@
                 if (nuevoNombre && nuevoNombre.trim()) {
                     const { error } = await sb.from('tecnicos').update({ nombre: nuevoNombre.trim() }).eq('id', id);
                     if (error) { toast('Error: ' + error.message, 'err'); return; }
-                    toast('Nombre actualizado ✓', 'ok');
-                    cargarTecnicos();
+                    toast('Nombre actualizado ✓', 'ok'); cargarTecnicos();
                 }
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function cambiarEstadoTecnico(id, nuevoEstado) {
             abrirConfirm('¿Cambiar estado del técnico?', async () => {
-                try {
-                    const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id);
-                    if (error) { toast('Error: ' + error.message, 'err'); return; }
-                    toast('Estado actualizado ✓', 'ok');
-                    cargarTecnicos();
-                } catch (e) { toast('Error: ' + e.message, 'err'); }
+                try { const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id); if (error) { toast('Error: ' + error.message, 'err'); return; } toast('Estado actualizado ✓', 'ok'); cargarTecnicos(); }
+                catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, cambiar');
         }
 
-        // ============ USUARIOS (con metadatos de rol) ============
         async function cargarUsuarios() {
             try {
                 const { data, error } = await sb.from('perfiles').select('*').order('nombre');
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-usuarios');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-usuarios'); tbody.innerHTML = '';
                 data.forEach(u => {
                     if (u.rol === 'tecnico') return;
                     const nuevoEstado = !u.activo;
-                    tbody.innerHTML += '<tr><td>' + u.id + '</td><td>' + escHtml(u.nombre) + '</td><td>' + escHtml(u.email || '') + '</td><td>' + u.rol + '</td><td>' + (u.activo ? 'Activo' : 'Inactivo') + '</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario(\'' + u.id + '\')">Editar</button> <button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario(\'' + u.id + '\',' + nuevoEstado + ')">' + (u.activo ? 'Desactivar' : 'Activar') + '</button></td></tr>';
+                    tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button> <button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${nuevoEstado})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
                 });
             } catch (e) { toast('Error cargando usuarios: ' + e.message, 'err'); }
         }
@@ -1284,25 +1308,13 @@
             const email = document.getElementById('usu-email').value.trim();
             const pass = document.getElementById('usu-pass').value;
             const rol = document.getElementById('usu-rol').value;
-
             if (!nombre || !email || !pass) { toast('Todos los campos son obligatorios', 'err'); return; }
             if (pass.length < 8) { toast('La contraseña debe tener al menos 8 caracteres', 'err'); return; }
-
             try {
-                // Crear usuario con nombre y rol en metadatos
-                const { data: user, error: errAuth } = await sb.auth.signUp({
-                    email,
-                    password: pass,
-                    options: {
-                        data: { nombre, rol }
-                    }
-                });
+                const { data: user, error: errAuth } = await sb.auth.signUp({ email, password: pass, options: { data: { nombre, rol } } });
                 if (errAuth) throw errAuth;
                 if (!user?.id) throw new Error('No se pudo crear el usuario');
-
-                toast('Usuario creado ✓', 'ok');
-                cerrarModalUsuario();
-                cargarUsuarios(); // El trigger crea el perfil automáticamente
+                toast('Usuario creado ✓', 'ok'); cerrarModalUsuario(); cargarUsuarios();
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
@@ -1317,73 +1329,66 @@
                     if (nuevoRol && ['admin','recepcionista','jefe_taller'].includes(nuevoRol)) updates.rol = nuevoRol;
                     const { error } = await sb.from('perfiles').update(updates).eq('id', id);
                     if (error) { toast('Error: ' + error.message, 'err'); return; }
-                    toast('Usuario actualizado ✓', 'ok');
-                    cargarUsuarios();
+                    toast('Usuario actualizado ✓', 'ok'); cargarUsuarios();
                 }
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function cambiarEstadoUsuario(id, nuevoEstado) {
             abrirConfirm('¿Cambiar estado del usuario?', async () => {
-                try {
-                    const { error } = await sb.from('perfiles').update({ activo: nuevoEstado }).eq('id', id);
-                    if (error) { toast('Error: ' + error.message, 'err'); return; }
-                    toast('Estado actualizado ✓', 'ok');
-                    cargarUsuarios();
-                } catch (e) { toast('Error: ' + e.message, 'err'); }
+                try { const { error } = await sb.from('perfiles').update({ activo: nuevoEstado }).eq('id', id); if (error) { toast('Error: ' + error.message, 'err'); return; } toast('Estado actualizado ✓', 'ok'); cargarUsuarios(); }
+                catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, cambiar');
         }
 
-        // ============ NUEVA COTIZACIÓN ============
         async function cargarDatosNuevaOT() {
             try {
                 const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
                 const selMarca = document.getElementById('ot-marca');
                 selMarca.innerHTML = '<option value="">Selecciona...</option>';
                 marcas.forEach(m => selMarca.innerHTML += `<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
-
                 const selModelo = document.getElementById('ot-modelo');
                 selModelo.innerHTML = '<option value="">Primero selecciona marca</option>';
-
                 const { data: clientes } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
                 const selCliente = document.getElementById('ot-cliente-particular');
                 selCliente.innerHTML = '<option value="">Selecciona...</option>';
                 clientes.forEach(c => selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
-
                 const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
                 const selAgencia = document.getElementById('ot-cliente-agencia');
                 selAgencia.innerHTML = '<option value="">Selecciona...</option>';
                 agencias.forEach(a => selAgencia.innerHTML += `<option value="${a.id}" data-nombre="${escHtml(a.nombre)}">${escHtml(a.nombre)}</option>`);
-
-                const { data: trabajos } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+                const { data: categorias } = await sb.from('categorias').select('*').eq('activo', true).order('nombre');
+                const { data: trabajos } = await sb.from('trabajos').select('*, categorias(nombre)').eq('activo', true).order('nombre');
                 const cont = document.getElementById('lista-trabajos');
                 cont.innerHTML = '';
-                trabajos.forEach(t => {
-                    cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);">
-                        <input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()">
-                        <span style="flex:1;">${escHtml(t.nombre)}</span>
-                        <span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} días</span>
-                    </div>`;
-                });
-
+                if (categorias && categorias.length > 0) {
+                    categorias.forEach(cat => {
+                        const trabajosCat = trabajos.filter(t => t.categoria_id === cat.id);
+                        if (trabajosCat.length > 0) {
+                            cont.innerHTML += `<div style="margin-top:10px;"><strong>${escHtml(cat.nombre)}</strong></div>`;
+                            trabajosCat.forEach(t => {
+                                cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()"><span style="flex:1;">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} días</span></div>`;
+                            });
+                        }
+                    });
+                } else {
+                    trabajos.forEach(t => {
+                        cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()"><span style="flex:1;">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} días</span></div>`;
+                    });
+                }
                 selMarca.addEventListener('change', async () => {
                     const marcaId = selMarca.value;
                     const { data: modelos } = await sb.from('modelos').select('*').eq('marca_id', marcaId).eq('activo', true).order('nombre');
                     selModelo.innerHTML = '<option value="">Selecciona...</option>';
                     modelos.forEach(m => selModelo.innerHTML += `<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
                 });
-
                 document.getElementById('ot-total').textContent = '$0.00';
             } catch (e) { toast('Error cargando datos: ' + e.message, 'err'); }
         }
 
         function calcularTotal() {
-            let total = 0;
-            let tiempoDias = 0;
-            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
-                total += parseFloat(chk.dataset.precio || 0);
-                tiempoDias += parseFloat(chk.dataset.tiempo || 0);
-            });
+            let total = 0, tiempoDias = 0;
+            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => { total += parseFloat(chk.dataset.precio || 0); tiempoDias += parseFloat(chk.dataset.tiempo || 0); });
             document.getElementById('ot-total').textContent = '$' + total.toFixed(2);
         }
 
@@ -1435,55 +1440,34 @@
                 if (tipoCliente === 'agencia' && !clienteAgenciaId) { toast('Selecciona la agencia', 'err'); return; }
 
                 const trabajosSeleccionados = [];
-                let costoTotal = 0;
-                let tiempoTotalDias = 0;
+                let costoTotal = 0, tiempoTotalDias = 0;
                 document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
                     const precio = parseFloat(chk.dataset.precio || 0);
                     const tiempo = parseFloat(chk.dataset.tiempo || 0);
-                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: precio });
-                    costoTotal += precio;
-                    tiempoTotalDias += tiempo;
+                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio });
+                    costoTotal += precio; tiempoTotalDias += tiempo;
                 });
-
                 if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
-
                 const codigoBase = generarCodigoOT();
                 const { data: existentes } = await sb.from('ot').select('codigo').like('codigo', codigoBase + '%').order('codigo', { ascending: false }).limit(1);
                 let codigo = codigoBase;
-                if (existentes && existentes.length > 0) {
-                    const ultimo = existentes[0].codigo.replace(codigoBase, '');
-                    const sufijo = ultimo ? parseInt(ultimo) + 1 : 1;
-                    codigo = codigoBase + sufijo;
-                }
-
+                if (existentes && existentes.length > 0) { const ultimo = existentes[0].codigo.replace(codigoBase, ''); const sufijo = ultimo ? parseInt(ultimo) + 1 : 1; codigo = codigoBase + sufijo; }
                 const numero = 'CT-' + codigo;
                 const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
                 const diasEstimados = diasManual > 0 ? diasManual : (tiempoTotalDias || 1);
-
                 const otData = {
                     placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
                     cliente_tipo: tipoCliente,
                     agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
                     cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
-                    costo_total: costoTotal,
-                    tiempo_est: tiempoTotalDias,
-                    dias_estimados: diasEstimados,
-                    fecha_entrega: fechaEntrega,
-                    estado: 'cotizacion',
+                    costo_total: costoTotal, tiempo_est: tiempoTotalDias, dias_estimados: diasEstimados,
+                    fecha_entrega: fechaEntrega, estado: 'cotizacion',
                     flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
-                    numero: numero,
-                    vigencia: vigencia,
-                    codigo: codigo
+                    numero, vigencia, codigo
                 };
-
                 const { data, error } = await sb.from('ot').insert(otData).select().single();
                 if (error) throw error;
-
-                for (const t of trabajosSeleccionados) {
-                    const { error: errItem } = await sb.from('ot_trabajos').insert({ ot_id: data.id, trabajo_id: t.trabajo_id, precio: t.precio });
-                    if (errItem) throw errItem;
-                }
-
+                for (const t of trabajosSeleccionados) { const { error: errItem } = await sb.from('ot_trabajos').insert({ ot_id: data.id, trabajo_id: t.trabajo_id, precio: t.precio }); if (errItem) throw errItem; }
                 toast('Cotización ' + numero + ' creada ✓', 'ok');
                 document.getElementById('form-nueva-ot').reset();
                 sv('cotizaciones');
@@ -1492,36 +1476,17 @@
 
         async function cargarCotizaciones() {
             try {
-                const { data, error } = await sb.from('ot')
-                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
-                    .eq('estado', 'cotizacion')
-                    .order('created_at', { ascending: false });
+                const { data, error } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('estado', 'cotizacion').order('created_at', { ascending: false });
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-                const tbody = document.getElementById('tabla-cotizaciones');
-                tbody.innerHTML = '';
+                const tbody = document.getElementById('tabla-cotizaciones'); tbody.innerHTML = '';
                 data.forEach(ot => {
                     const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
-                    tbody.innerHTML += `<tr>
-                        <td><input type="checkbox" class="chk-ot" value="${ot.id}"></td>
-                        <td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td>
-                        <td>${escHtml(ot.placa)}</td>
-                        <td>${escHtml(clienteNombre)}</td>
-                        <td>$${ot.costo_total || 0}</td>
-                        <td>${ot.fecha_entrega || '—'}</td>
-                        <td><span class="badge-cotizacion">Cotización</span></td>
-                        <td class="text-right">
-                            <button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button>
-                            <button class="btn btn-sm" onclick="imprimirCotizacion(${ot.id})">📄 PDF</button>
-                        </td>
-                    </tr>`;
+                    tbody.innerHTML += `<tr><td><input type="checkbox" class="chk-ot" value="${ot.id}"></td><td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td><td>${escHtml(ot.placa)}</td><td>${escHtml(clienteNombre)}</td><td>$${ot.costo_total || 0}</td><td>${ot.fecha_entrega || '—'}</td><td><span class="badge-cotizacion">Cotización</span></td><td class="text-right"><button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button><button class="btn btn-sm" onclick="imprimirCotizacion(${ot.id})">📄 PDF</button></td></tr>`;
                 });
             } catch (e) { toast('Error cargando cotizaciones: ' + e.message, 'err'); }
         }
 
-        function toggleAll() {
-            const checkAll = document.getElementById('check-all');
-            document.querySelectorAll('.chk-ot').forEach(chk => chk.checked = checkAll.checked);
-        }
+        function toggleAll() { const checkAll = document.getElementById('check-all'); document.querySelectorAll('.chk-ot').forEach(chk => chk.checked = checkAll.checked); }
 
         async function aprobarOT(id) {
             abrirConfirm('¿Aprobar esta cotización? Se convertirá en Orden de Trabajo.', async () => {
@@ -1530,18 +1495,8 @@
                     const nuevoNumero = 'OT-' + (otActual.codigo || '');
                     const fechaAprobacion = new Date().toISOString();
                     let fechaEntrega = otActual.fecha_entrega;
-                    if (!fechaEntrega) {
-                        const dias = otActual.dias_estimados || 1;
-                        const fe = new Date();
-                        fe.setDate(fe.getDate() + dias);
-                        fechaEntrega = fe.toISOString().split('T')[0];
-                    }
-                    const { error } = await sb.from('ot').update({
-                        estado: 'aprobada',
-                        numero: nuevoNumero,
-                        fecha_aprobacion: fechaAprobacion,
-                        fecha_entrega: fechaEntrega
-                    }).eq('id', id);
+                    if (!fechaEntrega) { const dias = otActual.dias_estimados || 1; const fe = new Date(); fe.setDate(fe.getDate() + dias); fechaEntrega = fe.toISOString().split('T')[0]; }
+                    const { error } = await sb.from('ot').update({ estado: 'aprobada', numero: nuevoNumero, fecha_aprobacion: fechaAprobacion, fecha_entrega: fechaEntrega }).eq('id', id);
                     if (error) throw error;
                     toast('Cotización aprobada → ' + nuevoNumero + ' ✓', 'ok');
                     cargarCotizaciones();
@@ -1559,58 +1514,76 @@
                         const nuevoNumero = 'OT-' + (otActual?.codigo || '');
                         const fechaAprobacion = new Date().toISOString();
                         let fechaEntrega = otActual?.fecha_entrega;
-                        if (!fechaEntrega) {
-                            const dias = otActual?.dias_estimados || 1;
-                            const fe = new Date();
-                            fe.setDate(fe.getDate() + dias);
-                            fechaEntrega = fe.toISOString().split('T')[0];
-                        }
-                        await sb.from('ot').update({
-                            estado: 'aprobada',
-                            numero: nuevoNumero,
-                            fecha_aprobacion: fechaAprobacion,
-                            fecha_entrega: fechaEntrega
-                        }).eq('id', id);
+                        if (!fechaEntrega) { const dias = otActual?.dias_estimados || 1; const fe = new Date(); fe.setDate(fe.getDate() + dias); fechaEntrega = fe.toISOString().split('T')[0]; }
+                        await sb.from('ot').update({ estado: 'aprobada', numero: nuevoNumero, fecha_aprobacion: fechaAprobacion, fecha_entrega: fechaEntrega }).eq('id', id);
                     }
-                    toast('Cotizaciones aprobadas ✓', 'ok');
-                    cargarCotizaciones();
+                    toast('Cotizaciones aprobadas ✓', 'ok'); cargarCotizaciones();
                 } catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, aprobar todas');
         }
 
         async function cargarTaller() {
             try {
+                const categorias = await cargarCategorias();
                 const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
                 const filtroSelect = document.getElementById('filtro-tecnico');
                 filtroSelect.innerHTML = '<option value="">Todos</option>';
                 tecnicos.forEach(t => filtroSelect.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
-
-                const { data, error } = await sb.from('ot')
-                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre)')
+                const selectCategoria = document.getElementById('filtro-categoria');
+                selectCategoria.innerHTML = '<option value="">Todas</option>';
+                categorias.forEach(c => selectCategoria.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
+                const { data: ots, error } = await sb.from('ot')
+                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre), ot_trabajos(trabajos(categoria_id))')
                     .in('estado', ['aprobada', 'en_taller', 'completada', 'cancelada'])
                     .order('updated_at', { ascending: false });
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-
-                window._otsTaller = data;
+                const otsConCategoria = ots.map(ot => {
+                    let categoriaId = null;
+                    const trabajos = ot.ot_trabajos || [];
+                    if (trabajos.length > 0) {
+                        const counts = {};
+                        trabajos.forEach(t => { const catId = t.trabajos?.categoria_id; if (catId) counts[catId] = (counts[catId] || 0) + 1; });
+                        const entries = Object.entries(counts);
+                        if (entries.length > 0) { entries.sort((a,b) => b[1] - a[1]); categoriaId = parseInt(entries[0][0]); }
+                    }
+                    return { ...ot, categoria_id: categoriaId };
+                });
+                window._otsTaller = otsConCategoria;
                 aplicarFiltroKanban();
             } catch (e) { toast('Error cargando taller: ' + e.message, 'err'); }
         }
 
         function aplicarFiltroKanban() {
-            const filtro = document.getElementById('filtro-tecnico').value;
+            const filtroTec = document.getElementById('filtro-tecnico').value;
+            const filtroCat = document.getElementById('filtro-categoria').value;
             const data = window._otsTaller || [];
-            const filtradas = filtro ? data.filter(ot => String(ot.tecnico_id) === filtro) : data;
-
+            const categorias = categoriasCache;
+            let filtradas = filtroTec ? data.filter(ot => String(ot.tecnico_id) === filtroTec) : data;
+            if (filtroCat) filtradas = filtradas.filter(ot => String(ot.categoria_id) === filtroCat);
             ['aprobada', 'en_taller', 'completada', 'cancelada'].forEach(estado => {
-                document.getElementById('cards-' + estado).innerHTML = '';
+                const carrilesDiv = document.getElementById('carriles-' + estado);
+                carrilesDiv.innerHTML = '';
                 document.getElementById('count-' + estado).textContent = 0;
-            });
-
-            filtradas.forEach(ot => {
-                const col = document.getElementById('cards-' + ot.estado);
-                if (col) {
-                    col.innerHTML += generarCardKanban(ot);
-                    document.getElementById('count-' + ot.estado).textContent = col.children.length;
+                categorias.forEach(cat => {
+                    const tarjetasCat = filtradas.filter(ot => ot.estado === estado && ot.categoria_id === cat.id);
+                    if (tarjetasCat.length > 0 || estado === 'aprobada' || estado === 'en_taller') {
+                        const carril = document.createElement('div');
+                        carril.className = 'kanban-carril';
+                        carril.innerHTML = `<div class="kanban-carril-titulo">${escHtml(cat.nombre)} (${tarjetasCat.length})</div><div class="kanban-cards" id="cards-${estado}-${cat.id}"></div>`;
+                        carrilesDiv.appendChild(carril);
+                        const cont = carril.querySelector('.kanban-cards');
+                        tarjetasCat.forEach(ot => cont.innerHTML += generarCardKanban(ot));
+                        document.getElementById('count-' + estado).textContent = parseInt(document.getElementById('count-' + estado).textContent || 0) + tarjetasCat.length;
+                    }
+                });
+                const sinCat = filtradas.filter(ot => ot.estado === estado && !ot.categoria_id);
+                if (sinCat.length > 0) {
+                    const carril = document.createElement('div');
+                    carril.className = 'kanban-carril';
+                    carril.innerHTML = `<div class="kanban-carril-titulo">Otros (${sinCat.length})</div><div class="kanban-cards" id="cards-${estado}-otros"></div>`;
+                    carrilesDiv.appendChild(carril);
+                    sinCat.forEach(ot => carril.querySelector('.kanban-cards').innerHTML += generarCardKanban(ot));
+                    document.getElementById('count-' + estado).textContent = parseInt(document.getElementById('count-' + estado).textContent || 0) + sinCat.length;
                 }
             });
         }
@@ -1619,126 +1592,52 @@
             const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
             const tecnicoNombre = ot.tecnicos?.nombre || 'Sin asignar';
             let fechaEntregaInfo = '';
-            if (ot.fecha_entrega) {
-                const hoy = new Date().toISOString().split('T')[0];
-                const esRetrasada = ot.fecha_entrega < hoy && ['aprobada','en_taller'].includes(ot.estado);
-                fechaEntregaInfo = `<div style="font-size:11px; ${esRetrasada ? 'color:red;' : 'color:green;'}">
-                    📅 ${ot.fecha_entrega} ${esRetrasada ? '⚠️' : ''}
-                </div>`;
-            }
+            if (ot.fecha_entrega) { const hoy = new Date().toISOString().split('T')[0]; const esRetrasada = ot.fecha_entrega < hoy && ['aprobada','en_taller'].includes(ot.estado); fechaEntregaInfo = `<div style="font-size:11px; ${esRetrasada ? 'color:red;' : 'color:green;'}">📅 ${ot.fecha_entrega} ${esRetrasada ? '⚠️' : ''}</div>`; }
             let acciones = '';
-            if (ot.estado === 'aprobada') {
-                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
-            } else if (ot.estado === 'en_taller') {
-                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
-            } else if (ot.estado === 'completada') {
-                acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
-            } else {
-                acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
-            }
-            return `<div class="kanban-card" data-ot-id="${ot.id}" draggable="true">
-                <div class="card-placa">${escHtml(ot.placa)}</div>
-                <div class="card-cliente">${escHtml(clienteNombre)}</div>
-                <div class="card-codigo">${escHtml(ot.numero || ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>
-                ${fechaEntregaInfo}
-                <div class="card-actions">${acciones}</div>
-            </div>`;
+            if (ot.estado === 'aprobada') acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+            else if (ot.estado === 'en_taller') acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+            else if (ot.estado === 'completada') acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+            else acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+            return `<div class="kanban-card" data-ot-id="${ot.id}" draggable="true"><div class="card-placa">${escHtml(ot.placa)}</div><div class="card-cliente">${escHtml(clienteNombre)}</div><div class="card-codigo">${escHtml(ot.numero || ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>${fechaEntregaInfo}<div class="card-actions">${acciones}</div></div>`;
         }
 
-        document.addEventListener('dragstart', (e) => {
-            const card = e.target.closest('.kanban-card');
-            if (!card) return;
-            e.dataTransfer.setData('text/plain', card.dataset.otId);
-            card.classList.add('dragging');
-        });
-
-        document.addEventListener('dragover', (e) => {
-            const col = e.target.closest('.kanban-col');
-            if (col) { e.preventDefault(); col.classList.add('drag-over'); }
-        });
-
-        document.addEventListener('dragleave', (e) => {
-            const col = e.target.closest('.kanban-col');
-            if (col) col.classList.remove('drag-over');
-        });
-
-        document.addEventListener('drop', (e) => {
-            const col = e.target.closest('.kanban-col');
-            if (!col) return;
-            e.preventDefault();
-            col.classList.remove('drag-over');
-            const otId = e.dataTransfer.getData('text/plain');
-            const nuevoEstado = col.dataset.estado;
-            if (otId && nuevoEstado) moverOT(parseInt(otId), nuevoEstado);
-        });
-
-        document.addEventListener('dragend', (e) => {
-            const card = e.target.closest('.kanban-card');
-            if (card) card.classList.remove('dragging');
-            document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
-        });
+        document.addEventListener('dragstart', (e) => { const card = e.target.closest('.kanban-card'); if (!card) return; e.dataTransfer.setData('text/plain', card.dataset.otId); card.classList.add('dragging'); });
+        document.addEventListener('dragover', (e) => { const col = e.target.closest('.kanban-col'); if (col) { e.preventDefault(); col.classList.add('drag-over'); } });
+        document.addEventListener('dragleave', (e) => { const col = e.target.closest('.kanban-col'); if (col) col.classList.remove('drag-over'); });
+        document.addEventListener('drop', (e) => { const col = e.target.closest('.kanban-col'); if (!col) return; e.preventDefault(); col.classList.remove('drag-over'); const otId = e.dataTransfer.getData('text/plain'); const nuevoEstado = col.dataset.estado; if (otId && nuevoEstado) moverOT(parseInt(otId), nuevoEstado); });
+        document.addEventListener('dragend', (e) => { const card = e.target.closest('.kanban-card'); if (card) card.classList.remove('dragging'); document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over')); });
 
         async function moverOT(otId, nuevoEstado) {
-            const mensajes = {
-                en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
-                completada: '¿Marcar esta OT como Completada?',
-                cancelada: '¿Cancelar esta OT?'
-            };
+            const mensajes = { en_taller: '¿Iniciar esta OT (pasar a En Taller)?', completada: '¿Marcar esta OT como Completada?', cancelada: '¿Cancelar esta OT?' };
             if (!confirm(mensajes[nuevoEstado] || '¿Cambiar estado?')) return;
-            try {
-                const { error } = await sb.from('ot').update({ estado: nuevoEstado }).eq('id', otId);
-                if (error) throw error;
-                toast('Estado actualizado ✓', 'ok');
-                cargarTaller();
-                cargarDashboard();
-            } catch (e) { toast('Error: ' + e.message, 'err'); }
+            try { const { error } = await sb.from('ot').update({ estado: nuevoEstado }).eq('id', otId); if (error) throw error; toast('Estado actualizado ✓', 'ok'); cargarTaller(); cargarDashboard(); }
+            catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function abrirAsignar(otId) {
             otAsignarId = otId;
-            try {
-                const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
-                const select = document.getElementById('select-tecnico');
-                select.innerHTML = '<option value="">— Sin técnico —</option>';
-                tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
-                document.getElementById('mov-asignar').classList.add('open');
-            } catch (e) { toast('Error: ' + e.message, 'err'); }
+            try { const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre'); const select = document.getElementById('select-tecnico'); select.innerHTML = '<option value="">— Sin técnico —</option>'; tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`); document.getElementById('mov-asignar').classList.add('open'); }
+            catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         function cerrarAsignar() { document.getElementById('mov-asignar').classList.remove('open'); otAsignarId = null; }
 
         async function confirmarAsignacion() {
             const tecnicoId = document.getElementById('select-tecnico').value || null;
-            try {
-                const { error } = await sb.from('ot').update({ tecnico_id: tecnicoId }).eq('id', otAsignarId);
-                if (error) throw error;
-                toast(tecnicoId ? 'Técnico asignado ✓' : 'OT sin técnico asignado', 'ok');
-                cerrarAsignar();
-                cargarTaller();
-            } catch (e) { toast('Error: ' + e.message, 'err'); }
+            try { const { error } = await sb.from('ot').update({ tecnico_id: tecnicoId }).eq('id', otAsignarId); if (error) throw error; toast(tecnicoId ? 'Técnico asignado ✓' : 'OT sin técnico asignado', 'ok'); cerrarAsignar(); cargarTaller(); }
+            catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function verTrabajos(otId) {
             try {
-                const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single();
-                if (!ot) return;
-                const { data: otTrabajos, error } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-
+                const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single(); if (!ot) return;
+                const { data: otTrabajos, error } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId); if (error) { toast('Error: ' + error.message, 'err'); return; }
                 detalleOTActual = ot;
-                let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p>`;
-                html += `<p><strong>Folio:</strong> ${escHtml(ot.numero || ot.codigo || '')}</p>`;
-                html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p>`;
+                let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p><p><strong>Folio:</strong> ${escHtml(ot.numero || ot.codigo || '')}</p><p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p>`;
                 if (ot.fecha_entrega) html += `<p><strong>Fecha entrega:</strong> ${ot.fecha_entrega}</p>`;
-                html += `<hr>`;
-                html += `<h4>Lista de trabajos:</h4>`;
+                html += `<hr><h4>Lista de trabajos:</h4>`;
                 if (otTrabajos.length === 0) html += `<p>No hay trabajos registrados.</p>`;
-                else {
-                    html += `<ul style="margin-left:20px;">`;
-                    otTrabajos.forEach(item => html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`);
-                    html += `</ul>`;
-                }
-
+                else { html += `<ul style="margin-left:20px;">`; otTrabajos.forEach(item => html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`); html += `</ul>`; }
                 document.getElementById('detalle-titulo').textContent = 'Detalle de ' + (ot.numero || ot.codigo || ot.id);
                 document.getElementById('detalle-contenido').innerHTML = html;
                 document.getElementById('mov-detalle-ot').classList.add('open');
@@ -1757,37 +1656,21 @@
                 let html = '';
                 todosTrabajos.forEach(t => {
                     const selected = otTrabajos.some(ot => ot.trabajo_id === t.id);
-                    html += `<div class="chk-flujo-item">
-                        <input type="checkbox" class="chk-flujo-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" ${selected ? 'checked' : ''}>
-                        <span>${escHtml(t.nombre)} — $${t.precio_base || 0}</span>
-                    </div>`;
+                    html += `<div class="chk-flujo-item"><input type="checkbox" class="chk-flujo-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" ${selected ? 'checked' : ''}><span>${escHtml(t.nombre)} — $${t.precio_base || 0}</span></div>`;
                 });
                 document.getElementById('editar-flujo-body').innerHTML = html;
                 document.getElementById('mov-editar-flujo').classList.add('open');
             });
         }
 
-        function cerrarEditarFlujo() {
-            document.getElementById('mov-editar-flujo').classList.remove('open');
-            otEditarFlujoId = null;
-        }
+        function cerrarEditarFlujo() { document.getElementById('mov-editar-flujo').classList.remove('open'); otEditarFlujoId = null; }
 
         async function guardarFlujoOT() {
             const otId = otEditarFlujoId;
-            const seleccionados = Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(chk => ({
-                trabajo_id: parseInt(chk.value),
-                precio: parseFloat(chk.dataset.precio || 0)
-            }));
+            const seleccionados = Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(chk => ({ trabajo_id: parseInt(chk.value), precio: parseFloat(chk.dataset.precio || 0) }));
             if (seleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
-            try {
-                await sb.from('ot_trabajos').delete().eq('ot_id', otId);
-                for (const t of seleccionados) await sb.from('ot_trabajos').insert({ ot_id: otId, trabajo_id: t.trabajo_id, precio: t.precio });
-                const costoTotal = seleccionados.reduce((sum, t) => sum + t.precio, 0);
-                await sb.from('ot').update({ costo_total: costoTotal }).eq('id', otId);
-                toast('Flujo actualizado ✓', 'ok');
-                cerrarEditarFlujo();
-                cargarTaller();
-            } catch (e) { toast('Error: ' + e.message, 'err'); }
+            try { await sb.from('ot_trabajos').delete().eq('ot_id', otId); for (const t of seleccionados) await sb.from('ot_trabajos').insert({ ot_id: otId, trabajo_id: t.trabajo_id, precio: t.precio }); const costoTotal = seleccionados.reduce((sum, t) => sum + t.precio, 0); await sb.from('ot').update({ costo_total: costoTotal }).eq('id', otId); toast('Flujo actualizado ✓', 'ok'); cerrarEditarFlujo(); cargarTaller(); }
+            catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         async function cargarAgenciasFactura() {
@@ -1802,28 +1685,12 @@
             const cont = document.getElementById('factura-ot-lista');
             cont.innerHTML = '';
             if (!agenciaId) return;
-
-            const { data: ots } = await sb.from('ot')
-                .select('*, marcas(nombre), modelos(nombre), clientes(nombre)')
-                .eq('agencia_id', agenciaId)
-                .eq('estado', 'completada')
-                .is('factura_id', null)
-                .order('updated_at', { ascending: false });
-
+            const { data: ots } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre)').eq('agencia_id', agenciaId).eq('estado', 'completada').is('factura_id', null).order('updated_at', { ascending: false });
             if (ots.length === 0) { cont.innerHTML = '<p style="color:#888;">No hay OTs completadas sin facturar para esta agencia.</p>'; return; }
-
-            cont.innerHTML = `<table>
-                <thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead>
-                <tbody>${ots.map(ot => `
-                    <tr><td><input type="checkbox" class="chk-ot-factura" value="${ot.id}"></td><td>${escHtml(ot.numero || ot.codigo)}</td><td>${escHtml(ot.placa)}</td><td>${escHtml(ot.marcas?.nombre || '')} ${escHtml(ot.modelos?.nombre || '')}</td><td>$${ot.costo_total || 0}</td></tr>`).join('')}
-                </tbody>
-            </table>`;
+            cont.innerHTML = `<table><thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead><tbody>${ots.map(ot => `<tr><td><input type="checkbox" class="chk-ot-factura" value="${ot.id}"></td><td>${escHtml(ot.numero || ot.codigo)}</td><td>${escHtml(ot.placa)}</td><td>${escHtml(ot.marcas?.nombre || '')} ${escHtml(ot.modelos?.nombre || '')}</td><td>$${ot.costo_total || 0}</td></tr>`).join('')}</tbody></table>`;
         }
 
-        function toggleAllOT() {
-            const all = document.getElementById('check-all-ot').checked;
-            document.querySelectorAll('.chk-ot-factura').forEach(c => c.checked = all);
-        }
+        function toggleAllOT() { const all = document.getElementById('check-all-ot').checked; document.querySelectorAll('.chk-ot-factura').forEach(c => c.checked = all); }
 
         async function asignarFactura() {
             const agenciaId = document.getElementById('factura-agencia').value;
@@ -1846,28 +1713,13 @@
         }
 
         async function cargarConciliacion() {
-            const cont = document.getElementById('conciliacion-tabla');
-            cont.innerHTML = '<p>Cargando...</p>';
+            const cont = document.getElementById('conciliacion-tabla'); cont.innerHTML = '<p>Cargando...</p>';
             const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
             let html = '<table><thead><tr><th>Agencia</th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Estado</th><th>Total</th><th>Factura</th></tr></thead><tbody>';
             for (const ag of agencias) {
-                const { data: ots } = await sb.from('ot')
-                    .select('*, marcas(nombre), modelos(nombre), facturas(numero)')
-                    .eq('agencia_id', ag.id)
-                    .neq('estado', 'cancelada')
-                    .order('created_at', { ascending: false });
+                const { data: ots } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), facturas(numero)').eq('agencia_id', ag.id).neq('estado', 'cancelada').order('created_at', { ascending: false });
                 if (!ots || ots.length === 0) continue;
-                ots.forEach(ot => {
-                    html += '<tr>'
-                        + '<td>' + escHtml(ag.nombre) + '</td>'
-                        + '<td>' + escHtml(ot.numero || ot.codigo || '') + '</td>'
-                        + '<td>' + escHtml(ot.placa || '') + '</td>'
-                        + '<td>' + escHtml((ot.marcas?.nombre || '') + ' ' + (ot.modelos?.nombre || '')) + '</td>'
-                        + '<td>' + escHtml(ot.estado || '') + '</td>'
-                        + '<td>$' + (ot.costo_total || 0) + '</td>'
-                        + '<td>' + (ot.facturas?.numero ? escHtml(ot.facturas.numero) : '<span style="color:#888;">Pendiente</span>') + '</td>'
-                        + '</tr>';
-                });
+                ots.forEach(ot => { html += `<tr><td>${escHtml(ag.nombre)}</td><td>${escHtml(ot.numero || ot.codigo || '')}</td><td>${escHtml(ot.placa || '')}</td><td>${escHtml((ot.marcas?.nombre || '') + ' ' + (ot.modelos?.nombre || ''))}</td><td>${escHtml(ot.estado || '')}</td><td>$${ot.costo_total || 0}</td><td>${ot.facturas?.numero ? escHtml(ot.facturas.numero) : '<span style="color:#888;">Pendiente</span>'}</td></tr>`; });
             }
             html += '</tbody></table>';
             cont.innerHTML = html;
@@ -1875,10 +1727,7 @@
 
         function exportarConciliacion() {
             const rows = [];
-            document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr => {
-                const cells = Array.from(tr.children).map(td => td.textContent.trim());
-                rows.push({ Agencia: cells[0], Folio: cells[1], Placa: cells[2], 'Marca/Modelo': cells[3], Estado: cells[4], Total: cells[5], Factura: cells[6] });
-            });
+            document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr => { const cells = Array.from(tr.children).map(td => td.textContent.trim()); rows.push({ Agencia: cells[0], Folio: cells[1], Placa: cells[2], 'Marca/Modelo': cells[3], Estado: cells[4], Total: cells[5], Factura: cells[6] }); });
             const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Conciliación');
@@ -1889,30 +1738,11 @@
             const unidades = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
             const decenas = ['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
             const centenas = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
-            function grupo(n) {
-                if(n === 0) return '';
-                if(n === 100) return 'CIEN';
-                let r = '';
-                const c = Math.floor(n/100), d = Math.floor((n%100)/10), u = n%10;
-                if(c) r += centenas[c] + ' ';
-                if(n%100 < 20 && n%100 > 0) r += unidades[n%100];
-                else { if(d) r += decenas[d] + (u?' Y ':''); if(u) r += unidades[u]; }
-                return r.trim();
-            }
-            const entero = Math.floor(numero);
-            const centavos = Math.round((numero - entero) * 100);
-            let texto = '';
-            const millones = Math.floor(entero/1000000);
-            const miles = Math.floor((entero%1000000)/1000);
-            const resto = entero % 1000;
+            function grupo(n) { if(n === 0) return ''; if(n === 100) return 'CIEN'; let r = ''; const c = Math.floor(n/100), d = Math.floor((n%100)/10), u = n%10; if(c) r += centenas[c] + ' '; if(n%100 < 20 && n%100 > 0) r += unidades[n%100]; else { if(d) r += decenas[d] + (u?' Y ':''); if(u) r += unidades[u]; } return r.trim(); }
+            const entero = Math.floor(numero); const centavos = Math.round((numero - entero) * 100); let texto = '';
+            const millones = Math.floor(entero/1000000); const miles = Math.floor((entero%1000000)/1000); const resto = entero % 1000;
             if(entero === 0) texto = 'CERO';
-            else {
-                if(millones === 1) texto += 'UN MILLÓN ';
-                else if(millones > 1) texto += grupo(millones) + ' MILLONES ';
-                if(miles === 1) texto += 'MIL ';
-                else if(miles > 1) texto += grupo(miles) + ' MIL ';
-                if(resto) texto += grupo(resto);
-            }
+            else { if(millones === 1) texto += 'UN MILLÓN '; else if(millones > 1) texto += grupo(millones) + ' MILLONES '; if(miles === 1) texto += 'MIL '; else if(miles > 1) texto += grupo(miles) + ' MIL '; if(resto) texto += grupo(resto); }
             return `${texto.trim()} PESOS ${String(centavos).padStart(2,'0')}/100 M.N.`;
         }
 
@@ -1922,31 +1752,22 @@
                 if (e1) { toast('Error: ' + e1.message, 'err'); return; }
                 const { data: items, error: e2 } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
                 if (e2) { toast('Error: ' + e2.message, 'err'); return; }
-
                 const cliente = ot.cliente_tipo === 'agencia' ? ot.agencias : ot.clientes;
                 const doc = new jspdf.jsPDF('p', 'mm', 'a4');
-                const M = 15;
-                let finalY = M;
-
+                const M = 15; let finalY = M;
                 if (CONFIG.logo_base64) { doc.addImage(CONFIG.logo_base64, 'PNG', M, M, 55, 18); finalY = M + 22; }
                 else { doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text(CONFIG.empresa_nombre || 'Taller', M, M + 8); finalY = M + 14; }
-
                 doc.setFontSize(9); doc.setFont('helvetica', 'normal');
                 doc.text(CONFIG.empresa_rfc || '', M, finalY); finalY += 4;
                 doc.text(CONFIG.empresa_direccion || '', M, finalY); finalY += 4;
                 doc.text(`${CONFIG.empresa_telefono || ''} · ${CONFIG.empresa_email || ''}`, M, finalY); finalY += 4;
                 doc.text(CONFIG.empresa_web || '', M, finalY);
-
                 finalY = M + 30;
                 doc.setFillColor(10, 15, 44); doc.rect(M, finalY, 180, 8, 'F');
                 doc.setTextColor(255); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
                 doc.text('COTIZACIÓN', M + 2, finalY + 5.5); doc.setTextColor(0); finalY += 14;
-
-                const boxY = finalY;
-                doc.setDrawColor(0);
-                doc.roundedRect(M, boxY, 90, 30, 2, 2); doc.roundedRect(105, boxY, 90, 30, 2, 2);
-                doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-                doc.text('CLIENTE', M + 2, boxY + 5); doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
+                const boxY = finalY; doc.setDrawColor(0); doc.roundedRect(M, boxY, 90, 30, 2, 2); doc.roundedRect(105, boxY, 90, 30, 2, 2);
+                doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.text('CLIENTE', M + 2, boxY + 5); doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
                 doc.setFont('helvetica', 'normal');
                 doc.text(ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || ''), M + 2, boxY + 12);
                 doc.text(cliente?.telefono || '', M + 2, boxY + 16);
@@ -1957,31 +1778,17 @@
                 doc.text('Vigencia: ' + (ot.vigencia || ''), 107, boxY + 20);
                 doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
                 finalY = boxY + 35;
-
                 doc.setFillColor(240, 240, 240); doc.rect(M, finalY, 180, 7, 'F');
-                doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-                doc.text('DATOS DEL VEHÍCULO', M + 2, finalY + 5); finalY += 11;
-                doc.setFont('helvetica', 'normal');
-                doc.text('Placa: ' + (ot.placa || ''), M + 2, finalY);
-                doc.text('Marca: ' + (ot.marcas?.nombre || ''), M + 50, finalY);
-                doc.text('Modelo: ' + (ot.modelos?.nombre || ''), M + 100, finalY); finalY += 5;
-                doc.text('Año: ' + (ot.anio || ''), M + 2, finalY);
-                doc.text('Color: ' + (ot.color || ''), M + 50, finalY); finalY += 8;
-
+                doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.text('DATOS DEL VEHÍCULO', M + 2, finalY + 5); finalY += 11;
+                doc.setFont('helvetica', 'normal'); doc.text('Placa: ' + (ot.placa || ''), M + 2, finalY); doc.text('Marca: ' + (ot.marcas?.nombre || ''), M + 50, finalY); doc.text('Modelo: ' + (ot.modelos?.nombre || ''), M + 100, finalY); finalY += 5; doc.text('Año: ' + (ot.anio || ''), M + 2, finalY); doc.text('Color: ' + (ot.color || ''), M + 50, finalY); finalY += 8;
                 const tableBody = items.map((it, i) => [i+1, it.trabajos?.nombre || '', it.cantidad || 1, it.precio || 0, it.importe || it.precio || 0]);
                 doc.autoTable({ startY: finalY, head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']], body: tableBody, theme: 'striped', headStyles: { fillColor: [10, 15, 44] }, styles: { fontSize: 9 }, margin: { left: M, right: M } });
                 finalY = doc.lastAutoTable.finalY + 5;
-
                 const total = ot.costo_total || 0;
                 doc.text('Subtotal: $' + total.toFixed(2), 130, finalY); finalY += 5;
                 doc.text('TOTAL: $' + total.toFixed(2), 130, finalY); finalY += 8;
-
-                doc.setFont('helvetica', 'italic');
-                doc.text('Son: ' + numeroALetras(total), M, finalY); finalY += 10;
-
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-                doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 }); finalY += 20;
-
+                doc.setFont('helvetica', 'italic'); doc.text('Son: ' + numeroALetras(total), M, finalY); finalY += 10;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 }); finalY += 20;
                 doc.setFillColor(10, 15, 44); doc.rect(0, 285, 210, 12, 'F');
                 doc.setTextColor(255); doc.text(CONFIG.empresa_nombre || 'Taller', 105, 293, { align: 'center' });
                 doc.save(ot.numero + '.pdf');
@@ -2024,11 +1831,7 @@
             cont.innerHTML = '';
             if (!tecnicoId) return;
             try {
-                const { data, error } = await sb.from('ot')
-                    .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
-                    .eq('tecnico_id', tecnicoId)
-                    .in('estado', ['aprobada', 'en_taller'])
-                    .order('updated_at', { ascending: false });
+                const { data, error } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('tecnico_id', tecnicoId).in('estado', ['aprobada', 'en_taller']).order('updated_at', { ascending: false });
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 if (data.length === 0) { cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>'; return; }
                 data.forEach(ot => {
