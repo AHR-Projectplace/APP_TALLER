@@ -46,7 +46,6 @@
             line-height: 1.5;
         }
 
-        /* Botones */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 10px 16px; border: 1px solid var(--sf-border);
@@ -63,7 +62,6 @@
         .btn-block { width: 100%; }
         .btn-sm { padding: 6px 10px; font-size: 12px; min-height: 32px; }
 
-        /* Inputs */
         .inp {
             width: 100%; padding: 10px 12px; border: 1px solid var(--sf-border);
             border-radius: var(--r); font-size: 14px; font-family: inherit;
@@ -73,10 +71,8 @@
 
         .flbl { display: block; margin-bottom: 6px; font-weight: 500; color: var(--sf-text-secondary); }
 
-        /* Tarjetas */
         .card { background: var(--surface); border: 1px solid var(--sf-border); border-radius: var(--r); padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* Stats */
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -102,13 +98,11 @@
             color: var(--sf-blue);
         }
 
-        /* Auth */
         .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
         .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .auth-logo { text-align: center; margin-bottom: 24px; }
         .auth-logo h1 { font-size: 22px; font-weight: 600; color: var(--sf-blue); }
 
-        /* App layout */
         #app { display: none; }
         .topbar {
             background: var(--sf-white); border-bottom: 1px solid var(--sf-border);
@@ -143,13 +137,11 @@
         .page-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; }
         .page-desc { color: var(--sf-text-secondary); margin-bottom: 20px; }
 
-        /* Tablas */
         table { width: 100%; border-collapse: collapse; background: var(--sf-white); border-radius: var(--r); overflow: hidden; }
         th { background: var(--sf-gray-10); text-align: left; padding: 12px 16px; font-weight: 600; color: var(--sf-text); border-bottom: 1px solid var(--sf-border); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--sf-border); }
         tr:last-child td { border-bottom: none; }
 
-        /* Modales */
         .mov { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
         .mov.open { display: flex; }
         .mo { background: var(--sf-white); border-radius: 12px; width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -157,11 +149,9 @@
         .mob { margin-bottom: 20px; }
         .mof { display: flex; justify-content: flex-end; gap: 10px; }
 
-        /* Toast */
         #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 9999; }
         #toast.show { opacity: 1; }
 
-        /* Kanban */
         .kanban-board {
             display: flex;
             gap: 16px;
@@ -174,6 +164,12 @@
             min-width: 260px;
             flex: 1;
             padding: 12px;
+            transition: background 0.2s, border 0.2s;
+            border: 2px solid transparent;
+        }
+        .kanban-col.drag-over {
+            border-color: var(--sf-blue);
+            background: var(--sf-blue-light);
         }
         .kanban-col-header {
             font-weight: 600;
@@ -198,6 +194,13 @@
             border-radius: var(--r);
             padding: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: grab;
+            touch-action: none; /* para que el drag funcione en touch */
+            transition: box-shadow 0.2s, opacity 0.2s;
+        }
+        .kanban-card.dragging {
+            opacity: 0.5;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         .kanban-card .card-placa {
             font-weight: 700;
@@ -219,6 +222,7 @@
             gap: 4px;
             flex-wrap: wrap;
         }
+
         .filtro-kanban {
             margin-bottom: 16px;
             display: flex;
@@ -226,7 +230,6 @@
             align-items: center;
         }
 
-        /* Tabs en Administración */
         .tabs {
             display: flex;
             gap: 4px;
@@ -255,7 +258,6 @@
             display: block;
         }
 
-        /* Consulta técnica */
         .consulta-tecnico-wrap {
             max-width: 800px;
             margin: 40px auto;
@@ -451,14 +453,14 @@
                 <!-- Kanban Taller -->
                 <div id="view-taller" class="view" style="display:none;">
                     <h2 class="page-title">Taller — Tablero Kanban</h2>
-                    <p class="page-desc">Visualiza y gestiona el avance de los vehículos.</p>
+                    <p class="page-desc">Arrastra las tarjetas para cambiar su estado o usa los botones.</p>
                     <div class="filtro-kanban">
                         <label class="flbl" style="margin:0;">Filtrar por técnico:</label>
                         <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()">
                             <option value="">Todos</option>
                         </select>
                     </div>
-                    <div class="kanban-board">
+                    <div class="kanban-board" id="kanban-board">
                         <div class="kanban-col" data-estado="aprobada">
                             <div class="kanban-col-header">Aprobadas <span class="count" id="count-aprobada">0</span></div>
                             <div class="kanban-cards" id="cards-aprobada"></div>
@@ -478,7 +480,7 @@
                     </div>
                 </div>
 
-                <!-- Administración (con pestañas) -->
+                <!-- Administración -->
                 <div id="view-admin" class="view" style="display:none;">
                     <h2 class="page-title">Administración</h2>
                     <p class="page-desc">Gestiona catálogos, técnicos y usuarios del sistema.</p>
@@ -604,7 +606,7 @@
         </div>
     </div>
 
-    <!-- MODAL ASIGNAR TÉCNICO (desde Kanban) -->
+    <!-- MODAL ASIGNAR TÉCNICO -->
     <div class="mov" id="mov-asignar">
         <div class="mo">
             <div class="moh">Asignar Técnico</div>
@@ -639,7 +641,7 @@
         </div>
     </div>
 
-    <!-- MODAL CREAR USUARIO (admin/recepcionista/jefe) -->
+    <!-- MODAL CREAR USUARIO -->
     <div class="mov" id="mov-usuario">
         <div class="mo">
             <div class="moh">Nuevo Usuario</div>
@@ -663,6 +665,17 @@
             <div class="mof">
                 <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
                 <button class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE OT (trabajos) -->
+    <div class="mov" id="mov-detalle-ot">
+        <div class="mo">
+            <div class="moh" id="detalle-titulo">Detalle de trabajos</div>
+            <div class="mob" id="detalle-contenido"></div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarDetalleOT()">Cerrar</button>
             </div>
         </div>
     </div>
@@ -762,15 +775,11 @@
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
-            // Ocultar Administración si el rol no tiene permisos (solo admin, jefe, recepción)
             const rol = PERFIL?.rol;
             if (rol === 'tecnico') {
-                // Los técnicos no acceden a la app completa (solo consulta pública)
-                // Aquí no debería pasar, pero por seguridad cerramos sesión.
                 sb.auth.signOut();
                 return;
             }
-            // Mostrar todo (según RLS)
             sv('dashboard');
             cargarDashboard();
         }
@@ -806,7 +815,7 @@
             document.getElementById('stat-facturas').textContent = 0;
         }
 
-        // ============ CRUD GENÉRICO (catálogos) ============
+        // ============ CRUD GENÉRICO ============
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
@@ -897,7 +906,6 @@
                     toast('Creado ✓', 'ok');
                 }
                 cerrarModal();
-                // Recargar el tab correspondiente si estamos en admin
                 if (document.getElementById('view-admin').style.display !== 'none') {
                     cargarAdmin();
                 } else {
@@ -908,7 +916,7 @@
             }
         });
 
-        // ============ CARGA DE CATÁLOGOS (para tabs) ============
+        // ============ CARGA DE CATÁLOGOS ============
         async function cargarMarcas() {
             const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
             if (error) { toast('Error: ' + error.message, 'err'); return; }
@@ -1023,10 +1031,9 @@
             );
         }
 
-        // ============ ADMINISTRACIÓN (tabs) ============
+        // ============ ADMINISTRACIÓN ============
         async function cargarAdmin() {
             const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'marcas';
-            // Cargar todos los datos de los tabs
             await Promise.all([
                 cargarMarcas(),
                 cargarModelos(),
@@ -1095,7 +1102,6 @@
                 toast('Técnico creado ✓', 'ok');
                 cerrarModalTecnico();
                 if (origenTecnico === 'asignar') {
-                    // Recargar select de asignación
                     const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
                     const select = document.getElementById('select-tecnico');
                     select.innerHTML = '<option value="">— Sin técnico —</option>';
@@ -1131,15 +1137,14 @@
             }, 'Sí, cambiar');
         }
 
-        // ============ USUARIOS (gestión de cuentas) ============
+        // ============ USUARIOS ============
         async function cargarUsuarios() {
             const { data, error } = await sb.from('perfiles').select('*').order('nombre');
             if (error) { toast('Error: ' + error.message, 'err'); return; }
             const tbody = document.getElementById('tabla-usuarios');
             tbody.innerHTML = '';
             data.forEach(u => {
-                // Mostrar solo usuarios con rol admin, recepcionista, jefe_taller (excluir técnico si existiera, pero técnico no tiene cuenta)
-                if (u.rol === 'tecnico') return; // técnicos no tienen cuenta
+                if (u.rol === 'tecnico') return;
                 tbody.innerHTML += `<tr>
                     <td>${u.id}</td>
                     <td>${escHtml(u.nombre)}</td>
@@ -1182,7 +1187,6 @@
             }
 
             try {
-                // 1. Crear usuario en Supabase Auth
                 const { data: user, error: errAuth } = await sb.auth.signUp({
                     email: email,
                     password: pass,
@@ -1191,7 +1195,6 @@
                 if (errAuth) throw errAuth;
                 if (!user?.id) throw new Error('No se pudo crear el usuario');
 
-                // 2. Insertar perfil con rol
                 const { error: errPerfil } = await sb.from('perfiles').insert({
                     id: user.id,
                     nombre: nombre,
@@ -1522,6 +1525,9 @@
                     document.getElementById('count-' + ot.estado).textContent = col.children.length;
                 }
             });
+
+            // Inicializar drag & drop en las nuevas tarjetas
+            inicializarDragDrop();
         }
 
         function generarCardKanban(ot) {
@@ -1533,21 +1539,25 @@
                     <button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button>
                     <button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button>
                     <button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button>
+                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>
                 `;
             } else if (ot.estado === 'en_taller') {
                 acciones = `
                     <button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button>
                     <button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button>
                     <button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button>
+                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>
                 `;
             } else if (ot.estado === 'completada') {
-                acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span>`;
+                acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span>
+                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else {
-                acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span>`;
+                acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span>
+                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             }
 
             return `
-                <div class="kanban-card">
+                <div class="kanban-card" data-ot-id="${ot.id}" draggable="true">
                     <div class="card-placa">${escHtml(ot.placa)}</div>
                     <div class="card-cliente">${escHtml(clienteNombre)}</div>
                     <div class="card-codigo">${escHtml(ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>
@@ -1556,52 +1566,136 @@
             `;
         }
 
-        async function abrirAsignar(otId) {
-            otAsignarId = otId;
-            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
-            const select = document.getElementById('select-tecnico');
-            select.innerHTML = '<option value="">— Sin técnico —</option>';
-            tecnicos.forEach(t => {
-                select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
+        // ============ DRAG & DROP (mouse y touch) ============
+        function inicializarDragDrop() {
+            const cards = document.querySelectorAll('.kanban-card');
+            cards.forEach(card => {
+                card.removeEventListener('pointerdown', handlePointerDown);
+                card.addEventListener('pointerdown', handlePointerDown);
             });
-            document.getElementById('mov-asignar').classList.add('open');
+
+            const cols = document.querySelectorAll('.kanban-col');
+            cols.forEach(col => {
+                col.removeEventListener('pointerover', handlePointerOver);
+                col.removeEventListener('pointerout', handlePointerOut);
+                col.removeEventListener('pointerup', handlePointerUp);
+                col.addEventListener('pointerover', handlePointerOver);
+                col.addEventListener('pointerout', handlePointerOut);
+                col.addEventListener('pointerup', handlePointerUp);
+            });
         }
 
-        function cerrarAsignar() {
-            document.getElementById('mov-asignar').classList.remove('open');
-            otAsignarId = null;
+        let draggedCard = null;
+        let dragClone = null;
+        let startX, startY;
+
+        function handlePointerDown(e) {
+            if (e.target.closest('.btn')) return; // no arrastrar si se hace clic en botón
+            draggedCard = e.target.closest('.kanban-card');
+            if (!draggedCard) return;
+
+            e.preventDefault();
+            startX = e.clientX;
+            startY = e.clientY;
+
+            // Crear clone visual
+            dragClone = draggedCard.cloneNode(true);
+            dragClone.classList.add('dragging');
+            dragClone.style.position = 'absolute';
+            dragClone.style.width = draggedCard.offsetWidth + 'px';
+            dragClone.style.zIndex = 1000;
+            document.body.appendChild(dragClone);
+            moveClone(e.clientX, e.clientY);
+
+            // Eventos globales
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUpGlobal);
         }
 
-        async function confirmarAsignacion() {
-            const tecnicoId = document.getElementById('select-tecnico').value || null;
-            try {
-                const { error } = await sb.from('ot').update({ tecnico_id: tecnicoId }).eq('id', otAsignarId);
-                if (error) throw error;
-                toast(tecnicoId ? 'Técnico asignado ✓' : 'OT sin técnico asignado', 'ok');
-                cerrarAsignar();
-                cargarTaller();
-            } catch (e) {
-                toast('Error: ' + e.message, 'err');
-            }
+        function handlePointerMove(e) {
+            if (!dragClone) return;
+            moveClone(e.clientX, e.clientY);
+
+            // Detectar columna bajo el cursor
+            const col = document.elementFromPoint(e.clientX, e.clientY)?.closest('.kanban-col');
+            document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+            if (col) col.classList.add('drag-over');
         }
 
-        async function moverOT(otId, nuevoEstado) {
-            const acciones = {
-                en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
-                completada: '¿Marcar esta OT como Completada?',
-                cancelada: '¿Cancelar esta OT?'
-            };
-            abrirConfirm(acciones[nuevoEstado] || '¿Cambiar estado?', async () => {
-                try {
-                    const { error } = await sb.from('ot').update({ estado: nuevoEstado }).eq('id', otId);
-                    if (error) throw error;
-                    toast('Estado actualizado ✓', 'ok');
-                    cargarTaller();
-                    cargarDashboard();
-                } catch (e) {
-                    toast('Error: ' + e.message, 'err');
+        function handlePointerUpGlobal(e) {
+            if (!dragClone) return;
+
+            const col = document.elementFromPoint(e.clientX, e.clientY)?.closest('.kanban-col');
+            if (col) {
+                const nuevoEstado = col.dataset.estado;
+                const otId = draggedCard.dataset.otId;
+                if (otId && nuevoEstado) {
+                    moverOT(otId, nuevoEstado);
                 }
-            }, 'Sí, cambiar');
+            }
+
+            // Limpiar
+            if (dragClone) dragClone.remove();
+            dragClone = null;
+            draggedCard = null;
+            document.removeEventListener('pointermove', handlePointerMove);
+            document.removeEventListener('pointerup', handlePointerUpGlobal);
+            document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+        }
+
+        function moveClone(x, y) {
+            if (!dragClone) return;
+            dragClone.style.left = (x - dragClone.offsetWidth / 2) + 'px';
+            dragClone.style.top = (y - dragClone.offsetHeight / 2) + 'px';
+        }
+
+        function handlePointerOver(e) {
+            // Ya se maneja en pointermove
+        }
+
+        function handlePointerOut(e) {
+            // No necesario
+        }
+
+        function handlePointerUp(e) {
+            // Ya se maneja en pointerup global
+        }
+
+        // ============ VER TRABAJOS (detalle OT) ============
+        async function verTrabajos(otId) {
+            // Obtener datos de la OT
+            const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single();
+            if (!ot) return;
+
+            // Obtener trabajos de la OT desde ot_trabajos
+            const { data: otTrabajos, error } = await sb.from('ot_trabajos')
+                .select('*, trabajos(nombre)')
+                .eq('ot_id', otId);
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+
+            // Construir contenido
+            let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p>`;
+            html += `<p><strong>Código:</strong> ${escHtml(ot.codigo || '')}</p>`;
+            html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p>`;
+            html += `<hr>`;
+            html += `<h4>Lista de trabajos:</h4>`;
+            if (otTrabajos.length === 0) {
+                html += `<p>No hay trabajos registrados.</p>`;
+            } else {
+                html += `<ul style="margin-left:20px;">`;
+                otTrabajos.forEach(item => {
+                    html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`;
+                });
+                html += `</ul>`;
+            }
+
+            document.getElementById('detalle-titulo').textContent = 'Detalle de OT ' + (ot.codigo || ot.id);
+            document.getElementById('detalle-contenido').innerHTML = html;
+            document.getElementById('mov-detalle-ot').classList.add('open');
+        }
+
+        function cerrarDetalleOT() {
+            document.getElementById('mov-detalle-ot').classList.remove('open');
         }
 
         // ============ CONSULTA PÚBLICA PARA TÉCNICO ============
