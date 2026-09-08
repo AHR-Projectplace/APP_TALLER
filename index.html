@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taller Hojalatería y Pintura — Sistema de Gestión</title>
     
-    <!-- Fuente estilo Salesforce (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Supabase JS (CDN) -->
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
     <style>
@@ -158,7 +155,6 @@
         .badge-completada { background: var(--sf-gray-40); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
         .badge-cancelada { background: var(--sf-error); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
 
-        /* Kanban */
         .kanban-board {
             display: flex;
             gap: 16px;
@@ -217,6 +213,16 @@
             flex-wrap: wrap;
         }
 
+        .filtro-kanban {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .filtro-kanban select {
+            max-width: 250px;
+        }
+
         .mis-tareas-list {
             display: flex;
             flex-direction: column;
@@ -230,6 +236,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* Estilos para la consulta pública de técnico */
+        .consulta-tecnico-wrap {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .consulta-tecnico-card {
+            background: var(--sf-white);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -250,9 +269,32 @@
                 <br><br>
                 <button class="btn btn-primary btn-block" type="submit">Iniciar sesión</button>
             </form>
+            <div style="text-align:center; margin-top:16px;">
+                <button class="btn btn-block" onclick="abrirConsultaTecnico()">🔍 Soy técnico, ver mis tareas</button>
+            </div>
             <p style="text-align:center; margin-top:16px; font-size:12px; color:var(--sf-text-secondary);">
                 ¿No tienes cuenta? Contacta al administrador.
             </p>
+        </div>
+    </div>
+
+    <!-- CONSULTA PÚBLICA PARA TÉCNICO (sin login) -->
+    <div id="consulta-tecnico-wrap" style="display:none;">
+        <div class="consulta-tecnico-card">
+            <h2 style="margin-bottom:16px;">Consulta de tareas</h2>
+            <p style="margin-bottom:16px; color:var(--sf-text-secondary);">Selecciona tu nombre para ver tus trabajos asignados.</p>
+            <div class="form-row">
+                <div class="form-col">
+                    <label class="flbl">Técnico</label>
+                    <select class="inp" id="select-consulta-tecnico" onchange="cargarTareasConsulta()">
+                        <option value="">Selecciona...</option>
+                    </select>
+                </div>
+                <div class="form-col" style="display:flex; align-items:flex-end;">
+                    <button class="btn" onclick="cerrarConsultaTecnico()">Volver al login</button>
+                </div>
+            </div>
+            <div id="consulta-tareas-lista" style="margin-top:20px;"></div>
         </div>
     </div>
 
@@ -268,7 +310,7 @@
                 <a class="nav-item" data-view="nueva-ot">Nueva Cotización</a>
                 <a class="nav-item" data-view="cotizaciones">Cotizaciones</a>
                 <a class="nav-item" data-view="taller" id="nav-taller">Taller (Kanban)</a>
-                <a class="nav-item" data-view="mis-tareas" id="nav-mis-tareas" style="display:none;">Mis Tareas</a>
+                <a class="nav-item" data-view="tecnicos" id="nav-tecnicos">Técnicos</a>
                 <a class="nav-item" data-view="marcas">Marcas</a>
                 <a class="nav-item" data-view="modelos">Modelos</a>
                 <a class="nav-item" data-view="trabajos">Trabajos</a>
@@ -393,10 +435,16 @@
                     </table>
                 </div>
 
-                <!-- Kanban Taller -->
+                <!-- Kanban Taller con filtro -->
                 <div id="view-taller" class="view" style="display:none;">
                     <h2 class="page-title">Taller — Tablero Kanban</h2>
-                    <p class="page-desc">Arrastra mentalmente los autos según su avance. Usa los botones para cambiar de estado.</p>
+                    <p class="page-desc">Visualiza y gestiona el avance de los vehículos.</p>
+                    <div class="filtro-kanban">
+                        <label class="flbl" style="margin:0;">Filtrar por técnico:</label>
+                        <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
                     <div class="kanban-board">
                         <div class="kanban-col" data-estado="aprobada">
                             <div class="kanban-col-header">Aprobadas <span class="count" id="count-aprobada">0</span></div>
@@ -417,14 +465,21 @@
                     </div>
                 </div>
 
-                <!-- Mis Tareas (Técnico) -->
-                <div id="view-mis-tareas" class="view" style="display:none;">
-                    <h2 class="page-title">Mis Tareas</h2>
-                    <p class="page-desc">Estas son las órdenes de trabajo asignadas a ti.</p>
-                    <div id="mis-tareas-list" class="mis-tareas-list"></div>
+                <!-- Vista Técnicos -->
+                <div id="view-tecnicos" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Técnicos</h2>
+                        <button class="btn btn-primary" onclick="abrirModalTecnico()">+ Nuevo Técnico</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tabla-tecnicos"></tbody>
+                    </table>
                 </div>
 
-                <!-- Catálogos (los de siempre) -->
+                <!-- Catálogos -->
                 <div id="view-marcas" class="view" style="display:none;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <h2 class="page-title">Marcas</h2>
@@ -513,11 +568,31 @@
             <div class="moh">Asignar Técnico</div>
             <div class="mob">
                 <label class="flbl">Selecciona un técnico</label>
-                <select class="inp" id="select-tecnico"></select>
+                <select class="inp" id="select-tecnico">
+                    <option value="">— Sin técnico —</option>
+                </select>
+                <div style="margin-top:12px; text-align:center;">
+                    <button class="btn btn-sm" onclick="abrirModalTecnicoDesdeAsignar()">+ Crear Técnico</button>
+                </div>
             </div>
             <div class="mof">
                 <button class="btn" onclick="cerrarAsignar()">Cancelar</button>
                 <button class="btn btn-primary" onclick="confirmarAsignacion()">Asignar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CREAR TÉCNICO -->
+    <div class="mov" id="mov-tecnico">
+        <div class="mo">
+            <div class="moh">Nuevo Técnico</div>
+            <div class="mob">
+                <label class="flbl">Nombre completo</label>
+                <input class="inp" type="text" id="tec-nombre" placeholder="Juan Pérez">
+            </div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarModalTecnico()">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarTecnico()">Guardar</button>
             </div>
         </div>
     </div>
@@ -534,6 +609,7 @@
         let PERFIL = null;
         let confirmCallback = null;
         let otAsignarId = null;
+        let origenTecnico = 'vista';
 
         function escHtml(str) {
             if (str === null || str === undefined) return '';
@@ -614,31 +690,8 @@
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
             const rol = PERFIL?.rol;
-            // Configurar visibilidad de navegación según rol
-            if (rol === 'tecnico') {
-                // Solo Dashboard y Mis Tareas
-                document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                    const v = item.dataset.view;
-                    if (v !== 'dashboard' && v !== 'mis-tareas') {
-                        item.style.display = 'none';
-                    } else {
-                        item.style.display = 'block';
-                    }
-                });
-                // Mostrar Mis Tareas
-                document.getElementById('nav-mis-tareas').style.display = 'block';
-            } else {
-                // Admin, recepcionista, jefe_taller: mostrar todo excepto Mis Tareas
-                document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                    const v = item.dataset.view;
-                    if (v === 'mis-tareas') {
-                        item.style.display = 'none';
-                    } else {
-                        item.style.display = 'block';
-                    }
-                });
-            }
-            // Cargar vista por defecto
+            // Todos los roles con acceso (admin, recepcionista, jefe_taller) ven todo excepto gestión de técnicos solo admin/jefe/recepción
+            // Ocultamos la vista de técnicos si el rol es solo visor? Por ahora mostramos todo.
             sv('dashboard');
             cargarDashboard();
         }
@@ -658,7 +711,7 @@
             if (view === 'nueva-ot') cargarDatosNuevaOT();
             if (view === 'cotizaciones') cargarCotizaciones();
             if (view === 'taller') cargarTaller();
-            if (view === 'mis-tareas') cargarMisTareas();
+            if (view === 'tecnicos') cargarTecnicos();
         }
 
         document.querySelectorAll('.sidebar .nav-item').forEach(item => {
@@ -678,7 +731,7 @@
             document.getElementById('stat-facturas').textContent = 0;
         }
 
-        // CRUD GENÉRICO (igual que antes)
+        // CRUD GENÉRICO
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
@@ -891,7 +944,7 @@
             );
         }
 
-        // NUEVA COTIZACIÓN (igual que antes, con generación de código)
+        // NUEVA COTIZACIÓN
         async function cargarDatosNuevaOT() {
             const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
             const selMarca = document.getElementById('ot-marca');
@@ -1142,24 +1195,39 @@
             }, 'Sí, aprobar todas');
         }
 
-        // ============================================================
         // KANBAN TALLER
-        // ============================================================
         async function cargarTaller() {
-            // Cargar todas las OTs no cotización (aprobada, en_taller, completada, cancelada)
+            // Cargar técnicos para el filtro
+            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+            const filtroSelect = document.getElementById('filtro-tecnico');
+            filtroSelect.innerHTML = '<option value="">Todos</option>';
+            tecnicos.forEach(t => {
+                filtroSelect.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
+            });
+
+            // Cargar OTs (sin filtro por ahora, se filtra en el render)
             const { data, error } = await sb.from('ot')
-                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), perfiles(nombre)')
+                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre)')
                 .in('estado', ['aprobada', 'en_taller', 'completada', 'cancelada'])
                 .order('updated_at', { ascending: false });
             if (error) { toast('Error: ' + error.message, 'err'); return; }
 
-            // Limpiar columnas
+            // Guardar en variable global para aplicar filtro
+            window._otsTaller = data;
+            aplicarFiltroKanban();
+        }
+
+        function aplicarFiltroKanban() {
+            const filtro = document.getElementById('filtro-tecnico').value;
+            const data = window._otsTaller || [];
+            const filtradas = filtro ? data.filter(ot => String(ot.tecnico_id) === filtro) : data;
+
             ['aprobada', 'en_taller', 'completada', 'cancelada'].forEach(estado => {
                 document.getElementById('cards-' + estado).innerHTML = '';
                 document.getElementById('count-' + estado).textContent = 0;
             });
 
-            data.forEach(ot => {
+            filtradas.forEach(ot => {
                 const col = document.getElementById('cards-' + ot.estado);
                 if (col) {
                     col.innerHTML += generarCardKanban(ot);
@@ -1170,7 +1238,7 @@
 
         function generarCardKanban(ot) {
             const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
-            const tecnicoNombre = ot.perfiles?.nombre || 'Sin asignar';
+            const tecnicoNombre = ot.tecnicos?.nombre || 'Sin asignar';
             let acciones = '';
             if (ot.estado === 'aprobada') {
                 acciones = `
@@ -1200,13 +1268,11 @@
             `;
         }
 
-        // Asignar técnico
         async function abrirAsignar(otId) {
             otAsignarId = otId;
-            // Cargar técnicos (perfiles con rol tecnico y activo)
-            const { data: tecnicos } = await sb.from('perfiles').select('*').eq('rol', 'tecnico').eq('activo', true);
+            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
             const select = document.getElementById('select-tecnico');
-            select.innerHTML = '<option value="">Selecciona un técnico...</option>';
+            select.innerHTML = '<option value="">— Sin técnico —</option>';
             tecnicos.forEach(t => {
                 select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
             });
@@ -1219,15 +1285,11 @@
         }
 
         async function confirmarAsignacion() {
-            const tecnicoId = document.getElementById('select-tecnico').value;
-            if (!tecnicoId) {
-                toast('Selecciona un técnico', 'err');
-                return;
-            }
+            const tecnicoId = document.getElementById('select-tecnico').value || null;
             try {
                 const { error } = await sb.from('ot').update({ tecnico_id: tecnicoId }).eq('id', otAsignarId);
                 if (error) throw error;
-                toast('Técnico asignado ✓', 'ok');
+                toast(tecnicoId ? 'Técnico asignado ✓' : 'OT sin técnico asignado', 'ok');
                 cerrarAsignar();
                 cargarTaller();
             } catch (e) {
@@ -1235,7 +1297,6 @@
             }
         }
 
-        // Mover OT a otro estado
         async function moverOT(otId, nuevoEstado) {
             const acciones = {
                 en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
@@ -1255,21 +1316,125 @@
             }, 'Sí, cambiar');
         }
 
+        // TÉCNICOS (Gestión con tabla tecnicos)
+        async function cargarTecnicos() {
+            const { data, error } = await sb.from('tecnicos')
+                .select('*')
+                .order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-tecnicos');
+            tbody.innerHTML = '';
+            data.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.id}</td>
+                    <td>${escHtml(t.nombre)}</td>
+                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function abrirModalTecnico() {
+            origenTecnico = 'vista';
+            document.getElementById('tec-nombre').value = '';
+            document.getElementById('mov-tecnico').classList.add('open');
+        }
+
+        function abrirModalTecnicoDesdeAsignar() {
+            origenTecnico = 'asignar';
+            document.getElementById('tec-nombre').value = '';
+            document.getElementById('mov-tecnico').classList.add('open');
+        }
+
+        function cerrarModalTecnico() {
+            document.getElementById('mov-tecnico').classList.remove('open');
+        }
+
+        async function guardarTecnico() {
+            const nombre = document.getElementById('tec-nombre').value.trim();
+            if (!nombre) {
+                toast('El nombre es obligatorio', 'err');
+                return;
+            }
+            try {
+                const { error } = await sb.from('tecnicos').insert({ nombre, activo: true });
+                if (error) throw error;
+                toast('Técnico creado ✓', 'ok');
+                cerrarModalTecnico();
+                if (origenTecnico === 'asignar') {
+                    // Recargar select de asignación
+                    const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+                    const select = document.getElementById('select-tecnico');
+                    select.innerHTML = '<option value="">— Sin técnico —</option>';
+                    tecnicos.forEach(t => {
+                        select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
+                    });
+                } else {
+                    cargarTecnicos();
+                }
+            } catch (e) {
+                toast('Error: ' + e.message, 'err');
+            }
+        }
+
+        async function abrirEditarTecnico(id) {
+            const { data } = await sb.from('tecnicos').select('*').eq('id', id).single();
+            if (!data) return;
+            const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
+            if (nuevoNombre && nuevoNombre.trim()) {
+                const { error } = await sb.from('tecnicos').update({ nombre: nuevoNombre.trim() }).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Nombre actualizado ✓', 'ok');
+                cargarTecnicos();
+            }
+        }
+
+        async function cambiarEstadoTecnico(id, nuevoEstado) {
+            abrirConfirm('¿Cambiar estado del técnico?', async () => {
+                const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Estado actualizado ✓', 'ok');
+                cargarTecnicos();
+            }, 'Sí, cambiar');
+        }
+
         // ============================================================
-        // MIS TAREAS (Técnico)
+        // CONSULTA PÚBLICA PARA TÉCNICO (sin login)
         // ============================================================
-        async function cargarMisTareas() {
-            if (!SESSION?.id) return;
-            // Obtener OTs asignadas al técnico actual con estado en_taller (o aprobada y en_taller?)
+        async function abrirConsultaTecnico() {
+            document.getElementById('login-wrap').style.display = 'none';
+            document.getElementById('consulta-tecnico-wrap').style.display = 'block';
+            // Cargar técnicos
+            const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+            const select = document.getElementById('select-consulta-tecnico');
+            select.innerHTML = '<option value="">Selecciona...</option>';
+            tecnicos.forEach(t => {
+                select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
+            });
+            document.getElementById('consulta-tareas-lista').innerHTML = '';
+        }
+
+        function cerrarConsultaTecnico() {
+            document.getElementById('consulta-tecnico-wrap').style.display = 'none';
+            document.getElementById('login-wrap').style.display = 'flex';
+        }
+
+        async function cargarTareasConsulta() {
+            const tecnicoId = document.getElementById('select-consulta-tecnico').value;
+            const cont = document.getElementById('consulta-tareas-lista');
+            cont.innerHTML = '';
+            if (!tecnicoId) return;
+
             const { data, error } = await sb.from('ot')
                 .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
-                .eq('tecnico_id', SESSION.id)
+                .eq('tecnico_id', tecnicoId)
                 .in('estado', ['aprobada', 'en_taller'])
                 .order('updated_at', { ascending: false });
             if (error) { toast('Error: ' + error.message, 'err'); return; }
 
-            const cont = document.getElementById('mis-tareas-list');
-            cont.innerHTML = '';
             if (data.length === 0) {
                 cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>';
                 return;
@@ -1277,19 +1442,16 @@
 
             data.forEach(ot => {
                 const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
-                let botones = '';
-                if (ot.estado === 'aprobada') {
-                    botones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button>`;
-                } else if (ot.estado === 'en_taller') {
-                    botones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button>`;
-                }
+                let badge = '';
+                if (ot.estado === 'aprobada') badge = '<span class="badge-aprobada">Pendiente de iniciar</span>';
+                else if (ot.estado === 'en_taller') badge = '<span class="badge-en-taller">En proceso</span>';
                 cont.innerHTML += `
                     <div class="mis-tarea-item">
                         <div>
                             <strong>${escHtml(ot.placa)}</strong> — ${escHtml(clienteNombre)}<br>
                             <small class="card-codigo">${escHtml(ot.codigo || '')}</small>
                         </div>
-                        <div>${botones}</div>
+                        <div>${badge}</div>
                     </div>
                 `;
             });
