@@ -1040,7 +1040,8 @@
                 tbody.innerHTML = '';
                 data.forEach(u => {
                     if (u.rol === 'tecnico') return;
-                    tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`);
+                    const nuevoEstado = !u.activo;
+                    tbody.innerHTML += '<tr><td>' + u.id + '</td><td>' + escHtml(u.nombre) + '</td><td>' + escHtml(u.email || '') + '</td><td>' + u.rol + '</td><td>' + (u.activo ? 'Activo' : 'Inactivo') + '</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario(\'' + u.id + '\')">Editar</button> <button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario(\'' + u.id + '\',' + nuevoEstado + ')">' + (u.activo ? 'Desactivar' : 'Activar') + '</button></td></tr>';
                 });
             } catch (e) { toast('Error cargando usuarios: ' + e.message, 'err'); }
         }
