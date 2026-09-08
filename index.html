@@ -46,6 +46,7 @@
             line-height: 1.5;
         }
 
+        /* Botones */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 10px 16px; border: 1px solid var(--sf-border);
@@ -62,6 +63,7 @@
         .btn-block { width: 100%; }
         .btn-sm { padding: 6px 10px; font-size: 12px; min-height: 32px; }
 
+        /* Inputs */
         .inp {
             width: 100%; padding: 10px 12px; border: 1px solid var(--sf-border);
             border-radius: var(--r); font-size: 14px; font-family: inherit;
@@ -71,8 +73,10 @@
 
         .flbl { display: block; margin-bottom: 6px; font-weight: 500; color: var(--sf-text-secondary); }
 
+        /* Tarjetas */
         .card { background: var(--surface); border: 1px solid var(--sf-border); border-radius: var(--r); padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
+        /* Stats */
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -98,11 +102,13 @@
             color: var(--sf-blue);
         }
 
+        /* Auth */
         .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
         .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .auth-logo { text-align: center; margin-bottom: 24px; }
         .auth-logo h1 { font-size: 22px; font-weight: 600; color: var(--sf-blue); }
 
+        /* App layout */
         #app { display: none; }
         .topbar {
             background: var(--sf-white); border-bottom: 1px solid var(--sf-border);
@@ -117,10 +123,18 @@
             width: 220px; background: var(--sf-white); border-right: 1px solid var(--sf-border);
             padding: 20px 0; flex-shrink: 0;
         }
+        .sidebar .nav-section {
+            padding: 10px 20px 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--sf-gray-40);
+            letter-spacing: 0.5px;
+        }
         .sidebar .nav-item {
-            display: block; padding: 10px 20px; color: var(--sf-text-secondary);
+            display: block; padding: 8px 20px; color: var(--sf-text-secondary);
             text-decoration: none; transition: background 0.2s; font-weight: 500;
             cursor: pointer;
+            font-size: 14px;
         }
         .sidebar .nav-item:hover { background: var(--sf-blue-light); color: var(--sf-blue); }
         .sidebar .nav-item.active { background: var(--sf-blue-light); color: var(--sf-blue); border-right: 3px solid var(--sf-blue); }
@@ -129,11 +143,13 @@
         .page-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; }
         .page-desc { color: var(--sf-text-secondary); margin-bottom: 20px; }
 
+        /* Tablas */
         table { width: 100%; border-collapse: collapse; background: var(--sf-white); border-radius: var(--r); overflow: hidden; }
         th { background: var(--sf-gray-10); text-align: left; padding: 12px 16px; font-weight: 600; color: var(--sf-text); border-bottom: 1px solid var(--sf-border); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--sf-border); }
         tr:last-child td { border-bottom: none; }
 
+        /* Modales */
         .mov { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
         .mov.open { display: flex; }
         .mo { background: var(--sf-white); border-radius: 12px; width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -141,20 +157,11 @@
         .mob { margin-bottom: 20px; }
         .mof { display: flex; justify-content: flex-end; gap: 10px; }
 
+        /* Toast */
         #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 9999; }
         #toast.show { opacity: 1; }
 
-        .text-right { text-align: right; }
-        .mt-2 { margin-top: 20px; }
-        .mb-2 { margin-bottom: 20px; }
-        .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
-        .form-col { flex: 1; }
-        .badge-cotizacion { background: var(--sf-warning); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .badge-aprobada { background: var(--sf-blue); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .badge-en-taller { background: var(--sf-success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .badge-completada { background: var(--sf-gray-40); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .badge-cancelada { background: var(--sf-error); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-
+        /* Kanban */
         .kanban-board {
             display: flex;
             gap: 16px;
@@ -212,33 +219,43 @@
             gap: 4px;
             flex-wrap: wrap;
         }
-
         .filtro-kanban {
             margin-bottom: 16px;
             display: flex;
             gap: 10px;
             align-items: center;
         }
-        .filtro-kanban select {
-            max-width: 250px;
+
+        /* Tabs en Administración */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--sf-border);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--sf-text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .tab-btn.active {
+            color: var(--sf-blue);
+            border-bottom-color: var(--sf-blue);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
 
-        .mis-tareas-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .mis-tarea-item {
-            background: var(--surface);
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Estilos para la consulta pública de técnico */
+        /* Consulta técnica */
         .consulta-tecnico-wrap {
             max-width: 800px;
             margin: 40px auto;
@@ -278,7 +295,7 @@
         </div>
     </div>
 
-    <!-- CONSULTA PÚBLICA PARA TÉCNICO (sin login) -->
+    <!-- CONSULTA PÚBLICA PARA TÉCNICO -->
     <div id="consulta-tecnico-wrap" style="display:none;">
         <div class="consulta-tecnico-card">
             <h2 style="margin-bottom:16px;">Consulta de tareas</h2>
@@ -306,16 +323,14 @@
         </div>
         <div class="layout">
             <aside class="sidebar" id="sidebar">
+                <div class="nav-section">Operación</div>
                 <a class="nav-item" data-view="dashboard">Dashboard</a>
                 <a class="nav-item" data-view="nueva-ot">Nueva Cotización</a>
                 <a class="nav-item" data-view="cotizaciones">Cotizaciones</a>
-                <a class="nav-item" data-view="taller" id="nav-taller">Taller (Kanban)</a>
-                <a class="nav-item" data-view="tecnicos" id="nav-tecnicos">Técnicos</a>
-                <a class="nav-item" data-view="marcas">Marcas</a>
-                <a class="nav-item" data-view="modelos">Modelos</a>
-                <a class="nav-item" data-view="trabajos">Trabajos</a>
-                <a class="nav-item" data-view="agencias">Agencias</a>
-                <a class="nav-item" data-view="clientes">Clientes</a>
+                <a class="nav-item" data-view="taller">Taller (Kanban)</a>
+                
+                <div class="nav-section">Administración</div>
+                <a class="nav-item" data-view="admin">Administración</a>
             </aside>
             <main class="main">
                 <!-- Dashboard -->
@@ -394,9 +409,7 @@
                             </div>
 
                             <h3 style="margin:20px 0 12px;">Trabajos a realizar</h3>
-                            <div id="lista-trabajos">
-                                <!-- Se llenará dinámicamente -->
-                            </div>
+                            <div id="lista-trabajos"></div>
 
                             <div style="margin-top:20px; text-align:right;">
                                 <strong>Costo Total Estimado: </strong>
@@ -435,7 +448,7 @@
                     </table>
                 </div>
 
-                <!-- Kanban Taller con filtro -->
+                <!-- Kanban Taller -->
                 <div id="view-taller" class="view" style="display:none;">
                     <h2 class="page-title">Taller — Tablero Kanban</h2>
                     <p class="page-desc">Visualiza y gestiona el avance de los vehículos.</p>
@@ -465,80 +478,109 @@
                     </div>
                 </div>
 
-                <!-- Vista Técnicos -->
-                <div id="view-tecnicos" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Técnicos</h2>
-                        <button class="btn btn-primary" onclick="abrirModalTecnico()">+ Nuevo Técnico</button>
+                <!-- Administración (con pestañas) -->
+                <div id="view-admin" class="view" style="display:none;">
+                    <h2 class="page-title">Administración</h2>
+                    <p class="page-desc">Gestiona catálogos, técnicos y usuarios del sistema.</p>
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="cambiarTabAdmin('marcas')">Marcas</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('modelos')">Modelos</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('trabajos')">Trabajos</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('agencias')">Agencias</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('clientes')">Clientes</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('tecnicos')">Técnicos</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('usuarios')">Usuarios</button>
                     </div>
-                    <table>
-                        <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr>
-                        </thead>
-                        <tbody id="tabla-tecnicos"></tbody>
-                    </table>
-                </div>
 
-                <!-- Catálogos -->
-                <div id="view-marcas" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Marcas</h2>
-                        <button class="btn btn-primary" onclick="abrirModal('marca')">+ Nueva Marca</button>
+                    <!-- Marcas -->
+                    <div id="tab-marcas" class="tab-content active">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Marcas</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModal('marca')">+ Nueva Marca</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-marcas"></tbody>
+                        </table>
                     </div>
-                    <table>
-                        <thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
-                        <tbody id="tabla-marcas"></tbody>
-                    </table>
-                </div>
 
-                <div id="view-modelos" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Modelos</h2>
-                        <button class="btn btn-primary" onclick="abrirModal('modelo')">+ Nuevo Modelo</button>
+                    <!-- Modelos -->
+                    <div id="tab-modelos" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Modelos</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModal('modelo')">+ Nuevo Modelo</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Marca</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-modelos"></tbody>
+                        </table>
                     </div>
-                    <table>
-                        <thead><tr><th>ID</th><th>Nombre</th><th>Marca</th><th>Estado</th><th>Acciones</th></tr></thead>
-                        <tbody id="tabla-modelos"></tbody>
-                    </table>
-                </div>
 
-                <div id="view-trabajos" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Trabajos</h2>
-                        <button class="btn btn-primary" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
+                    <!-- Trabajos -->
+                    <div id="tab-trabajos" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Trabajos</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-trabajos"></tbody>
+                        </table>
                     </div>
-                    <table>
-                        <thead><tr><th>ID</th><th>Nombre</th><th>Precio Base</th><th>Tiempo Est.</th><th>Estado</th><th>Acciones</th></tr></thead>
-                        <tbody id="tabla-trabajos"></tbody>
-                    </table>
-                </div>
 
-                <div id="view-agencias" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Agencias</h2>
-                        <button class="btn btn-primary" onclick="abrirModal('agencia')">+ Nueva Agencia</button>
+                    <!-- Agencias -->
+                    <div id="tab-agencias" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Agencias</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModal('agencia')">+ Nueva Agencia</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-agencias"></tbody>
+                        </table>
                     </div>
-                    <table>
-                        <thead><tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead>
-                        <tbody id="tabla-agencias"></tbody>
-                    </table>
-                </div>
 
-                <div id="view-clientes" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 class="page-title">Clientes</h2>
-                        <button class="btn btn-primary" onclick="abrirModal('cliente')">+ Nuevo Cliente</button>
+                    <!-- Clientes -->
+                    <div id="tab-clientes" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Clientes</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModal('cliente')">+ Nuevo Cliente</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-clientes"></tbody>
+                        </table>
                     </div>
-                    <table>
-                        <thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
-                        <tbody id="tabla-clientes"></tbody>
-                    </table>
+
+                    <!-- Técnicos -->
+                    <div id="tab-tecnicos" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Técnicos</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalTecnico()">+ Nuevo Técnico</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-tecnicos"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Usuarios -->
+                    <div id="tab-usuarios" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Usuarios del sistema</h3>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalUsuario()">+ Nuevo Usuario</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="tabla-usuarios"></tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- MODAL CRUD -->
+    <!-- MODAL CRUD GENÉRICO (catálogos) -->
     <div class="mov" id="mov-crud">
         <div class="mo">
             <div class="moh" id="crud-title">Nuevo registro</div>
@@ -562,7 +604,7 @@
         </div>
     </div>
 
-    <!-- MODAL ASIGNAR TÉCNICO -->
+    <!-- MODAL ASIGNAR TÉCNICO (desde Kanban) -->
     <div class="mov" id="mov-asignar">
         <div class="mo">
             <div class="moh">Asignar Técnico</div>
@@ -597,6 +639,34 @@
         </div>
     </div>
 
+    <!-- MODAL CREAR USUARIO (admin/recepcionista/jefe) -->
+    <div class="mov" id="mov-usuario">
+        <div class="mo">
+            <div class="moh">Nuevo Usuario</div>
+            <div class="mob">
+                <label class="flbl">Nombre completo</label>
+                <input class="inp" type="text" id="usu-nombre" placeholder="María López">
+                <br><br>
+                <label class="flbl">Correo electrónico</label>
+                <input class="inp" type="email" id="usu-email" placeholder="maria@taller.com">
+                <br><br>
+                <label class="flbl">Contraseña temporal</label>
+                <input class="inp" type="password" id="usu-pass" placeholder="Mínimo 8 caracteres">
+                <br><br>
+                <label class="flbl">Rol</label>
+                <select class="inp" id="usu-rol">
+                    <option value="admin">Administrador</option>
+                    <option value="recepcionista">Recepcionista</option>
+                    <option value="jefe_taller">Jefe de Taller</option>
+                </select>
+            </div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarModalUsuario()">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast"></div>
 
@@ -611,6 +681,7 @@
         let otAsignarId = null;
         let origenTecnico = 'vista';
 
+        // ============ UTILIDADES ============
         function escHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -647,6 +718,7 @@
         }
         document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
 
+        // ============ AUTH Y SESIÓN ============
         async function initSession(userId) {
             const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
             if (error) { toast('Error al cargar perfil: ' + error.message, 'err'); return; }
@@ -685,13 +757,20 @@
             }
         });
 
+        // ============ NAVEGACIÓN ============
         function mostrarApp() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
+            // Ocultar Administración si el rol no tiene permisos (solo admin, jefe, recepción)
             const rol = PERFIL?.rol;
-            // Todos los roles con acceso (admin, recepcionista, jefe_taller) ven todo excepto gestión de técnicos solo admin/jefe/recepción
-            // Ocultamos la vista de técnicos si el rol es solo visor? Por ahora mostramos todo.
+            if (rol === 'tecnico') {
+                // Los técnicos no acceden a la app completa (solo consulta pública)
+                // Aquí no debería pasar, pero por seguridad cerramos sesión.
+                sb.auth.signOut();
+                return;
+            }
+            // Mostrar todo (según RLS)
             sv('dashboard');
             cargarDashboard();
         }
@@ -703,22 +782,18 @@
             if (target) target.style.display = 'block';
             const nav = document.querySelector('.sidebar .nav-item[data-view="' + view + '"]');
             if (nav) nav.classList.add('active');
-            if (view === 'marcas') cargarMarcas();
-            if (view === 'modelos') cargarModelos();
-            if (view === 'trabajos') cargarTrabajos();
-            if (view === 'agencias') cargarAgencias();
-            if (view === 'clientes') cargarClientes();
+            if (view === 'dashboard') cargarDashboard();
             if (view === 'nueva-ot') cargarDatosNuevaOT();
             if (view === 'cotizaciones') cargarCotizaciones();
             if (view === 'taller') cargarTaller();
-            if (view === 'tecnicos') cargarTecnicos();
+            if (view === 'admin') cargarAdmin();
         }
 
         document.querySelectorAll('.sidebar .nav-item').forEach(item => {
             item.addEventListener('click', () => sv(item.dataset.view));
         });
 
-        // DASHBOARD
+        // ============ DASHBOARD ============
         async function cargarDashboard() {
             const { count: taller } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
             document.getElementById('stat-taller').textContent = taller || 0;
@@ -731,7 +806,7 @@
             document.getElementById('stat-facturas').textContent = 0;
         }
 
-        // CRUD GENÉRICO
+        // ============ CRUD GENÉRICO (catálogos) ============
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
@@ -822,13 +897,18 @@
                     toast('Creado ✓', 'ok');
                 }
                 cerrarModal();
-                sv(vistaMap[vistaActual] || vistaActual);
+                // Recargar el tab correspondiente si estamos en admin
+                if (document.getElementById('view-admin').style.display !== 'none') {
+                    cargarAdmin();
+                } else {
+                    sv(vistaMap[vistaActual] || vistaActual);
+                }
             } catch (e) {
                 toast('Error: ' + e.message, 'err');
             }
         });
 
-        // CARGAR CATÁLOGOS
+        // ============ CARGA DE CATÁLOGOS (para tabs) ============
         async function cargarMarcas() {
             const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
             if (error) { toast('Error: ' + error.message, 'err'); return; }
@@ -934,8 +1014,7 @@
                         const { error } = await sb.from(tabla).update({ activo: false }).eq('id', id);
                         if (error) throw error;
                         toast('Eliminado ✓', 'ok');
-                        const vistaActual = document.querySelector('.sidebar .nav-item.active')?.dataset.view;
-                        if (vistaActual) sv(vistaActual);
+                        cargarAdmin();
                     } catch (e) {
                         toast('Error: ' + e.message, 'err');
                     }
@@ -944,7 +1023,219 @@
             );
         }
 
-        // NUEVA COTIZACIÓN
+        // ============ ADMINISTRACIÓN (tabs) ============
+        async function cargarAdmin() {
+            const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'marcas';
+            // Cargar todos los datos de los tabs
+            await Promise.all([
+                cargarMarcas(),
+                cargarModelos(),
+                cargarTrabajos(),
+                cargarAgencias(),
+                cargarClientes(),
+                cargarTecnicos(),
+                cargarUsuarios()
+            ]);
+            cambiarTabAdmin(activeTab);
+        }
+
+        function cambiarTabAdmin(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+            if (btn) btn.classList.add('active');
+            const content = document.getElementById('tab-' + tab);
+            if (content) content.classList.add('active');
+        }
+
+        // ============ TÉCNICOS ============
+        async function cargarTecnicos() {
+            const { data, error } = await sb.from('tecnicos').select('*').order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-tecnicos');
+            tbody.innerHTML = '';
+            data.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.id}</td>
+                    <td>${escHtml(t.nombre)}</td>
+                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function abrirModalTecnico() {
+            origenTecnico = 'vista';
+            document.getElementById('tec-nombre').value = '';
+            document.getElementById('mov-tecnico').classList.add('open');
+        }
+
+        function abrirModalTecnicoDesdeAsignar() {
+            origenTecnico = 'asignar';
+            document.getElementById('tec-nombre').value = '';
+            document.getElementById('mov-tecnico').classList.add('open');
+        }
+
+        function cerrarModalTecnico() {
+            document.getElementById('mov-tecnico').classList.remove('open');
+        }
+
+        async function guardarTecnico() {
+            const nombre = document.getElementById('tec-nombre').value.trim();
+            if (!nombre) {
+                toast('El nombre es obligatorio', 'err');
+                return;
+            }
+            try {
+                const { error } = await sb.from('tecnicos').insert({ nombre, activo: true });
+                if (error) throw error;
+                toast('Técnico creado ✓', 'ok');
+                cerrarModalTecnico();
+                if (origenTecnico === 'asignar') {
+                    // Recargar select de asignación
+                    const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
+                    const select = document.getElementById('select-tecnico');
+                    select.innerHTML = '<option value="">— Sin técnico —</option>';
+                    tecnicos.forEach(t => {
+                        select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
+                    });
+                } else {
+                    cargarTecnicos();
+                }
+            } catch (e) {
+                toast('Error: ' + e.message, 'err');
+            }
+        }
+
+        async function abrirEditarTecnico(id) {
+            const { data } = await sb.from('tecnicos').select('*').eq('id', id).single();
+            if (!data) return;
+            const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
+            if (nuevoNombre && nuevoNombre.trim()) {
+                const { error } = await sb.from('tecnicos').update({ nombre: nuevoNombre.trim() }).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Nombre actualizado ✓', 'ok');
+                cargarTecnicos();
+            }
+        }
+
+        async function cambiarEstadoTecnico(id, nuevoEstado) {
+            abrirConfirm('¿Cambiar estado del técnico?', async () => {
+                const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Estado actualizado ✓', 'ok');
+                cargarTecnicos();
+            }, 'Sí, cambiar');
+        }
+
+        // ============ USUARIOS (gestión de cuentas) ============
+        async function cargarUsuarios() {
+            const { data, error } = await sb.from('perfiles').select('*').order('nombre');
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-usuarios');
+            tbody.innerHTML = '';
+            data.forEach(u => {
+                // Mostrar solo usuarios con rol admin, recepcionista, jefe_taller (excluir técnico si existiera, pero técnico no tiene cuenta)
+                if (u.rol === 'tecnico') return; // técnicos no tienen cuenta
+                tbody.innerHTML += `<tr>
+                    <td>${u.id}</td>
+                    <td>${escHtml(u.nombre)}</td>
+                    <td>${escHtml(u.email || '')}</td>
+                    <td>${u.rol}</td>
+                    <td>${u.activo ? 'Activo' : 'Inactivo'}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function abrirModalUsuario() {
+            document.getElementById('usu-nombre').value = '';
+            document.getElementById('usu-email').value = '';
+            document.getElementById('usu-pass').value = '';
+            document.getElementById('usu-rol').value = 'recepcionista';
+            document.getElementById('mov-usuario').classList.add('open');
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('mov-usuario').classList.remove('open');
+        }
+
+        async function guardarUsuario() {
+            const nombre = document.getElementById('usu-nombre').value.trim();
+            const email = document.getElementById('usu-email').value.trim();
+            const pass = document.getElementById('usu-pass').value;
+            const rol = document.getElementById('usu-rol').value;
+
+            if (!nombre || !email || !pass) {
+                toast('Todos los campos son obligatorios', 'err');
+                return;
+            }
+            if (pass.length < 8) {
+                toast('La contraseña debe tener al menos 8 caracteres', 'err');
+                return;
+            }
+
+            try {
+                // 1. Crear usuario en Supabase Auth
+                const { data: user, error: errAuth } = await sb.auth.signUp({
+                    email: email,
+                    password: pass,
+                    options: { data: { nombre: nombre } }
+                });
+                if (errAuth) throw errAuth;
+                if (!user?.id) throw new Error('No se pudo crear el usuario');
+
+                // 2. Insertar perfil con rol
+                const { error: errPerfil } = await sb.from('perfiles').insert({
+                    id: user.id,
+                    nombre: nombre,
+                    email: email,
+                    rol: rol,
+                    activo: true
+                });
+                if (errPerfil) throw errPerfil;
+
+                toast('Usuario creado ✓', 'ok');
+                cerrarModalUsuario();
+                cargarUsuarios();
+            } catch (e) {
+                toast('Error: ' + e.message, 'err');
+            }
+        }
+
+        async function abrirEditarUsuario(id) {
+            const { data } = await sb.from('perfiles').select('*').eq('id', id).single();
+            if (!data) return;
+            const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
+            const nuevoRol = prompt('Nuevo rol (admin, recepcionista, jefe_taller):', data.rol);
+            if (nuevoNombre && nuevoNombre.trim()) {
+                const updates = { nombre: nuevoNombre.trim() };
+                if (nuevoRol && ['admin','recepcionista','jefe_taller'].includes(nuevoRol)) {
+                    updates.rol = nuevoRol;
+                }
+                const { error } = await sb.from('perfiles').update(updates).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Usuario actualizado ✓', 'ok');
+                cargarUsuarios();
+            }
+        }
+
+        async function cambiarEstadoUsuario(id, nuevoEstado) {
+            abrirConfirm('¿Cambiar estado del usuario?', async () => {
+                const { error } = await sb.from('perfiles').update({ activo: nuevoEstado }).eq('id', id);
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                toast('Estado actualizado ✓', 'ok');
+                cargarUsuarios();
+            }, 'Sí, cambiar');
+        }
+
+        // ============ NUEVA COTIZACIÓN ============
         async function cargarDatosNuevaOT() {
             const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
             const selMarca = document.getElementById('ot-marca');
@@ -1132,7 +1423,7 @@
             }
         });
 
-        // LISTADO DE COTIZACIONES
+        // ============ COTIZACIONES ============
         async function cargarCotizaciones() {
             const { data, error } = await sb.from('ot')
                 .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
@@ -1195,9 +1486,8 @@
             }, 'Sí, aprobar todas');
         }
 
-        // KANBAN TALLER
+        // ============ KANBAN TALLER ============
         async function cargarTaller() {
-            // Cargar técnicos para el filtro
             const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
             const filtroSelect = document.getElementById('filtro-tecnico');
             filtroSelect.innerHTML = '<option value="">Todos</option>';
@@ -1205,14 +1495,12 @@
                 filtroSelect.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
             });
 
-            // Cargar OTs (sin filtro por ahora, se filtra en el render)
             const { data, error } = await sb.from('ot')
                 .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre)')
                 .in('estado', ['aprobada', 'en_taller', 'completada', 'cancelada'])
                 .order('updated_at', { ascending: false });
             if (error) { toast('Error: ' + error.message, 'err'); return; }
 
-            // Guardar en variable global para aplicar filtro
             window._otsTaller = data;
             aplicarFiltroKanban();
         }
@@ -1316,98 +1604,10 @@
             }, 'Sí, cambiar');
         }
 
-        // TÉCNICOS (Gestión con tabla tecnicos)
-        async function cargarTecnicos() {
-            const { data, error } = await sb.from('tecnicos')
-                .select('*')
-                .order('nombre');
-            if (error) { toast('Error: ' + error.message, 'err'); return; }
-            const tbody = document.getElementById('tabla-tecnicos');
-            tbody.innerHTML = '';
-            data.forEach(t => {
-                tbody.innerHTML += `<tr>
-                    <td>${t.id}</td>
-                    <td>${escHtml(t.nombre)}</td>
-                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        function abrirModalTecnico() {
-            origenTecnico = 'vista';
-            document.getElementById('tec-nombre').value = '';
-            document.getElementById('mov-tecnico').classList.add('open');
-        }
-
-        function abrirModalTecnicoDesdeAsignar() {
-            origenTecnico = 'asignar';
-            document.getElementById('tec-nombre').value = '';
-            document.getElementById('mov-tecnico').classList.add('open');
-        }
-
-        function cerrarModalTecnico() {
-            document.getElementById('mov-tecnico').classList.remove('open');
-        }
-
-        async function guardarTecnico() {
-            const nombre = document.getElementById('tec-nombre').value.trim();
-            if (!nombre) {
-                toast('El nombre es obligatorio', 'err');
-                return;
-            }
-            try {
-                const { error } = await sb.from('tecnicos').insert({ nombre, activo: true });
-                if (error) throw error;
-                toast('Técnico creado ✓', 'ok');
-                cerrarModalTecnico();
-                if (origenTecnico === 'asignar') {
-                    // Recargar select de asignación
-                    const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
-                    const select = document.getElementById('select-tecnico');
-                    select.innerHTML = '<option value="">— Sin técnico —</option>';
-                    tecnicos.forEach(t => {
-                        select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`;
-                    });
-                } else {
-                    cargarTecnicos();
-                }
-            } catch (e) {
-                toast('Error: ' + e.message, 'err');
-            }
-        }
-
-        async function abrirEditarTecnico(id) {
-            const { data } = await sb.from('tecnicos').select('*').eq('id', id).single();
-            if (!data) return;
-            const nuevoNombre = prompt('Nuevo nombre para ' + (data.nombre || ''), data.nombre);
-            if (nuevoNombre && nuevoNombre.trim()) {
-                const { error } = await sb.from('tecnicos').update({ nombre: nuevoNombre.trim() }).eq('id', id);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                toast('Nombre actualizado ✓', 'ok');
-                cargarTecnicos();
-            }
-        }
-
-        async function cambiarEstadoTecnico(id, nuevoEstado) {
-            abrirConfirm('¿Cambiar estado del técnico?', async () => {
-                const { error } = await sb.from('tecnicos').update({ activo: nuevoEstado }).eq('id', id);
-                if (error) { toast('Error: ' + error.message, 'err'); return; }
-                toast('Estado actualizado ✓', 'ok');
-                cargarTecnicos();
-            }, 'Sí, cambiar');
-        }
-
-        // ============================================================
-        // CONSULTA PÚBLICA PARA TÉCNICO (sin login)
-        // ============================================================
+        // ============ CONSULTA PÚBLICA PARA TÉCNICO ============
         async function abrirConsultaTecnico() {
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('consulta-tecnico-wrap').style.display = 'block';
-            // Cargar técnicos
             const { data: tecnicos } = await sb.from('tecnicos').select('*').eq('activo', true).order('nombre');
             const select = document.getElementById('select-consulta-tecnico');
             select.innerHTML = '<option value="">Selecciona...</option>';
