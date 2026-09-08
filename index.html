@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller Hojalatería y Pintura — Sistema de Gestión</title>
+    
+    <!-- Fuente estilo Salesforce (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS (CDN) -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+    <style>
+        /* ============================================================
+           DISEÑO BASADO EN SALESFORCE LIGHTNING
+           ============================================================ */
+        :root {
+            /* Colores principales Salesforce */
+            --sf-blue: #0176d3;
+            --sf-blue-dark: #014486;
+            --sf-blue-light: #eaf5fe;
+            --sf-gray-10: #f3f3f3;
+            --sf-gray-20: #e5e5e5;
+            --sf-gray-30: #c9c9c9;
+            --sf-gray-40: #939393;
+            --sf-text: #080707;
+            --sf-text-secondary: #444444;
+            --sf-white: #ffffff;
+            --sf-border: #dddbda;
+            
+            /* Semánticos */
+            --sf-success: #2e844a;
+            --sf-warning: #fe9339;
+            --sf-error: #ba0517;
+            
+            /* Variables para nuestro sistema (reutilizables) */
+            --acc: var(--sf-blue);
+            --acc2: var(--sf-blue-light);
+            --bg: #f3f3f3;
+            --surface: #fff;
+            --bd: var(--sf-border);
+            --bd2: #c9c9c9;
+            --t: var(--sf-text);
+            --t2: var(--sf-text-secondary);
+            --r: 8px;
+            --rs: 4px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--t);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Botones estilo Salesforce */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border: 1px solid var(--sf-border);
+            border-radius: var(--r);
+            background: var(--sf-white);
+            color: var(--sf-blue);
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            font-size: 14px;
+            min-height: 40px;
+        }
+        .btn:hover {
+            background: var(--sf-blue-light);
+            border-color: var(--sf-blue);
+        }
+        .btn-primary {
+            background: var(--sf-blue);
+            color: var(--sf-white);
+            border-color: var(--sf-blue);
+        }
+        .btn-primary:hover {
+            background: var(--sf-blue-dark);
+            border-color: var(--sf-blue-dark);
+        }
+        .btn-block {
+            width: 100%;
+        }
+
+        /* Inputs */
+        .inp {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--sf-border);
+            border-radius: var(--r);
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--sf-white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .inp:focus {
+            outline: none;
+            border-color: var(--sf-blue);
+            box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.2);
+        }
+
+        /* Etiquetas de formulario */
+        .flbl {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--sf-text-secondary);
+        }
+
+        /* Tarjetas */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--sf-border);
+            border-radius: var(--r);
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Login */
+        .auth-wrap {
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%);
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 32px;
+            background: var(--sf-white);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .auth-logo h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--sf-blue);
+        }
+
+        /* Ocultar app si no hay sesión */
+        #app {
+            display: none;
+        }
+
+        /* Panel de navegación (placeholder) */
+        .topbar {
+            background: var(--sf-white);
+            border-bottom: 1px solid var(--sf-border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar .brand {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--sf-blue);
+        }
+        .topbar .user {
+            font-size: 13px;
+            color: var(--sf-text-secondary);
+        }
+        .container {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--sf-border);
+            border-radius: var(--r);
+            padding: 16px;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--sf-text-secondary);
+        }
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 8px;
+            color: var(--sf-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- PANTALLA DE LOGIN -->
+    <div class="auth-wrap" id="login-wrap">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <h1>🔧 Taller H&P</h1>
+                <p style="color:var(--sf-text-secondary);">Sistema de Gestión</p>
+            </div>
+            <form id="login-form">
+                <label class="flbl" for="email">Correo electrónico</label>
+                <input class="inp" type="email" id="email" placeholder="nombre@taller.com" required>
+                <br><br>
+                <label class="flbl" for="password">Contraseña</label>
+                <input class="inp" type="password" id="password" placeholder="••••••••" required>
+                <br><br>
+                <button class="btn btn-primary btn-block" type="submit">Iniciar sesión</button>
+            </form>
+            <p style="text-align:center; margin-top:16px; font-size:12px; color:var(--sf-text-secondary);">
+                ¿No tienes cuenta? Contacta al administrador.
+            </p>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN (oculta hasta login) -->
+    <div id="app">
+        <div class="topbar">
+            <div class="brand">Taller H&P</div>
+            <div class="user" id="user-info">Usuario: —</div>
+        </div>
+        <div class="container">
+            <h2>Dashboard</h2>
+            <p>Bienvenido al sistema de gestión del taller.</p>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="label">Autos en taller</div>
+                    <div class="value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Entregas hoy</div>
+                    <div class="value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Facturas pendientes</div>
+                    <div class="value">0</div>
+                </div>
+            </div>
+            <!-- Aquí irán las vistas de los módulos (Kanban, cotizaciones, etc.) -->
+        </div>
+    </div>
+
+    <!-- TOAST (notificaciones) -->
+    <div id="toast" style="position:fixed; bottom:20px; right:20px; background:#333; color:#fff; padding:12px 20px; border-radius:8px; opacity:0; transition:opacity 0.3s; z-index:9999;"></div>
+
+    <script>
+        // ============================================================
+        // CONFIGURACIÓN SUPABASE
+        // ============================================================
+        const SUPABASE_URL = 'https://jcknyppkhorqgoieafkh.supabase.co';
+        const SUPABASE_ANON = 'sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
+
+        // Inicializar cliente
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+        // ============================================================
+        // SIMULACIÓN DE LOGIN (por ahora solo visual)
+        // ============================================================
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!sb) {
+                toast('⚠️ Configura tus credenciales de Supabase en el código.', 'err');
+                return;
+            }
+
+            try {
+                // Autenticación real con Supabase
+                const { data, error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                
+                mostrarApp(email);
+                toast('✅ Inicio de sesión exitoso');
+            } catch(err) {
+                toast('❌ Error: ' + err.message, 'err');
+            }
+        });
+
+        function mostrarApp(email) {
+            document.getElementById('login-wrap').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('user-info').textContent = 'Usuario: ' + email;
+        }
+
+        // Función de toast (simple)
+        function toast(msg, tipo = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.opacity = '1';
+            t.style.background = tipo === 'err' ? '#ba0517' : '#2e844a';
+            setTimeout(() => { t.style.opacity = '0'; }, 3000);
+        }
+    </script>
+</body>
+</html>
