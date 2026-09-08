@@ -81,7 +81,7 @@
 
         .stat-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
             margin-top: 24px;
         }
@@ -92,8 +92,10 @@
             padding: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .stat-card .label { font-size: 12px; text-transform: uppercase; color: var(--sf-text-secondary); }
-        .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 8px; color: var(--sf-blue); }
+        .stat-card .label { font-size: 11px; text-transform: uppercase; color: var(--sf-text-secondary); }
+        .stat-card .value { font-size: 24px; font-weight: 700; margin-top: 8px; color: var(--sf-blue); }
+        .stat-card.warning .value { color: var(--sf-warning); }
+        .stat-card.danger .value { color: var(--sf-error); }
 
         .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
         .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -168,6 +170,8 @@
         .kanban-card .card-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 
         .filtro-kanban { margin-bottom: 16px; display: flex; gap: 10px; align-items: center; }
+        .filtro-dashboard { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: flex-end; }
+        .filtro-dashboard .inp { max-width: 200px; }
 
         .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--sf-border); margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn {
@@ -250,7 +254,37 @@
                 <!-- Dashboard -->
                 <div id="view-dashboard" class="view">
                     <h2 class="page-title">Dashboard</h2>
-                    <p class="page-desc">Resumen operativo del taller.</p>
+                    <p class="page-desc">Resumen operativo con indicadores de entrega.</p>
+                    
+                    <!-- Filtros -->
+                    <div class="filtro-dashboard">
+                        <div>
+                            <label class="flbl">Agencia</label>
+                            <select class="inp" id="filtro-agencia" onchange="aplicarFiltrosDashboard()">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="flbl">Cliente</label>
+                            <select class="inp" id="filtro-cliente" onchange="aplicarFiltrosDashboard()">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="flbl">Estado</label>
+                            <select class="inp" id="filtro-estado" onchange="aplicarFiltrosDashboard()">
+                                <option value="">Todos</option>
+                                <option value="cotizacion">Cotización</option>
+                                <option value="aprobada">Aprobada</option>
+                                <option value="en_taller">En Taller</option>
+                                <option value="completada">Completada</option>
+                                <option value="cancelada">Cancelada</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-sm" onclick="limpiarFiltrosDashboard()">Limpiar</button>
+                    </div>
+
+                    <!-- Tarjetas principales -->
                     <div class="stat-grid">
                         <div class="stat-card">
                             <div class="label">Autos en taller</div>
@@ -264,6 +298,56 @@
                             <div class="label">Facturas pendientes</div>
                             <div class="value" id="stat-facturas">0</div>
                         </div>
+                    </div>
+
+                    <!-- Tarjetas de entrega -->
+                    <div class="stat-grid">
+                        <div class="stat-card warning">
+                            <div class="label">Próximos a entregar</div>
+                            <div class="value" id="stat-proximos">0</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="label">Retrasados</div>
+                            <div class="value" id="stat-retrasados">0</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="label">Entregados hoy</div>
+                            <div class="value" id="stat-entregados-hoy">0</div>
+                        </div>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="label">Tasa de retraso</div>
+                            <div class="value" id="kpi-tasa-retraso">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Técnico del mes</div>
+                            <div class="value" id="kpi-tecnico-mes">—</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Días promedio taller (agencias)</div>
+                            <div class="value" id="kpi-dias-promedio">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de OTs filtradas -->
+                    <div class="card mt-2">
+                        <h3>Órdenes de trabajo (según filtros)</h3>
+                        <table id="tabla-dashboard">
+                            <thead>
+                                <tr>
+                                    <th>Folio</th>
+                                    <th>Placa</th>
+                                    <th>Cliente</th>
+                                    <th>Estado</th>
+                                    <th>Fecha entrega</th>
+                                    <th>Días restantes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-dashboard"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -803,19 +887,153 @@
             item.addEventListener('click', () => sv(item.dataset.view));
         });
 
-        // ============ DASHBOARD ============
+        // ============ DASHBOARD (con filtros e indicadores) ============
         async function cargarDashboard() {
             try {
-                const { count: taller } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
-                document.getElementById('stat-taller').textContent = taller || 0;
-                const hoy = new Date().toISOString().split('T')[0];
-                const { count: entregas } = await sb.from('ot').select('*', { count: 'exact', head: true })
-                    .eq('estado', 'completada')
-                    .gte('updated_at', hoy + 'T00:00:00')
-                    .lt('updated_at', hoy + 'T23:59:59');
-                document.getElementById('stat-entregas').textContent = entregas || 0;
-                document.getElementById('stat-facturas').textContent = 0;
+                // Cargar selects de filtros
+                const [agencias, clientes] = await Promise.all([
+                    sb.from('agencias').select('*').eq('activo', true).order('nombre'),
+                    sb.from('clientes').select('*').eq('activo', true).order('nombre')
+                ]);
+                const selAgencia = document.getElementById('filtro-agencia');
+                selAgencia.innerHTML = '<option value="">Todas</option>';
+                agencias.data.forEach(a => selAgencia.innerHTML += `<option value="${a.id}">${escHtml(a.nombre)}</option>`);
+                const selCliente = document.getElementById('filtro-cliente');
+                selCliente.innerHTML = '<option value="">Todos</option>';
+                clientes.data.forEach(c => selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
+                
+                // Aplicar filtros y cargar datos
+                await aplicarFiltrosDashboard();
             } catch (e) { console.warn('Dashboard error:', e.message); }
+        }
+
+        async function aplicarFiltrosDashboard() {
+            try {
+                const agenciaId = document.getElementById('filtro-agencia').value;
+                const clienteId = document.getElementById('filtro-cliente').value;
+                const estado = document.getElementById('filtro-estado').value;
+
+                // Construir query dinámico
+                let query = sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)');
+                if (agenciaId) query = query.eq('agencia_id', agenciaId);
+                if (clienteId) query = query.eq('cliente_id', clienteId);
+                if (estado) query = query.eq('estado', estado);
+                query = query.not('estado', 'is', null); // evitar nulos
+                const { data: ots, error } = await query.order('created_at', { ascending: false });
+                if (error) throw error;
+
+                // Calcular indicadores
+                const hoy = new Date();
+                const hoyISO = hoy.toISOString().split('T')[0];
+
+                // Autos en taller (sin filtro? mejor contamos de ots filtrados? Mantener simple: de todos)
+                const { count: tallerCount } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
+                document.getElementById('stat-taller').textContent = tallerCount || 0;
+
+                // Entregas hoy (sin filtro)
+                const { count: entregasHoy } = await sb.from('ot').select('*', { count: 'exact', head: true })
+                    .eq('estado', 'completada')
+                    .gte('updated_at', hoyISO + 'T00:00:00')
+                    .lt('updated_at', hoyISO + 'T23:59:59');
+                document.getElementById('stat-entregas').textContent = entregasHoy || 0;
+
+                // Facturas pendientes (count de OTs completadas sin facturar)
+                const { count: factPend } = await sb.from('ot').select('*', { count: 'exact', head: true })
+                    .eq('estado', 'completada')
+                    .is('factura_id', null);
+                document.getElementById('stat-facturas').textContent = factPend || 0;
+
+                // Próximos a entregar (entre hoy y +2 días, estados aprobada/en_taller)
+                const proximos = ots.filter(ot => {
+                    if (!ot.fecha_entrega) return false;
+                    const fecha = new Date(ot.fecha_entrega);
+                    const diff = (fecha - hoy) / (1000*60*60*24);
+                    return diff >= 0 && diff <= 2 && ['aprobada','en_taller'].includes(ot.estado);
+                });
+                document.getElementById('stat-proximos').textContent = proximos.length;
+
+                // Retrasados (fecha_entrega < hoy y estados aprobada/en_taller)
+                const retrasados = ots.filter(ot => {
+                    if (!ot.fecha_entrega) return false;
+                    const fecha = new Date(ot.fecha_entrega);
+                    return fecha < hoy && ['aprobada','en_taller'].includes(ot.estado);
+                });
+                document.getElementById('stat-retrasados').textContent = retrasados.length;
+
+                // Entregados hoy (completadas con fecha_entrega = hoy o updated_at hoy)
+                const entregadosHoy = ots.filter(ot => {
+                    return ot.estado === 'completada' && ot.fecha_entrega === hoyISO;
+                });
+                document.getElementById('stat-entregados-hoy').textContent = entregadosHoy.length;
+
+                // KPI Tasa de retraso: (retrasados / total en proceso) *100
+                const totalEnProceso = ots.filter(ot => ['aprobada','en_taller'].includes(ot.estado) && ot.fecha_entrega).length;
+                const tasa = totalEnProceso > 0 ? Math.round((retrasados.length / totalEnProceso) * 100) : 0;
+                document.getElementById('kpi-tasa-retraso').textContent = tasa + '%';
+
+                // KPI Técnico del mes (más completados en el mes actual)
+                const { data: tecnicos } = await sb.from('tecnicos').select('*').order('nombre');
+                let maxTecnico = '—';
+                let maxCount = 0;
+                for (const tec of tecnicos) {
+                    const { count } = await sb.from('ot')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('tecnico_id', tec.id)
+                        .eq('estado', 'completada')
+                        .gte('updated_at', hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01T00:00:00');
+                    if (count > maxCount) { maxCount = count; maxTecnico = tec.nombre; }
+                }
+                document.getElementById('kpi-tecnico-mes').textContent = maxTecnico;
+
+                // KPI Días promedio en taller por agencia (solo completadas con fecha_aprobacion y updated_at)
+                let totalDias = 0;
+                let totalOTs = 0;
+                for (const ag of agencias.data) {
+                    const { data: agOTs } = await sb.from('ot')
+                        .select('fecha_aprobacion, updated_at')
+                        .eq('agencia_id', ag.id)
+                        .eq('estado', 'completada')
+                        .not('fecha_aprobacion', 'is', null);
+                    if (agOTs) {
+                        agOTs.forEach(ot => {
+                            if (ot.fecha_aprobacion && ot.updated_at) {
+                                const diff = (new Date(ot.updated_at) - new Date(ot.fecha_aprobacion)) / (1000*60*60*24);
+                                totalDias += diff;
+                                totalOTs++;
+                            }
+                        });
+                    }
+                }
+                const promedio = totalOTs > 0 ? (totalDias / totalOTs).toFixed(1) : 0;
+                document.getElementById('kpi-dias-promedio').textContent = promedio;
+
+                // Poblar tabla dashboard
+                const tbody = document.getElementById('tbody-dashboard');
+                tbody.innerHTML = '';
+                ots.forEach(ot => {
+                    const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
+                    let diasRestantes = '—';
+                    if (ot.fecha_entrega) {
+                        const diff = Math.ceil((new Date(ot.fecha_entrega) - hoy) / (1000*60*60*24));
+                        diasRestantes = diff < 0 ? `<span style="color:red;">${diff} días</span>` : `${diff} días`;
+                    }
+                    tbody.innerHTML += `<tr>
+                        <td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td>
+                        <td>${escHtml(ot.placa)}</td>
+                        <td>${escHtml(clienteNombre)}</td>
+                        <td>${escHtml(ot.estado || '')}</td>
+                        <td>${ot.fecha_entrega || '—'}</td>
+                        <td>${diasRestantes}</td>
+                    </tr>`;
+                });
+            } catch (e) { toast('Error en dashboard: ' + e.message, 'err'); }
+        }
+
+        function limpiarFiltrosDashboard() {
+            document.getElementById('filtro-agencia').value = '';
+            document.getElementById('filtro-cliente').value = '';
+            document.getElementById('filtro-estado').value = '';
+            aplicarFiltrosDashboard();
         }
 
         // ============ CRUD GENÉRICO ============
@@ -1203,6 +1421,8 @@
                 const codigo = generarCodigoOT();
                 const numero = 'CT-' + codigo;
                 const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
+                // Calcular días estimados (8 horas = 480 min por jornada)
+                const diasEstimados = Math.ceil(tiempoTotal / 480) || 1;
 
                 const otData = {
                     placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
@@ -1210,6 +1430,7 @@
                     agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
                     cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
                     costo_total: costoTotal, tiempo_est: tiempoTotal,
+                    dias_estimados: diasEstimados,
                     estado: 'cotizacion',
                     flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
                     numero: numero,
@@ -1267,9 +1488,22 @@
         async function aprobarOT(id) {
             abrirConfirm('¿Aprobar esta cotización? Se convertirá en Orden de Trabajo.', async () => {
                 try {
-                    const { data: otActual } = await sb.from('ot').select('codigo').eq('id', id).single();
-                    const nuevoNumero = 'OT-' + (otActual?.codigo || '');
-                    const { error } = await sb.from('ot').update({ estado: 'aprobada', numero: nuevoNumero }).eq('id', id);
+                    const { data: otActual, error: errGet } = await sb.from('ot').select('*').eq('id', id).single();
+                    if (errGet) throw errGet;
+                    const nuevoNumero = 'OT-' + (otActual.codigo || '');
+                    const fechaAprobacion = new Date().toISOString();
+                    // Calcular fecha entrega = fecha aprobación + días estimados
+                    const dias = otActual.dias_estimados || 1;
+                    const fechaEntrega = new Date();
+                    fechaEntrega.setDate(fechaEntrega.getDate() + dias);
+                    const fechaEntregaISO = fechaEntrega.toISOString().split('T')[0];
+
+                    const { error } = await sb.from('ot').update({
+                        estado: 'aprobada',
+                        numero: nuevoNumero,
+                        fecha_aprobacion: fechaAprobacion,
+                        fecha_entrega: fechaEntregaISO
+                    }).eq('id', id);
                     if (error) throw error;
                     toast('Cotización aprobada → ' + nuevoNumero + ' ✓', 'ok');
                     cargarCotizaciones();
@@ -1283,9 +1517,19 @@
             abrirConfirm(`¿Aprobar ${seleccionadas.length} cotizaciones? Se convertirán en OTs.`, async () => {
                 try {
                     for (const id of seleccionadas) {
-                        const { data: otActual } = await sb.from('ot').select('codigo').eq('id', id).single();
+                        const { data: otActual } = await sb.from('ot').select('*').eq('id', id).single();
                         const nuevoNumero = 'OT-' + (otActual?.codigo || '');
-                        await sb.from('ot').update({ estado: 'aprobada', numero: nuevoNumero }).eq('id', id);
+                        const fechaAprobacion = new Date().toISOString();
+                        const dias = otActual?.dias_estimados || 1;
+                        const fechaEntrega = new Date();
+                        fechaEntrega.setDate(fechaEntrega.getDate() + dias);
+                        const fechaEntregaISO = fechaEntrega.toISOString().split('T')[0];
+                        await sb.from('ot').update({
+                            estado: 'aprobada',
+                            numero: nuevoNumero,
+                            fecha_aprobacion: fechaAprobacion,
+                            fecha_entrega: fechaEntregaISO
+                        }).eq('id', id);
                     }
                     toast('Cotizaciones aprobadas ✓', 'ok');
                     cargarCotizaciones();
@@ -1334,6 +1578,15 @@
         function generarCardKanban(ot) {
             const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
             const tecnicoNombre = ot.tecnicos?.nombre || 'Sin asignar';
+            // Mostrar fecha entrega y estado retrasado
+            let fechaEntregaInfo = '';
+            if (ot.fecha_entrega) {
+                const hoy = new Date().toISOString().split('T')[0];
+                const esRetrasada = ot.fecha_entrega < hoy && ['aprobada','en_taller'].includes(ot.estado);
+                fechaEntregaInfo = `<div style="font-size:11px; ${esRetrasada ? 'color:red;' : 'color:green;'}">
+                    📅 ${ot.fecha_entrega} ${esRetrasada ? '⚠️' : ''}
+                </div>`;
+            }
             let acciones = '';
             if (ot.estado === 'aprobada') {
                 acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
@@ -1348,6 +1601,7 @@
                 <div class="card-placa">${escHtml(ot.placa)}</div>
                 <div class="card-cliente">${escHtml(clienteNombre)}</div>
                 <div class="card-codigo">${escHtml(ot.numero || ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>
+                ${fechaEntregaInfo}
                 <div class="card-actions">${acciones}</div>
             </div>`;
         }
@@ -1436,7 +1690,9 @@
                 detalleOTActual = ot;
                 let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p>`;
                 html += `<p><strong>Folio:</strong> ${escHtml(ot.numero || ot.codigo || '')}</p>`;
-                html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p><hr>`;
+                html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p>`;
+                if (ot.fecha_entrega) html += `<p><strong>Fecha entrega:</strong> ${ot.fecha_entrega}</p>`;
+                html += `<hr>`;
                 html += `<h4>Lista de trabajos:</h4>`;
                 if (otTrabajos.length === 0) html += `<p>No hay trabajos registrados.</p>`;
                 else {
@@ -1715,6 +1971,7 @@
             txt += `Cliente: ${ot.cliente_tipo === 'agencia' ? 'Agencia' : 'Particular'}\n`;
             txt += `Total: $${ot.costo_total || 0}\n`;
             txt += `Estado: ${ot.estado}\n`;
+            if (ot.fecha_entrega) txt += `Fecha entrega: ${ot.fecha_entrega}\n`;
             navigator.clipboard.writeText(txt);
             toast('Resumen copiado ✓', 'ok');
         }
