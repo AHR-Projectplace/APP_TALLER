@@ -1557,11 +1557,25 @@
             const cont = document.getElementById('conciliacion-tabla');
             cont.innerHTML = '<p>Cargando...</p>';
             const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
-            let html = '<table><thead><tr><th>Agencia</th><th>Facturado</th><th>Pendiente</th><th>Total</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Agencia</th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Estado</th><th>Total</th><th>Factura</th></tr></thead><tbody>';
             for (const ag of agencias) {
-                const { count: facturadas } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('agencia_id', ag.id).eq('estado', 'completada').not('factura_id', 'is', null);
-                const { count: pendientes } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('agencia_id', ag.id).eq('estado', 'completada').is('factura_id', null);
-                html += `<tr><td>${escHtml(ag.nombre)}</td><td>${facturadas || 0}</td><td>${pendientes || 0}</td><td>${(facturadas||0)+(pendientes||0)}</td></tr>`;
+                const { data: ots } = await sb.from('ot')
+                    .select('*, marcas(nombre), modelos(nombre), facturas(numero)')
+                    .eq('agencia_id', ag.id)
+                    .neq('estado', 'cancelada')
+                    .order('created_at', { ascending: false });
+                if (!ots || ots.length === 0) continue;
+                ots.forEach(ot => {
+                    html += '<tr>'
+                        + '<td>' + escHtml(ag.nombre) + '</td>'
+                        + '<td>' + escHtml(ot.numero || ot.codigo || '') + '</td>'
+                        + '<td>' + escHtml(ot.placa || '') + '</td>'
+                        + '<td>' + escHtml((ot.marcas?.nombre || '') + ' ' + (ot.modelos?.nombre || '')) + '</td>'
+                        + '<td>' + escHtml(ot.estado || '') + '</td>'
+                        + '<td>$' + (ot.costo_total || 0) + '</td>'
+                        + '<td>' + (ot.facturas?.numero ? escHtml(ot.facturas.numero) : '<span style="color:#888;">Pendiente</span>') + '</td>'
+                        + '</tr>';
+                });
             }
             html += '</tbody></table>';
             cont.innerHTML = html;
@@ -1652,6 +1666,17 @@
                 doc.text('Vigencia: ' + (ot.vigencia || ''), 107, boxY + 20);
                 doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
                 finalY = boxY + 35;
+
+                // Datos del vehículo
+                doc.setFillColor(240, 240, 240); doc.rect(M, finalY, 180, 7, 'F');
+                doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+                doc.text('DATOS DEL VEHÍCULO', M + 2, finalY + 5); finalY += 11;
+                doc.setFont('helvetica', 'normal');
+                doc.text('Placa: ' + (ot.placa || ''), M + 2, finalY);
+                doc.text('Marca: ' + (ot.marcas?.nombre || ''), M + 50, finalY);
+                doc.text('Modelo: ' + (ot.modelos?.nombre || ''), M + 100, finalY); finalY += 5;
+                doc.text('Año: ' + (ot.anio || ''), M + 2, finalY);
+                doc.text('Color: ' + (ot.color || ''), M + 50, finalY); finalY += 8;
 
                 const tableBody = items.map((it, i) => [i+1, it.trabajos?.nombre || '', it.cantidad || 1, it.precio || 0, it.importe || it.precio || 0]);
                 doc.autoTable({ startY: finalY, head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']], body: tableBody, theme: 'striped', headStyles: { fillColor: [10, 15, 44] }, styles: { fontSize: 9 }, margin: { left: M, right: M } });
