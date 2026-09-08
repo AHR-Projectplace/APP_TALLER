@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
@@ -64,6 +65,8 @@
         .btn-block { width: 100%; }
         .btn-sm { padding: 6px 10px; font-size: 12px; min-height: 32px; }
         .btn-secondary { background: var(--sf-gray-20); color: var(--sf-text); }
+        .btn-excel { background: #28a745; color: #fff; }
+        .btn-excel:hover { background: #218838; }
 
         .inp {
             width: 100%; padding: 10px 12px; border: 1px solid var(--sf-border);
@@ -89,17 +92,8 @@
             padding: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .stat-card .label {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--sf-text-secondary);
-        }
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-            margin-top: 8px;
-            color: var(--sf-blue);
-        }
+        .stat-card .label { font-size: 12px; text-transform: uppercase; color: var(--sf-text-secondary); }
+        .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 8px; color: var(--sf-blue); }
 
         .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
         .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -130,8 +124,7 @@
         .sidebar .nav-item {
             display: block; padding: 8px 20px; color: var(--sf-text-secondary);
             text-decoration: none; transition: background 0.2s; font-weight: 500;
-            cursor: pointer;
-            font-size: 14px;
+            cursor: pointer; font-size: 14px;
         }
         .sidebar .nav-item:hover { background: var(--sf-blue-light); color: var(--sf-blue); }
         .sidebar .nav-item.active { background: var(--sf-blue-light); color: var(--sf-blue); border-right: 3px solid var(--sf-blue); }
@@ -155,110 +148,40 @@
         #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 9999; }
         #toast.show { opacity: 1; }
 
-        .kanban-board {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            padding: 20px 0;
-        }
+        .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding: 20px 0; }
         .kanban-col {
-            background: var(--sf-gray-10);
-            border-radius: var(--r);
-            min-width: 260px;
-            flex: 1;
-            padding: 12px;
-            border: 2px solid transparent;
-            transition: background 0.2s, border-color 0.2s;
+            background: var(--sf-gray-10); border-radius: var(--r); min-width: 260px; flex: 1;
+            padding: 12px; border: 2px solid transparent; transition: background 0.2s, border-color 0.2s;
         }
-        .kanban-col.drag-over {
-            background: var(--sf-blue-light);
-            border-color: var(--sf-blue);
-        }
-        .kanban-col-header {
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .kanban-col-header .count {
-            background: var(--sf-white);
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 12px;
-        }
-        .kanban-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 50px;
-        }
+        .kanban-col.drag-over { background: var(--sf-blue-light); border-color: var(--sf-blue); }
+        .kanban-col-header { font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .kanban-col-header .count { background: var(--sf-white); border-radius: 20px; padding: 2px 8px; font-size: 12px; }
+        .kanban-cards { display: flex; flex-direction: column; gap: 8px; min-height: 50px; }
         .kanban-card {
-            background: var(--sf-white);
-            border-radius: var(--r);
-            padding: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: grab;
-            transition: box-shadow 0.2s;
+            background: var(--sf-white); border-radius: var(--r); padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: grab; transition: box-shadow 0.2s;
         }
-        .kanban-card.dragging {
-            opacity: 0.5;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .kanban-card .card-placa {
-            font-weight: 700;
-            font-size: 16px;
-        }
-        .kanban-card .card-cliente {
-            font-size: 12px;
-            color: var(--sf-text-secondary);
-            margin: 4px 0;
-        }
-        .kanban-card .card-codigo {
-            font-family: monospace;
-            font-size: 11px;
-            color: var(--sf-gray-40);
-            margin-bottom: 8px;
-        }
-        .kanban-card .card-actions {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
+        .kanban-card.dragging { opacity: 0.5; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .kanban-card .card-placa { font-weight: 700; font-size: 16px; }
+        .kanban-card .card-cliente { font-size: 12px; color: var(--sf-text-secondary); margin: 4px 0; }
+        .kanban-card .card-codigo { font-family: monospace; font-size: 11px; color: var(--sf-gray-40); margin-bottom: 8px; }
+        .kanban-card .card-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 
-        .filtro-kanban {
-            margin-bottom: 16px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .filtro-kanban { margin-bottom: 16px; display: flex; gap: 10px; align-items: center; }
 
-        .tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 1px solid var(--sf-border);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+        .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--sf-border); margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn {
-            padding: 8px 16px;
-            border: none;
-            background: transparent;
-            color: var(--sf-text-secondary);
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: color 0.2s, border-color 0.2s;
+            padding: 8px 16px; border: none; background: transparent; color: var(--sf-text-secondary);
+            font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s;
         }
-        .tab-btn.active {
-            color: var(--sf-blue);
-            border-bottom-color: var(--sf-blue);
-        }
+        .tab-btn.active { color: var(--sf-blue); border-bottom-color: var(--sf-blue); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         .consulta-tecnico-wrap { max-width: 800px; margin: 40px auto; padding: 20px; }
         .consulta-tecnico-card { background: var(--sf-white); border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        .chk-flujo-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
     </style>
 </head>
 <body>
@@ -318,6 +241,7 @@
                 <a class="nav-item" data-view="nueva-ot">Nueva Cotización</a>
                 <a class="nav-item" data-view="cotizaciones">Cotizaciones</a>
                 <a class="nav-item" data-view="taller">Taller (Kanban)</a>
+                <a class="nav-item" data-view="facturacion">Facturación</a>
                 
                 <div class="nav-section">Administración</div>
                 <a class="nav-item" data-view="admin">Administración</a>
@@ -465,6 +389,36 @@
                             <div class="kanban-col-header">Canceladas <span class="count" id="count-cancelada">0</span></div>
                             <div class="kanban-cards" id="cards-cancelada"></div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Facturación -->
+                <div id="view-facturacion" class="view" style="display:none;">
+                    <h2 class="page-title">Facturación</h2>
+                    <p class="page-desc">Vincular OTs completadas con facturas de agencias.</p>
+                    <div class="filtro-kanban" style="margin-bottom:20px;">
+                        <label class="flbl">Agencia:</label>
+                        <select class="inp" id="factura-agencia" onchange="cargarOTsFacturables()">
+                            <option value="">Selecciona...</option>
+                        </select>
+                    </div>
+                    <div class="card" id="factura-ot-lista"></div>
+                    <div class="card mt-2">
+                        <h3>Asignar factura</h3>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="flbl">Número de factura</label>
+                                <input class="inp" type="text" id="factura-numero" placeholder="A-1234">
+                            </div>
+                            <div class="form-col" style="display:flex; align-items:flex-end;">
+                                <button class="btn btn-primary" onclick="asignarFactura()">Vincular factura</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-2">
+                        <h3>Conciliación por agencia</h3>
+                        <button class="btn btn-excel btn-sm" onclick="exportarConciliacion()">📊 Exportar Excel</button>
+                        <div id="conciliacion-tabla" style="margin-top:15px;"></div>
                     </div>
                 </div>
 
@@ -681,16 +635,26 @@
         </div>
     </div>
 
+    <!-- MODAL EDITAR FLUJO -->
+    <div class="mov" id="mov-editar-flujo">
+        <div class="mo">
+            <div class="moh">Editar trabajos de la OT</div>
+            <div class="mob" id="editar-flujo-body"></div>
+            <div class="mof">
+                <button class="btn" onclick="cerrarEditarFlujo()">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarFlujoOT()">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast"></div>
 
     <script>
-        // ============ CONFIGURACIÓN DE SUPABASE ============
         const SUPABASE_URL = 'https://jcknyppkhorqgoieafkh.supabase.co';
         const SUPABASE_ANON = 'sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-        // ============ ESTADO GLOBAL ============
         let SESSION = null;
         let PERFIL = null;
         let confirmCallback = null;
@@ -698,6 +662,7 @@
         let origenTecnico = 'vista';
         let CONFIG = {};
         let detalleOTActual = null;
+        let otEditarFlujoId = null;
 
         // ============ UTILIDADES ============
         function escHtml(str) {
@@ -740,16 +705,13 @@
                 SESSION = { id: userId, email: data.email, rol: data.rol };
                 await cargarConfiguracion();
                 mostrarApp();
-            } catch (e) {
-                toast('Error al iniciar sesión: ' + e.message, 'err');
-            }
+            } catch (e) { toast('Error al iniciar sesión: ' + e.message, 'err'); }
         }
 
         (async function boot() {
             sb.auth.onAuthStateChange(async (event, session) => {
-                if (session?.user && !SESSION) {
-                    await initSession(session.user.id);
-                } else if (!session && event === 'SIGNED_OUT') {
+                if (session?.user && !SESSION) await initSession(session.user.id);
+                else if (!session && event === 'SIGNED_OUT') {
                     SESSION = null; PERFIL = null; CONFIG = {};
                     document.getElementById('app').style.display = 'none';
                     document.getElementById('login-wrap').style.display = 'flex';
@@ -776,7 +738,6 @@
                 const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
                 if (error) { CONFIG = {}; return; }
                 CONFIG = data || {};
-                // Poblar formulario si existe
                 if (data) {
                     document.getElementById('cfg-nombre').value = data.empresa_nombre || '';
                     document.getElementById('cfg-rfc').value = data.empresa_rfc || '';
@@ -789,9 +750,7 @@
                     document.getElementById('cfg-condiciones').value = data.condiciones_pago || '';
                     document.getElementById('cfg-terminos').value = data.terminos_cotizacion || '';
                 }
-            } catch (e) {
-                console.warn('Error cargando configuración:', e.message);
-            }
+            } catch (e) { console.warn('Error cargando configuración:', e.message); }
         }
 
         async function guardarConfig() {
@@ -820,8 +779,7 @@
             document.getElementById('login-wrap').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
-            const rol = PERFIL?.rol;
-            if (rol === 'tecnico') { sb.auth.signOut(); return; }
+            if (PERFIL?.rol === 'tecnico') { sb.auth.signOut(); return; }
             sv('dashboard');
             cargarDashboard();
         }
@@ -837,6 +795,7 @@
             if (view === 'nueva-ot') cargarDatosNuevaOT();
             if (view === 'cotizaciones') cargarCotizaciones();
             if (view === 'taller') cargarTaller();
+            if (view === 'facturacion') { cargarAgenciasFactura(); cargarConciliacion(); }
             if (view === 'admin') cargarAdmin();
         }
 
@@ -880,13 +839,9 @@
             let html = '';
             for (const field of config.fields) {
                 html += `<div style="margin-bottom:12px;"><label class="flbl">${field.label}</label>`;
-                if (field.type === 'select') {
-                    html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}><option value="">Selecciona...</option></select>`;
-                } else if (field.type === 'number') {
-                    html += `<input class="inp" type="number" name="${field.name}" ${field.step ? 'step="' + field.step + '"' : ''} ${field.required ? 'required' : ''}>`;
-                } else {
-                    html += `<input class="inp" type="${field.type || 'text'}" name="${field.name}" ${field.required ? 'required' : ''}>`;
-                }
+                if (field.type === 'select') html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}><option value="">Selecciona...</option></select>`;
+                else if (field.type === 'number') html += `<input class="inp" type="number" name="${field.name}" ${field.step ? 'step="' + field.step + '"' : ''} ${field.required ? 'required' : ''}>`;
+                else html += `<input class="inp" type="${field.type || 'text'}" name="${field.name}" ${field.required ? 'required' : ''}>`;
                 html += `</div>`;
             }
             document.getElementById('crud-body').innerHTML = html;
@@ -904,9 +859,7 @@
                 try {
                     const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true);
                     const select = document.querySelector(`#crud-body select[name="marca_id"]`);
-                    if (select && marcas) {
-                        marcas.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nombre; select.appendChild(opt); });
-                    }
+                    if (select && marcas) marcas.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nombre; select.appendChild(opt); });
                 } catch (e) { toast('Error cargando marcas: ' + e.message, 'err'); }
             }
             document.getElementById('mov-crud').classList.add('open');
@@ -950,9 +903,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-marcas');
                 tbody.innerHTML = '';
-                data.forEach(m => {
-                    tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`;
-                });
+                data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando marcas: ' + e.message, 'err'); }
         }
 
@@ -962,9 +913,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-modelos');
                 tbody.innerHTML = '';
-                data.forEach(m => {
-                    tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre || '')}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`;
-                });
+                data.forEach(m => tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre || '')}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando modelos: ' + e.message, 'err'); }
         }
 
@@ -974,9 +923,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-trabajos');
                 tbody.innerHTML = '';
-                data.forEach(t => {
-                    tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} min</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`;
-                });
+                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} min</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando trabajos: ' + e.message, 'err'); }
         }
 
@@ -986,9 +933,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-agencias');
                 tbody.innerHTML = '';
-                data.forEach(a => {
-                    tbody.innerHTML += `<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc || '')}</td><td>${escHtml(a.contacto || '')}</td><td>${a.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button></td></tr>`;
-                });
+                data.forEach(a => tbody.innerHTML += `<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc || '')}</td><td>${escHtml(a.contacto || '')}</td><td>${a.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando agencias: ' + e.message, 'err'); }
         }
 
@@ -998,9 +943,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-clientes');
                 tbody.innerHTML = '';
-                data.forEach(c => {
-                    tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono || '')}</td><td>${escHtml(c.email || '')}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button></td></tr>`;
-                });
+                data.forEach(c => tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono || '')}</td><td>${escHtml(c.email || '')}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando clientes: ' + e.message, 'err'); }
         }
 
@@ -1038,9 +981,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-tecnicos');
                 tbody.innerHTML = '';
-                data.forEach(t => {
-                    tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
-                });
+                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`);
             } catch (e) { toast('Error cargando técnicos: ' + e.message, 'err'); }
         }
 
@@ -1099,7 +1040,7 @@
                 tbody.innerHTML = '';
                 data.forEach(u => {
                     if (u.rol === 'tecnico') return;
-                    tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
+                    tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`);
                 });
             } catch (e) { toast('Error cargando usuarios: ' + e.message, 'err'); }
         }
@@ -1209,41 +1150,6 @@
             else { document.getElementById('div-cliente-particular').style.display = 'none'; document.getElementById('div-cliente-agencia').style.display = 'block'; }
         }
 
-        async function generarFolioCotizacion() {
-            const anio = new Date().getFullYear();
-            const prefijo = `CT-${anio}-`;
-            try {
-                const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
-                let consecutivo = 1;
-                if (existentes && existentes.length > 0) {
-                    const ultimo = existentes[0].numero.replace(prefijo, '');
-                    consecutivo = parseInt(ultimo) + 1;
-                }
-                return prefijo + String(consecutivo).padStart(3, '0');
-            } catch (e) {
-                console.warn('Error generando folio cotización:', e.message);
-                // Fallback: usar timestamp
-                return prefijo + Date.now().toString().slice(-3);
-            }
-        }
-
-        async function generarFolioOT() {
-            const anio = new Date().getFullYear();
-            const prefijo = `OT-${anio}-`;
-            try {
-                const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
-                let consecutivo = 1;
-                if (existentes && existentes.length > 0) {
-                    const ultimo = existentes[0].numero.replace(prefijo, '');
-                    consecutivo = parseInt(ultimo) + 1;
-                }
-                return prefijo + String(consecutivo).padStart(3, '0');
-            } catch (e) {
-                console.warn('Error generando folio OT:', e.message);
-                return prefijo + Date.now().toString().slice(-3);
-            }
-        }
-
         function generarCodigoOT() {
             const tipoCliente = document.getElementById('ot-tipo-cliente').value;
             let agenciaCodigo = 'PAR';
@@ -1268,9 +1174,7 @@
         }
 
         async function guardarCotizacion() {
-            console.log('Iniciando guardarCotizacion...');
             try {
-                // Validaciones
                 const placa = document.getElementById('ot-placa').value.trim();
                 const anio = document.getElementById('ot-anio').value || null;
                 const marcaId = document.getElementById('ot-marca').value;
@@ -1279,15 +1183,12 @@
                 const clienteParticularId = document.getElementById('ot-cliente-particular').value || null;
                 const clienteAgenciaId = document.getElementById('ot-cliente-agencia').value || null;
 
-                console.log('Validando campos:', { placa, marcaId, modeloId, tipoCliente });
-
                 if (!placa) { toast('Ingresa la placa', 'err'); return; }
                 if (!marcaId) { toast('Selecciona una marca', 'err'); return; }
                 if (!modeloId) { toast('Selecciona un modelo', 'err'); return; }
                 if (tipoCliente === 'particular' && !clienteParticularId) { toast('Selecciona el cliente particular', 'err'); return; }
                 if (tipoCliente === 'agencia' && !clienteAgenciaId) { toast('Selecciona la agencia', 'err'); return; }
 
-                // Trabajos seleccionados
                 const trabajosSeleccionados = [];
                 let costoTotal = 0, tiempoTotal = 0;
                 document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
@@ -1298,12 +1199,9 @@
 
                 if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
 
-                // Generar folio y código
-                const numero = await generarFolioCotizacion();
                 const codigo = generarCodigoOT();
+                const numero = 'CT-' + codigo;
                 const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
-
-                console.log('Folio generado:', numero);
 
                 const otData = {
                     placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
@@ -1318,13 +1216,9 @@
                     codigo: codigo
                 };
 
-                console.log('Insertando en Supabase...');
                 const { data, error } = await sb.from('ot').insert(otData).select().single();
                 if (error) throw error;
 
-                console.log('OT insertada:', data.id);
-
-                // Insertar trabajos
                 for (const t of trabajosSeleccionados) {
                     const { error: errItem } = await sb.from('ot_trabajos').insert({ ot_id: data.id, trabajo_id: t.trabajo_id, precio: t.precio });
                     if (errItem) throw errItem;
@@ -1333,10 +1227,7 @@
                 toast('Cotización ' + numero + ' creada ✓', 'ok');
                 document.getElementById('form-nueva-ot').reset();
                 sv('cotizaciones');
-            } catch (e) {
-                console.error('Error en guardarCotizacion:', e);
-                toast('Error: ' + e.message, 'err');
-            }
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
         // ============ COTIZACIONES ============
@@ -1375,10 +1266,11 @@
         async function aprobarOT(id) {
             abrirConfirm('¿Aprobar esta cotización? Se convertirá en Orden de Trabajo.', async () => {
                 try {
-                    const folioOT = await generarFolioOT();
-                    const { error } = await sb.from('ot').update({ estado: 'aprobada', numero: folioOT }).eq('id', id);
+                    const { data: otActual } = await sb.from('ot').select('codigo').eq('id', id).single();
+                    const nuevoNumero = 'OT-' + (otActual?.codigo || '');
+                    const { error } = await sb.from('ot').update({ estado: 'aprobada', numero: nuevoNumero }).eq('id', id);
                     if (error) throw error;
-                    toast('Cotización aprobada → OT ' + folioOT + ' ✓', 'ok');
+                    toast('Cotización aprobada → ' + nuevoNumero + ' ✓', 'ok');
                     cargarCotizaciones();
                 } catch (e) { toast('Error: ' + e.message, 'err'); }
             }, 'Sí, aprobar');
@@ -1390,8 +1282,9 @@
             abrirConfirm(`¿Aprobar ${seleccionadas.length} cotizaciones? Se convertirán en OTs.`, async () => {
                 try {
                     for (const id of seleccionadas) {
-                        const folioOT = await generarFolioOT();
-                        await sb.from('ot').update({ estado: 'aprobada', numero: folioOT }).eq('id', id);
+                        const { data: otActual } = await sb.from('ot').select('codigo').eq('id', id).single();
+                        const nuevoNumero = 'OT-' + (otActual?.codigo || '');
+                        await sb.from('ot').update({ estado: 'aprobada', numero: nuevoNumero }).eq('id', id);
                     }
                     toast('Cotizaciones aprobadas ✓', 'ok');
                     cargarCotizaciones();
@@ -1442,15 +1335,14 @@
             const tecnicoNombre = ot.tecnicos?.nombre || 'Sin asignar';
             let acciones = '';
             if (ot.estado === 'aprobada') {
-                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else if (ot.estado === 'en_taller') {
-                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${ot.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else if (ot.estado === 'completada') {
                 acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else {
                 acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             }
-
             return `<div class="kanban-card" data-ot-id="${ot.id}" draggable="true">
                 <div class="card-placa">${escHtml(ot.placa)}</div>
                 <div class="card-cliente">${escHtml(clienteNombre)}</div>
@@ -1493,7 +1385,6 @@
             document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
         });
 
-        // ============ MOVER OT ============
         async function moverOT(otId, nuevoEstado) {
             const mensajes = {
                 en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
@@ -1510,7 +1401,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ ASIGNAR TÉCNICO ============
         async function abrirAsignar(otId) {
             otAsignarId = otId;
             try {
@@ -1535,7 +1425,6 @@
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
-        // ============ VER TRABAJOS ============
         async function verTrabajos(otId) {
             try {
                 const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single();
@@ -1563,8 +1452,130 @@
 
         function cerrarDetalleOT() { document.getElementById('mov-detalle-ot').classList.remove('open'); detalleOTActual = null; }
 
-        function imprimirCotizacionDesdeDetalle() {
-            if (detalleOTActual) imprimirCotizacion(detalleOTActual.id);
+        function imprimirCotizacionDesdeDetalle() { if (detalleOTActual) imprimirCotizacion(detalleOTActual.id); }
+
+        // ============ EDITAR FLUJO POST-APROBACIÓN ============
+        function abrirEditarFlujo(otId) {
+            otEditarFlujoId = otId;
+            sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId).then(async ({ data: otTrabajos, error }) => {
+                if (error) { toast('Error: ' + error.message, 'err'); return; }
+                const { data: todosTrabajos } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+                let html = '';
+                todosTrabajos.forEach(t => {
+                    const selected = otTrabajos.some(ot => ot.trabajo_id === t.id);
+                    html += `<div class="chk-flujo-item">
+                        <input type="checkbox" class="chk-flujo-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" ${selected ? 'checked' : ''}>
+                        <span>${escHtml(t.nombre)} — $${t.precio_base || 0}</span>
+                    </div>`;
+                });
+                document.getElementById('editar-flujo-body').innerHTML = html;
+                document.getElementById('mov-editar-flujo').classList.add('open');
+            });
+        }
+
+        function cerrarEditarFlujo() {
+            document.getElementById('mov-editar-flujo').classList.remove('open');
+            otEditarFlujoId = null;
+        }
+
+        async function guardarFlujoOT() {
+            const otId = otEditarFlujoId;
+            const seleccionados = Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(chk => ({
+                trabajo_id: parseInt(chk.value),
+                precio: parseFloat(chk.dataset.precio || 0)
+            }));
+            if (seleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
+            try {
+                await sb.from('ot_trabajos').delete().eq('ot_id', otId);
+                for (const t of seleccionados) await sb.from('ot_trabajos').insert({ ot_id: otId, trabajo_id: t.trabajo_id, precio: t.precio });
+                const costoTotal = seleccionados.reduce((sum, t) => sum + t.precio, 0);
+                await sb.from('ot').update({ costo_total: costoTotal }).eq('id', otId);
+                toast('Flujo actualizado ✓', 'ok');
+                cerrarEditarFlujo();
+                cargarTaller();
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
+        }
+
+        // ============ FACTURACIÓN ============
+        async function cargarAgenciasFactura() {
+            const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+            const select = document.getElementById('factura-agencia');
+            select.innerHTML = '<option value="">Selecciona...</option>';
+            agencias.forEach(a => select.innerHTML += `<option value="${a.id}">${escHtml(a.nombre)}</option>`);
+        }
+
+        async function cargarOTsFacturables() {
+            const agenciaId = document.getElementById('factura-agencia').value;
+            const cont = document.getElementById('factura-ot-lista');
+            cont.innerHTML = '';
+            if (!agenciaId) return;
+
+            const { data: ots } = await sb.from('ot')
+                .select('*, marcas(nombre), modelos(nombre), clientes(nombre)')
+                .eq('agencia_id', agenciaId)
+                .eq('estado', 'completada')
+                .is('factura_id', null)
+                .order('updated_at', { ascending: false });
+
+            if (ots.length === 0) { cont.innerHTML = '<p style="color:#888;">No hay OTs completadas sin facturar para esta agencia.</p>'; return; }
+
+            cont.innerHTML = `<table>
+                <thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead>
+                <tbody>${ots.map(ot => `
+                    <tr><td><input type="checkbox" class="chk-ot-factura" value="${ot.id}"></td><td>${escHtml(ot.numero || ot.codigo)}</td><td>${escHtml(ot.placa)}</td><td>${escHtml(ot.marcas?.nombre || '')} ${escHtml(ot.modelos?.nombre || '')}</td><td>$${ot.costo_total || 0}</td></tr>`).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        function toggleAllOT() {
+            const all = document.getElementById('check-all-ot').checked;
+            document.querySelectorAll('.chk-ot-factura').forEach(c => c.checked = all);
+        }
+
+        async function asignarFactura() {
+            const agenciaId = document.getElementById('factura-agencia').value;
+            const numeroFactura = document.getElementById('factura-numero').value.trim();
+            const otSeleccionadas = Array.from(document.querySelectorAll('.chk-ot-factura:checked')).map(c => parseInt(c.value));
+            if (!agenciaId) { toast('Selecciona una agencia', 'err'); return; }
+            if (!numeroFactura) { toast('Ingresa el número de factura', 'err'); return; }
+            if (otSeleccionadas.length === 0) { toast('Selecciona al menos una OT', 'err'); return; }
+            try {
+                const { data: ots } = await sb.from('ot').select('costo_total').in('id', otSeleccionadas);
+                const montoTotal = ots.reduce((sum, ot) => sum + (ot.costo_total || 0), 0);
+                const { data: factura, error } = await sb.from('facturas').insert({ numero: numeroFactura, agencia_id: agenciaId, monto_total: montoTotal }).select('id').single();
+                if (error) throw error;
+                await sb.from('ot').update({ factura_id: factura.id }).in('id', otSeleccionadas);
+                toast('Factura ' + numeroFactura + ' vinculada ✓', 'ok');
+                document.getElementById('factura-numero').value = '';
+                cargarOTsFacturables();
+                cargarConciliacion();
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
+        }
+
+        async function cargarConciliacion() {
+            const cont = document.getElementById('conciliacion-tabla');
+            cont.innerHTML = '<p>Cargando...</p>';
+            const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+            let html = '<table><thead><tr><th>Agencia</th><th>Facturado</th><th>Pendiente</th><th>Total</th></tr></thead><tbody>';
+            for (const ag of agencias) {
+                const { count: facturadas } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('agencia_id', ag.id).eq('estado', 'completada').not('factura_id', 'is', null);
+                const { count: pendientes } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('agencia_id', ag.id).eq('estado', 'completada').is('factura_id', null);
+                html += `<tr><td>${escHtml(ag.nombre)}</td><td>${facturadas || 0}</td><td>${pendientes || 0}</td><td>${(facturadas||0)+(pendientes||0)}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            cont.innerHTML = html;
+        }
+
+        function exportarConciliacion() {
+            const rows = [];
+            document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr => {
+                const cells = Array.from(tr.children).map(td => td.textContent);
+                rows.push({ Agencia: cells[0], Facturado: cells[1], Pendiente: cells[2], Total: cells[3] });
+            });
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Conciliación');
+            XLSX.writeFile(wb, `conciliacion_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         // ============ PDF ============
@@ -1578,7 +1589,7 @@
                 let r = '';
                 const c = Math.floor(n/100), d = Math.floor((n%100)/10), u = n%10;
                 if(c) r += centenas[c] + ' ';
-                if(n%100 < 20 && n%100 > 0) { r += unidades[n%100]; }
+                if(n%100 < 20 && n%100 > 0) r += unidades[n%100];
                 else { if(d) r += decenas[d] + (u?' Y ':''); if(u) r += unidades[u]; }
                 return r.trim();
             }
@@ -1611,47 +1622,25 @@
                 const M = 15;
                 let finalY = M;
 
-                // Header
-                if (CONFIG.logo_base64) {
-                    doc.addImage(CONFIG.logo_base64, 'PNG', M, M, 55, 18);
-                    finalY = M + 22;
-                } else {
-                    doc.setFontSize(16);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(CONFIG.empresa_nombre || 'Taller', M, M + 8);
-                    finalY = M + 14;
-                }
+                if (CONFIG.logo_base64) { doc.addImage(CONFIG.logo_base64, 'PNG', M, M, 55, 18); finalY = M + 22; }
+                else { doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text(CONFIG.empresa_nombre || 'Taller', M, M + 8); finalY = M + 14; }
 
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                doc.text(CONFIG.empresa_rfc || '', M, finalY);
-                finalY += 4;
-                doc.text(CONFIG.empresa_direccion || '', M, finalY);
-                finalY += 4;
-                doc.text(`${CONFIG.empresa_telefono || ''} · ${CONFIG.empresa_email || ''}`, M, finalY);
-                finalY += 4;
+                doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                doc.text(CONFIG.empresa_rfc || '', M, finalY); finalY += 4;
+                doc.text(CONFIG.empresa_direccion || '', M, finalY); finalY += 4;
+                doc.text(`${CONFIG.empresa_telefono || ''} · ${CONFIG.empresa_email || ''}`, M, finalY); finalY += 4;
                 doc.text(CONFIG.empresa_web || '', M, finalY);
 
-                // Banda "COTIZACIÓN"
                 finalY = M + 30;
-                doc.setFillColor(10, 15, 44);
-                doc.rect(M, finalY, 180, 8, 'F');
-                doc.setTextColor(255);
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                doc.text('COTIZACIÓN', M + 2, finalY + 5.5);
-                doc.setTextColor(0);
-                finalY += 14;
+                doc.setFillColor(10, 15, 44); doc.rect(M, finalY, 180, 8, 'F');
+                doc.setTextColor(255); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+                doc.text('COTIZACIÓN', M + 2, finalY + 5.5); doc.setTextColor(0); finalY += 14;
 
-                // Cajas
                 const boxY = finalY;
                 doc.setDrawColor(0);
-                doc.roundedRect(M, boxY, 90, 30, 2, 2);
-                doc.roundedRect(105, boxY, 90, 30, 2, 2);
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'bold');
-                doc.text('CLIENTE', M + 2, boxY + 5);
-                doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
+                doc.roundedRect(M, boxY, 90, 30, 2, 2); doc.roundedRect(105, boxY, 90, 30, 2, 2);
+                doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+                doc.text('CLIENTE', M + 2, boxY + 5); doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
                 doc.setFont('helvetica', 'normal');
                 doc.text(ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || ''), M + 2, boxY + 12);
                 doc.text(cliente?.telefono || '', M + 2, boxY + 16);
@@ -1663,59 +1652,33 @@
                 doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
                 finalY = boxY + 35;
 
-                // Tabla
                 const tableBody = items.map((it, i) => [i+1, it.trabajos?.nombre || '', it.cantidad || 1, it.precio || 0, it.importe || it.precio || 0]);
-                doc.autoTable({
-                    startY: finalY,
-                    head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']],
-                    body: tableBody,
-                    theme: 'striped',
-                    headStyles: { fillColor: [10, 15, 44] },
-                    styles: { fontSize: 9 },
-                    margin: { left: M, right: M }
-                });
+                doc.autoTable({ startY: finalY, head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']], body: tableBody, theme: 'striped', headStyles: { fillColor: [10, 15, 44] }, styles: { fontSize: 9 }, margin: { left: M, right: M } });
                 finalY = doc.lastAutoTable.finalY + 5;
 
-                // Totales
                 const total = ot.costo_total || 0;
-                const subtotal = total;
-                doc.text('Subtotal: $' + subtotal.toFixed(2), 130, finalY);
-                finalY += 5;
-                doc.text('TOTAL: $' + total.toFixed(2), 130, finalY);
-                finalY += 8;
+                doc.text('Subtotal: $' + total.toFixed(2), 130, finalY); finalY += 5;
+                doc.text('TOTAL: $' + total.toFixed(2), 130, finalY); finalY += 8;
 
-                // Monto en letras
                 doc.setFont('helvetica', 'italic');
-                doc.text('Son: ' + numeroALetras(total), M, finalY);
-                finalY += 10;
+                doc.text('Son: ' + numeroALetras(total), M, finalY); finalY += 10;
 
-                // Términos
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 });
-                finalY += 20;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+                doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 }); finalY += 20;
 
-                // Footer
-                doc.setFillColor(10, 15, 44);
-                doc.rect(0, 285, 210, 12, 'F');
-                doc.setTextColor(255);
-                doc.text(CONFIG.empresa_nombre || 'Taller', 105, 293, { align: 'center' });
-
+                doc.setFillColor(10, 15, 44); doc.rect(0, 285, 210, 12, 'F');
+                doc.setTextColor(255); doc.text(CONFIG.empresa_nombre || 'Taller', 105, 293, { align: 'center' });
                 doc.save(ot.numero + '.pdf');
-            } catch (e) {
-                console.error('Error generando PDF:', e);
-                toast('Error generando PDF: ' + e.message, 'err');
-            }
+            } catch (e) { toast('Error generando PDF: ' + e.message, 'err'); }
         }
 
         // ============ WHATSAPP ============
         function copiarResumenWhatsApp() {
             if (!detalleOTActual) return;
             const ot = detalleOTActual;
-            const cliente = ot.cliente_tipo === 'agencia' ? 'Agencia' : 'Cliente';
             let txt = `*Resumen de ${ot.numero || ot.codigo}*\n`;
             txt += `Placa: ${ot.placa}\n`;
-            txt += `Cliente: ${cliente}\n`;
+            txt += `Cliente: ${ot.cliente_tipo === 'agencia' ? 'Agencia' : 'Particular'}\n`;
             txt += `Total: $${ot.costo_total || 0}\n`;
             txt += `Estado: ${ot.estado}\n`;
             navigator.clipboard.writeText(txt);
@@ -1745,7 +1708,6 @@
             const cont = document.getElementById('consulta-tareas-lista');
             cont.innerHTML = '';
             if (!tecnicoId) return;
-
             try {
                 const { data, error } = await sb.from('ot')
                     .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
@@ -1753,9 +1715,7 @@
                     .in('estado', ['aprobada', 'en_taller'])
                     .order('updated_at', { ascending: false });
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
-
                 if (data.length === 0) { cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>'; return; }
-
                 data.forEach(ot => {
                     const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
                     let badge = '';
