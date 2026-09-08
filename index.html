@@ -6,7 +6,9 @@
     <title>Taller Hojalatería y Pintura — Sistema de Gestión</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
@@ -424,7 +426,7 @@
                         <thead>
                             <tr>
                                 <th><input type="checkbox" id="check-all" onchange="toggleAll()"></th>
-                                <th>Código</th>
+                                <th>Folio</th>
                                 <th>Placa</th>
                                 <th>Cliente</th>
                                 <th>Total</th>
@@ -466,10 +468,10 @@
                     </div>
                 </div>
 
-                <!-- Administración -->
+                <!-- Administración (con pestañas) -->
                 <div id="view-admin" class="view" style="display:none;">
                     <h2 class="page-title">Administración</h2>
-                    <p class="page-desc">Gestiona catálogos, técnicos y usuarios del sistema.</p>
+                    <p class="page-desc">Gestiona catálogos, técnicos, usuarios y configuración.</p>
                     <div class="tabs">
                         <button class="tab-btn active" onclick="cambiarTabAdmin('marcas')">Marcas</button>
                         <button class="tab-btn" onclick="cambiarTabAdmin('modelos')">Modelos</button>
@@ -478,6 +480,7 @@
                         <button class="tab-btn" onclick="cambiarTabAdmin('clientes')">Clientes</button>
                         <button class="tab-btn" onclick="cambiarTabAdmin('tecnicos')">Técnicos</button>
                         <button class="tab-btn" onclick="cambiarTabAdmin('usuarios')">Usuarios</button>
+                        <button class="tab-btn" onclick="cambiarTabAdmin('config')">Configuración</button>
                     </div>
 
                     <div id="tab-marcas" class="tab-content active">
@@ -535,6 +538,44 @@
                         </div>
                         <table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-usuarios"></tbody></table>
                     </div>
+
+                    <div id="tab-config" class="tab-content">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Configuración de empresa</h3>
+                            <button class="btn btn-primary btn-sm" onclick="guardarConfig()">Guardar cambios</button>
+                        </div>
+                        <div style="margin-top:15px;">
+                            <label class="flbl">Nombre de la empresa</label>
+                            <input class="inp" type="text" id="cfg-nombre">
+                            <br><br>
+                            <label class="flbl">RFC</label>
+                            <input class="inp" type="text" id="cfg-rfc">
+                            <br><br>
+                            <label class="flbl">Dirección</label>
+                            <input class="inp" type="text" id="cfg-direccion">
+                            <br><br>
+                            <label class="flbl">Teléfono</label>
+                            <input class="inp" type="text" id="cfg-telefono">
+                            <br><br>
+                            <label class="flbl">Email</label>
+                            <input class="inp" type="email" id="cfg-email">
+                            <br><br>
+                            <label class="flbl">Sitio web</label>
+                            <input class="inp" type="text" id="cfg-web">
+                            <br><br>
+                            <label class="flbl">Banco</label>
+                            <input class="inp" type="text" id="cfg-banco">
+                            <br><br>
+                            <label class="flbl">Cuenta bancaria/CLABE</label>
+                            <input class="inp" type="text" id="cfg-cuenta">
+                            <br><br>
+                            <label class="flbl">Condiciones de pago</label>
+                            <textarea class="inp" id="cfg-condiciones" rows="2"></textarea>
+                            <br><br>
+                            <label class="flbl">Términos de cotización</label>
+                            <textarea class="inp" id="cfg-terminos" rows="3"></textarea>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -552,7 +593,7 @@
         </div>
     </div>
 
-    <!-- MODAL CONFIRMACIÓN (ya no se usa para mover OT, pero se mantiene para otras acciones) -->
+    <!-- MODAL CONFIRMACIÓN -->
     <div class="mov" id="mov-confirm">
         <div class="mo">
             <div class="moh">Confirmar</div>
@@ -627,13 +668,15 @@
         </div>
     </div>
 
-    <!-- MODAL DETALLE OT -->
+    <!-- MODAL DETALLE OT (trabajos) -->
     <div class="mov" id="mov-detalle-ot">
         <div class="mo">
             <div class="moh" id="detalle-titulo">Detalle de trabajos</div>
             <div class="mob" id="detalle-contenido"></div>
             <div class="mof">
                 <button class="btn" onclick="cerrarDetalleOT()">Cerrar</button>
+                <button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button>
+                <button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button>
             </div>
         </div>
     </div>
@@ -642,25 +685,24 @@
     <div id="toast"></div>
 
     <script>
+        // ============ CONFIGURACIÓN DE SUPABASE ============
         const SUPABASE_URL = 'https://jcknyppkhorqgoieafkh.supabase.co';
         const SUPABASE_ANON = 'sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+        // ============ ESTADO GLOBAL ============
         let SESSION = null;
         let PERFIL = null;
         let confirmCallback = null;
         let otAsignarId = null;
         let origenTecnico = 'vista';
+        let CONFIG = {}; // configuración de empresa
+        let detalleOTActual = null;
 
         // ============ UTILIDADES ============
         function escHtml(str) {
             if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
         }
 
         function toast(msg, tipo = '') {
@@ -689,12 +731,13 @@
         }
         document.getElementById('confirm-ok').addEventListener('click', ejecutarConfirm);
 
-        // ============ AUTH Y SESIÓN ============
+        // ============ AUTENTICACIÓN ============
         async function initSession(userId) {
             const { data, error } = await sb.from('perfiles').select('*').eq('id', userId).single();
             if (error) { toast('Error al cargar perfil: ' + error.message, 'err'); return; }
             PERFIL = data;
             SESSION = { id: userId, email: data.email, rol: data.rol };
+            await cargarConfiguracion();
             mostrarApp();
         }
 
@@ -703,8 +746,7 @@
                 if (session?.user && !SESSION) {
                     await initSession(session.user.id);
                 } else if (!session && event === 'SIGNED_OUT') {
-                    SESSION = null;
-                    PERFIL = null;
+                    SESSION = null; PERFIL = null; CONFIG = {};
                     document.getElementById('app').style.display = 'none';
                     document.getElementById('login-wrap').style.display = 'flex';
                 }
@@ -721,10 +763,49 @@
                 const { data, error } = await sb.auth.signInWithPassword({ email, password });
                 if (error) throw error;
                 toast('✅ Sesión iniciada', 'ok');
-            } catch (err) {
-                toast('❌ Error: ' + err.message, 'err');
-            }
+            } catch (err) { toast('❌ Error: ' + err.message, 'err'); }
         });
+
+        // ============ CONFIGURACIÓN ============
+        async function cargarConfiguracion() {
+            const { data, error } = await sb.from('configuracion_erp').select('*').eq('id', 1).single();
+            if (error) { CONFIG = {}; return; }
+            CONFIG = data || {};
+            // Poblar formulario si existe
+            if (data) {
+                document.getElementById('cfg-nombre').value = data.empresa_nombre || '';
+                document.getElementById('cfg-rfc').value = data.empresa_rfc || '';
+                document.getElementById('cfg-direccion').value = data.empresa_direccion || '';
+                document.getElementById('cfg-telefono').value = data.empresa_telefono || '';
+                document.getElementById('cfg-email').value = data.empresa_email || '';
+                document.getElementById('cfg-web').value = data.empresa_web || '';
+                document.getElementById('cfg-banco').value = data.banco || '';
+                document.getElementById('cfg-cuenta').value = data.cuenta_bancaria || '';
+                document.getElementById('cfg-condiciones').value = data.condiciones_pago || '';
+                document.getElementById('cfg-terminos').value = data.terminos_cotizacion || '';
+            }
+        }
+
+        async function guardarConfig() {
+            const cfg = {
+                empresa_nombre: document.getElementById('cfg-nombre').value,
+                empresa_rfc: document.getElementById('cfg-rfc').value,
+                empresa_direccion: document.getElementById('cfg-direccion').value,
+                empresa_telefono: document.getElementById('cfg-telefono').value,
+                empresa_email: document.getElementById('cfg-email').value,
+                empresa_web: document.getElementById('cfg-web').value,
+                banco: document.getElementById('cfg-banco').value,
+                cuenta_bancaria: document.getElementById('cfg-cuenta').value,
+                condiciones_pago: document.getElementById('cfg-condiciones').value,
+                terminos_cotizacion: document.getElementById('cfg-terminos').value
+            };
+            try {
+                const { error } = await sb.from('configuracion_erp').upsert({ id: 1, ...cfg });
+                if (error) throw error;
+                await cargarConfiguracion();
+                toast('Configuración guardada ✓', 'ok');
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
+        }
 
         // ============ NAVEGACIÓN ============
         function mostrarApp() {
@@ -768,7 +849,7 @@
             document.getElementById('stat-facturas').textContent = 0;
         }
 
-        // ============ CRUD GENÉRICO ============
+        // ============ CRUD GENÉRICO (catálogos) ============
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
@@ -788,12 +869,9 @@
             document.getElementById('crud-title').textContent = id ? 'Editar ' + config.title : 'Nuevo ' + config.title;
             let html = '';
             for (const field of config.fields) {
-                html += `<div style="margin-bottom:12px;">
-                    <label class="flbl">${field.label}</label>`;
+                html += `<div style="margin-bottom:12px;"><label class="flbl">${field.label}</label>`;
                 if (field.type === 'select') {
-                    html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}>`;
-                    html += `<option value="">Selecciona...</option>`;
-                    html += `</select>`;
+                    html += `<select class="inp" name="${field.name}" ${field.required ? 'required' : ''}><option value="">Selecciona...</option></select>`;
                 } else if (field.type === 'number') {
                     html += `<input class="inp" type="number" name="${field.name}" ${field.step ? 'step="' + field.step + '"' : ''} ${field.required ? 'required' : ''}>`;
                 } else {
@@ -814,22 +892,13 @@
                 const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true);
                 const select = document.querySelector(`#crud-body select[name="marca_id"]`);
                 if (select && marcas) {
-                    marcas.forEach(m => {
-                        const opt = document.createElement('option');
-                        opt.value = m.id;
-                        opt.textContent = m.nombre;
-                        select.appendChild(opt);
-                    });
+                    marcas.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nombre; select.appendChild(opt); });
                 }
             }
             document.getElementById('mov-crud').classList.add('open');
         }
 
-        function cerrarModal() {
-            document.getElementById('mov-crud').classList.remove('open');
-            currentModal = null;
-            currentEditId = null;
-        }
+        function cerrarModal() { document.getElementById('mov-crud').classList.remove('open'); currentModal = null; currentEditId = null; }
 
         document.getElementById('crud-save').addEventListener('click', async () => {
             if (!currentModal) return;
@@ -841,10 +910,7 @@
                 datos[field.name] = input ? input.value : '';
             }
             for (const field of config.fields) {
-                if (field.required && !datos[field.name]) {
-                    toast('Campo ' + field.label + ' es obligatorio', 'err');
-                    return;
-                }
+                if (field.required && !datos[field.name]) { toast('Campo ' + field.label + ' es obligatorio', 'err'); return; }
             }
             const vistaActual = currentModal;
             const vistaMap = { 'marca': 'marcas', 'modelo': 'modelos', 'trabajo': 'trabajos', 'agencia': 'agencias', 'cliente': 'clientes' };
@@ -859,32 +925,18 @@
                     toast('Creado ✓', 'ok');
                 }
                 cerrarModal();
-                if (document.getElementById('view-admin').style.display !== 'none') {
-                    cargarAdmin();
-                } else {
-                    sv(vistaMap[vistaActual] || vistaActual);
-                }
-            } catch (e) {
-                toast('Error: ' + e.message, 'err');
-            }
+                if (document.getElementById('view-admin').style.display !== 'none') cargarAdmin(); else sv(vistaMap[vistaActual] || vistaActual);
+            } catch (e) { toast('Error: ' + e.message, 'err'); }
         });
 
-        // ============ CARGA DE CATÁLOGOS ============
+        // ============ CARGAR CATÁLOGOS ============
         async function cargarMarcas() {
             const { data, error } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
             if (error) { toast('Error: ' + error.message, 'err'); return; }
             const tbody = document.getElementById('tabla-marcas');
             tbody.innerHTML = '';
             data.forEach(m => {
-                tbody.innerHTML += `<tr>
-                    <td>${m.id}</td>
-                    <td>${escHtml(m.nombre)}</td>
-                    <td>${m.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`;
             });
         }
 
@@ -894,16 +946,7 @@
             const tbody = document.getElementById('tabla-modelos');
             tbody.innerHTML = '';
             data.forEach(m => {
-                tbody.innerHTML += `<tr>
-                    <td>${m.id}</td>
-                    <td>${escHtml(m.nombre)}</td>
-                    <td>${escHtml(m.marcas?.nombre || '')}</td>
-                    <td>${m.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre || '')}</td><td>${m.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo', ${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos', ${m.id}, '${escHtml(m.nombre)}')">Eliminar</button></td></tr>`;
             });
         }
 
@@ -913,17 +956,7 @@
             const tbody = document.getElementById('tabla-trabajos');
             tbody.innerHTML = '';
             data.forEach(t => {
-                tbody.innerHTML += `<tr>
-                    <td>${t.id}</td>
-                    <td>${escHtml(t.nombre)}</td>
-                    <td>$${t.precio_base || 0}</td>
-                    <td>${t.tiempo_est || 0} min</td>
-                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} min</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`;
             });
         }
 
@@ -933,17 +966,7 @@
             const tbody = document.getElementById('tabla-agencias');
             tbody.innerHTML = '';
             data.forEach(a => {
-                tbody.innerHTML += `<tr>
-                    <td>${a.id}</td>
-                    <td>${escHtml(a.nombre)}</td>
-                    <td>${escHtml(a.rfc || '')}</td>
-                    <td>${escHtml(a.contacto || '')}</td>
-                    <td>${a.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc || '')}</td><td>${escHtml(a.contacto || '')}</td><td>${a.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia', ${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias', ${a.id}, '${escHtml(a.nombre)}')">Eliminar</button></td></tr>`;
             });
         }
 
@@ -953,35 +976,19 @@
             const tbody = document.getElementById('tabla-clientes');
             tbody.innerHTML = '';
             data.forEach(c => {
-                tbody.innerHTML += `<tr>
-                    <td>${c.id}</td>
-                    <td>${escHtml(c.nombre)}</td>
-                    <td>${escHtml(c.telefono || '')}</td>
-                    <td>${escHtml(c.email || '')}</td>
-                    <td>${c.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono || '')}</td><td>${escHtml(c.email || '')}</td><td>${c.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente', ${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes', ${c.id}, '${escHtml(c.nombre)}')">Eliminar</button></td></tr>`;
             });
         }
 
         async function eliminarRegistro(tabla, id, descripcion) {
-            abrirConfirm(
-                `¿Eliminar "${descripcion}"?`,
-                async () => {
-                    try {
-                        const { error } = await sb.from(tabla).update({ activo: false }).eq('id', id);
-                        if (error) throw error;
-                        toast('Eliminado ✓', 'ok');
-                        cargarAdmin();
-                    } catch (e) {
-                        toast('Error: ' + e.message, 'err');
-                    }
-                },
-                'Sí, eliminar'
-            );
+            abrirConfirm(`¿Eliminar "${descripcion}"?`, async () => {
+                try {
+                    const { error } = await sb.from(tabla).update({ activo: false }).eq('id', id);
+                    if (error) throw error;
+                    toast('Eliminado ✓', 'ok');
+                    cargarAdmin();
+                } catch (e) { toast('Error: ' + e.message, 'err'); }
+            }, 'Sí, eliminar');
         }
 
         // ============ ADMINISTRACIÓN ============
@@ -1007,33 +1014,13 @@
             const tbody = document.getElementById('tabla-tecnicos');
             tbody.innerHTML = '';
             data.forEach(t => {
-                tbody.innerHTML += `<tr>
-                    <td>${t.id}</td>
-                    <td>${escHtml(t.nombre)}</td>
-                    <td>${t.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id}, ${!t.activo})">${t.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
             });
         }
 
-        function abrirModalTecnico() {
-            origenTecnico = 'vista';
-            document.getElementById('tec-nombre').value = '';
-            document.getElementById('mov-tecnico').classList.add('open');
-        }
-
-        function abrirModalTecnicoDesdeAsignar() {
-            origenTecnico = 'asignar';
-            document.getElementById('tec-nombre').value = '';
-            document.getElementById('mov-tecnico').classList.add('open');
-        }
-
-        function cerrarModalTecnico() {
-            document.getElementById('mov-tecnico').classList.remove('open');
-        }
+        function abrirModalTecnico() { origenTecnico = 'vista'; document.getElementById('tec-nombre').value = ''; document.getElementById('mov-tecnico').classList.add('open'); }
+        function abrirModalTecnicoDesdeAsignar() { origenTecnico = 'asignar'; document.getElementById('tec-nombre').value = ''; document.getElementById('mov-tecnico').classList.add('open'); }
+        function cerrarModalTecnico() { document.getElementById('mov-tecnico').classList.remove('open'); }
 
         async function guardarTecnico() {
             const nombre = document.getElementById('tec-nombre').value.trim();
@@ -1048,9 +1035,7 @@
                     const select = document.getElementById('select-tecnico');
                     select.innerHTML = '<option value="">— Sin técnico —</option>';
                     tecnicos.forEach(t => select.innerHTML += `<option value="${t.id}">${escHtml(t.nombre)}</option>`);
-                } else {
-                    cargarTecnicos();
-                }
+                } else { cargarTecnicos(); }
             } catch (e) { toast('Error: ' + e.message, 'err'); }
         }
 
@@ -1083,59 +1068,30 @@
             tbody.innerHTML = '';
             data.forEach(u => {
                 if (u.rol === 'tecnico') return;
-                tbody.innerHTML += `<tr>
-                    <td>${u.id}</td>
-                    <td>${escHtml(u.nombre)}</td>
-                    <td>${escHtml(u.email || '')}</td>
-                    <td>${u.rol}</td>
-                    <td>${u.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="text-right">
-                        <button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email || '')}</td><td>${u.rol}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirEditarUsuario('${u.id}')">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoUsuario('${u.id}', ${!u.activo})">${u.activo ? 'Desactivar' : 'Activar'}</button></td></tr>`;
             });
         }
 
         function abrirModalUsuario() {
-            document.getElementById('usu-nombre').value = '';
-            document.getElementById('usu-email').value = '';
-            document.getElementById('usu-pass').value = '';
+            document.getElementById('usu-nombre').value = ''; document.getElementById('usu-email').value = ''; document.getElementById('usu-pass').value = '';
             document.getElementById('usu-rol').value = 'recepcionista';
             document.getElementById('mov-usuario').classList.add('open');
         }
-
-        function cerrarModalUsuario() {
-            document.getElementById('mov-usuario').classList.remove('open');
-        }
+        function cerrarModalUsuario() { document.getElementById('mov-usuario').classList.remove('open'); }
 
         async function guardarUsuario() {
             const nombre = document.getElementById('usu-nombre').value.trim();
             const email = document.getElementById('usu-email').value.trim();
             const pass = document.getElementById('usu-pass').value;
             const rol = document.getElementById('usu-rol').value;
-
             if (!nombre || !email || !pass) { toast('Todos los campos son obligatorios', 'err'); return; }
             if (pass.length < 8) { toast('La contraseña debe tener al menos 8 caracteres', 'err'); return; }
-
             try {
-                const { data: user, error: errAuth } = await sb.auth.signUp({
-                    email: email,
-                    password: pass,
-                    options: { data: { nombre: nombre } }
-                });
+                const { data: user, error: errAuth } = await sb.auth.signUp({ email, password: pass, options: { data: { nombre } } });
                 if (errAuth) throw errAuth;
                 if (!user?.id) throw new Error('No se pudo crear el usuario');
-
-                const { error: errPerfil } = await sb.from('perfiles').insert({
-                    id: user.id,
-                    nombre: nombre,
-                    email: email,
-                    rol: rol,
-                    activo: true
-                });
+                const { error: errPerfil } = await sb.from('perfiles').insert({ id: user.id, nombre, email, rol, activo: true });
                 if (errPerfil) throw errPerfil;
-
                 toast('Usuario creado ✓', 'ok');
                 cerrarModalUsuario();
                 cargarUsuarios();
@@ -1190,13 +1146,7 @@
             const cont = document.getElementById('lista-trabajos');
             cont.innerHTML = '';
             trabajos.forEach(t => {
-                cont.innerHTML += `
-                    <div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);">
-                        <input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()">
-                        <span style="flex:1;">${escHtml(t.nombre)}</span>
-                        <span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} min</span>
-                    </div>
-                `;
+                cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()"><span style="flex:1;">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} min</span></div>`;
             });
 
             selMarca.addEventListener('change', async () => {
@@ -1211,46 +1161,43 @@
 
         function calcularTotal() {
             let total = 0;
-            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
-                total += parseFloat(chk.dataset.precio || 0);
-            });
+            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => total += parseFloat(chk.dataset.precio || 0));
             document.getElementById('ot-total').textContent = '$' + total.toFixed(2);
         }
 
         function cambiarTipoCliente() {
             const tipo = document.getElementById('ot-tipo-cliente').value;
-            if (tipo === 'particular') {
-                document.getElementById('div-cliente-particular').style.display = 'block';
-                document.getElementById('div-cliente-agencia').style.display = 'none';
-            } else {
-                document.getElementById('div-cliente-particular').style.display = 'none';
-                document.getElementById('div-cliente-agencia').style.display = 'block';
-            }
+            if (tipo === 'particular') { document.getElementById('div-cliente-particular').style.display = 'block'; document.getElementById('div-cliente-agencia').style.display = 'none'; }
+            else { document.getElementById('div-cliente-particular').style.display = 'none'; document.getElementById('div-cliente-agencia').style.display = 'block'; }
         }
 
-        function generarCodigoOT() {
-            const tipoCliente = document.getElementById('ot-tipo-cliente').value;
-            let agenciaCodigo = 'PAR';
-            if (tipoCliente === 'agencia') {
-                const selAgencia = document.getElementById('ot-cliente-agencia');
-                const agenciaNombre = selAgencia.options[selAgencia.selectedIndex]?.dataset?.nombre || '';
-                agenciaCodigo = agenciaNombre.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase();
-                if (agenciaCodigo.length < 3) agenciaCodigo = agenciaCodigo.padEnd(3, 'X');
+        // Generador de folio para cotización CT-YYYY-NNN
+        async function generarFolioCotizacion() {
+            const anio = new Date().getFullYear();
+            const prefijo = `CT-${anio}-`;
+            const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
+            let consecutivo = 1;
+            if (existentes && existentes.length > 0) {
+                const ultimo = existentes[0].numero.replace(prefijo, '');
+                consecutivo = parseInt(ultimo) + 1;
             }
-            const hoy = new Date();
-            const dd = String(hoy.getDate()).padStart(2, '0');
-            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-            const aa = String(hoy.getFullYear()).slice(-2);
-            const fecha = dd + mm + aa;
-            const selMarca = document.getElementById('ot-marca');
-            const marcaNombre = selMarca.options[selMarca.selectedIndex]?.dataset?.nombre || '';
-            const marcaCodigo = marcaNombre.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
-            const selModelo = document.getElementById('ot-modelo');
-            const modeloNombre = selModelo.options[selModelo.selectedIndex]?.dataset?.nombre || '';
-            const modeloCodigo = modeloNombre.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
-            return agenciaCodigo + fecha + marcaCodigo + modeloCodigo;
+            return prefijo + String(consecutivo).padStart(3, '0');
         }
 
+        // Generador de folio para OT OT-YYYY-NNN (al aprobar)
+        async function generarFolioOT() {
+            const anio = new Date().getFullYear();
+            const prefijo = `OT-${anio}-`;
+            const { data: existentes } = await sb.from('ot').select('numero').like('numero', prefijo + '%').order('numero', { ascending: false }).limit(1);
+            let consecutivo = 1;
+            if (existentes && existentes.length > 0) {
+                const ultimo = existentes[0].numero.replace(prefijo, '');
+                consecutivo = parseInt(ultimo) + 1;
+            }
+            return prefijo + String(consecutivo).padStart(3, '0');
+        }
+
+        // Guardar nueva cotización
         document.getElementById('form-nueva-ot').addEventListener('submit', async (e) => {
             e.preventDefault();
             const placa = document.getElementById('ot-placa').value.trim();
@@ -1272,10 +1219,11 @@
                 costoTotal += parseFloat(chk.dataset.precio || 0);
                 tiempoTotal += parseInt(chk.dataset.tiempo || 0);
             });
-
             if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
 
-            const codigo = generarCodigoOT();
+            const numero = await generarFolioCotizacion();
+            const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
+
             const otData = {
                 placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
                 cliente_tipo: tipoCliente,
@@ -1284,32 +1232,18 @@
                 costo_total: costoTotal, tiempo_est: tiempoTotal,
                 estado: 'cotizacion',
                 flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
-                codigo: codigo
+                numero: numero,
+                vigencia: vigencia,
+                codigo: generarCodigoOT() // mantiene el código corto
             };
 
             try {
-                let data;
-                const { data: insertData, error } = await sb.from('ot').insert(otData).select().single();
-                if (error) {
-                    if (error.code === '23505') {
-                        const { data: maxOT } = await sb.from('ot').select('codigo').like('codigo', codigo + '%').order('codigo', { ascending: false }).limit(1);
-                        let sufijo = 1;
-                        if (maxOT && maxOT.length > 0) {
-                            const ultimo = maxOT[0].codigo;
-                            sufijo = parseInt(ultimo.slice(codigo.length)) + 1 || 1;
-                        }
-                        otData.codigo = codigo + sufijo;
-                        const retry = await sb.from('ot').insert(otData).select().single();
-                        if (retry.error) throw retry.error;
-                        data = retry.data;
-                    } else { throw error; }
-                } else { data = insertData; }
-
+                const { data, error } = await sb.from('ot').insert(otData).select().single();
+                if (error) throw error;
                 for (const t of trabajosSeleccionados) {
                     await sb.from('ot_trabajos').insert({ ot_id: data.id, trabajo_id: t.trabajo_id, precio: t.precio });
                 }
-
-                toast('Cotización creada ✓', 'ok');
+                toast('Cotización ' + numero + ' creada ✓', 'ok');
                 document.getElementById('form-nueva-ot').reset();
                 sv('cotizaciones');
             } catch (err) { toast('Error: ' + err.message, 'err'); }
@@ -1328,12 +1262,15 @@
                 const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
                 tbody.innerHTML += `<tr>
                     <td><input type="checkbox" class="chk-ot" value="${ot.id}"></td>
-                    <td><strong>${escHtml(ot.codigo || ot.id)}</strong></td>
+                    <td><strong>${escHtml(ot.numero || ot.codigo || ot.id)}</strong></td>
                     <td>${escHtml(ot.placa)}</td>
                     <td>${escHtml(clienteNombre)}</td>
                     <td>$${ot.costo_total || 0}</td>
                     <td><span class="badge-cotizacion">Cotización</span></td>
-                    <td class="text-right"><button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button></td>
+                    <td class="text-right">
+                        <button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button>
+                        <button class="btn btn-sm" onclick="imprimirCotizacion(${ot.id})">📄 PDF</button>
+                    </td>
                 </tr>`;
             });
         }
@@ -1344,25 +1281,31 @@
         }
 
         async function aprobarOT(id) {
-            if (!confirm('¿Aprobar esta cotización?')) return;
-            try {
-                const { error } = await sb.from('ot').update({ estado: 'aprobada' }).eq('id', id);
-                if (error) throw error;
-                toast('Cotización aprobada ✓', 'ok');
-                cargarCotizaciones();
-            } catch (e) { toast('Error: ' + e.message, 'err'); }
+            abrirConfirm('¿Aprobar esta cotización? Se convertirá en Orden de Trabajo.', async () => {
+                try {
+                    // Generar folio OT
+                    const folioOT = await generarFolioOT();
+                    const { error } = await sb.from('ot').update({ estado: 'aprobada', numero: folioOT }).eq('id', id);
+                    if (error) throw error;
+                    toast('Cotización aprobada → OT ' + folioOT + ' ✓', 'ok');
+                    cargarCotizaciones();
+                } catch (e) { toast('Error: ' + e.message, 'err'); }
+            }, 'Sí, aprobar');
         }
 
         async function aprobarSeleccionadas() {
             const seleccionadas = Array.from(document.querySelectorAll('.chk-ot:checked')).map(chk => chk.value);
             if (seleccionadas.length === 0) { toast('No hay cotizaciones seleccionadas', 'err'); return; }
-            if (!confirm(`¿Aprobar ${seleccionadas.length} cotizaciones?`)) return;
-            try {
-                const { error } = await sb.from('ot').update({ estado: 'aprobada' }).in('id', seleccionadas);
-                if (error) throw error;
-                toast('Cotizaciones aprobadas ✓', 'ok');
-                cargarCotizaciones();
-            } catch (e) { toast('Error: ' + e.message, 'err'); }
+            abrirConfirm(`¿Aprobar ${seleccionadas.length} cotizaciones? Se convertirán en OTs.`, async () => {
+                try {
+                    for (const id of seleccionadas) {
+                        const folioOT = await generarFolioOT();
+                        await sb.from('ot').update({ estado: 'aprobada', numero: folioOT }).eq('id', id);
+                    }
+                    toast('Cotizaciones aprobadas ✓', 'ok');
+                    cargarCotizaciones();
+                } catch (e) { toast('Error: ' + e.message, 'err'); }
+            }, 'Sí, aprobar todas');
         }
 
         // ============ KANBAN TALLER ============
@@ -1406,35 +1349,21 @@
             const tecnicoNombre = ot.tecnicos?.nombre || 'Sin asignar';
             let acciones = '';
             if (ot.estado === 'aprobada') {
-                acciones = `
-                    <button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button>
-                    <button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button>
-                    <button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button>
-                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>
-                `;
+                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else if (ot.estado === 'en_taller') {
-                acciones = `
-                    <button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button>
-                    <button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button>
-                    <button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button>
-                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>
-                `;
+                acciones = `<button class="btn btn-sm btn-primary" onclick="moverOT(${ot.id}, 'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${ot.id})">Asignar Técnico</button><button class="btn btn-sm btn-danger" onclick="moverOT(${ot.id}, 'cancelada')">Cancelar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else if (ot.estado === 'completada') {
-                acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span>
-                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+                acciones = `<span style="font-size:12px; color:var(--sf-text-secondary);">Completada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             } else {
-                acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span>
-                    <button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
+                acciones = `<span style="font-size:12px; color:var(--sf-error);">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${ot.id})">Ver trabajos</button>`;
             }
 
-            return `
-                <div class="kanban-card" data-ot-id="${ot.id}" draggable="true">
-                    <div class="card-placa">${escHtml(ot.placa)}</div>
-                    <div class="card-cliente">${escHtml(clienteNombre)}</div>
-                    <div class="card-codigo">${escHtml(ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>
-                    <div class="card-actions">${acciones}</div>
-                </div>
-            `;
+            return `<div class="kanban-card" data-ot-id="${ot.id}" draggable="true">
+                <div class="card-placa">${escHtml(ot.placa)}</div>
+                <div class="card-cliente">${escHtml(clienteNombre)}</div>
+                <div class="card-codigo">${escHtml(ot.numero || ot.codigo || '')} · Téc: ${escHtml(tecnicoNombre)}</div>
+                <div class="card-actions">${acciones}</div>
+            </div>`;
         }
 
         // ============ DRAG & DROP NATIVO HTML5 ============
@@ -1447,10 +1376,7 @@
 
         document.addEventListener('dragover', (e) => {
             const col = e.target.closest('.kanban-col');
-            if (col) {
-                e.preventDefault();
-                col.classList.add('drag-over');
-            }
+            if (col) { e.preventDefault(); col.classList.add('drag-over'); }
         });
 
         document.addEventListener('dragleave', (e) => {
@@ -1474,7 +1400,7 @@
             document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
         });
 
-        // ============ MOVER OT (con confirmación nativa) ============
+        // ============ MOVER OT ============
         async function moverOT(otId, nuevoEstado) {
             const mensajes = {
                 en_taller: '¿Iniciar esta OT (pasar a En Taller)?',
@@ -1501,10 +1427,7 @@
             document.getElementById('mov-asignar').classList.add('open');
         }
 
-        function cerrarAsignar() {
-            document.getElementById('mov-asignar').classList.remove('open');
-            otAsignarId = null;
-        }
+        function cerrarAsignar() { document.getElementById('mov-asignar').classList.remove('open'); otAsignarId = null; }
 
         async function confirmarAsignacion() {
             const tecnicoId = document.getElementById('select-tecnico').value || null;
@@ -1521,32 +1444,181 @@
         async function verTrabajos(otId) {
             const { data: ot } = await sb.from('ot').select('*').eq('id', otId).single();
             if (!ot) return;
-            const { data: otTrabajos, error } = await sb.from('ot_trabajos')
-                .select('*, trabajos(nombre)')
-                .eq('ot_id', otId);
+            const { data: otTrabajos, error } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
             if (error) { toast('Error: ' + error.message, 'err'); return; }
 
+            detalleOTActual = ot;
             let html = `<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p>`;
-            html += `<p><strong>Código:</strong> ${escHtml(ot.codigo || '')}</p>`;
+            html += `<p><strong>Folio:</strong> ${escHtml(ot.numero || ot.codigo || '')}</p>`;
             html += `<p><strong>Costo Total:</strong> $${ot.costo_total || 0}</p><hr>`;
             html += `<h4>Lista de trabajos:</h4>`;
-            if (otTrabajos.length === 0) {
-                html += `<p>No hay trabajos registrados.</p>`;
-            } else {
+            if (otTrabajos.length === 0) html += `<p>No hay trabajos registrados.</p>`;
+            else {
                 html += `<ul style="margin-left:20px;">`;
-                otTrabajos.forEach(item => {
-                    html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`;
-                });
+                otTrabajos.forEach(item => html += `<li>${escHtml(item.trabajos?.nombre || 'Trabajo')} — $${item.precio || 0}</li>`);
                 html += `</ul>`;
             }
 
-            document.getElementById('detalle-titulo').textContent = 'Detalle de OT ' + (ot.codigo || ot.id);
+            document.getElementById('detalle-titulo').textContent = 'Detalle de ' + (ot.numero || ot.codigo || ot.id);
             document.getElementById('detalle-contenido').innerHTML = html;
             document.getElementById('mov-detalle-ot').classList.add('open');
         }
 
-        function cerrarDetalleOT() {
-            document.getElementById('mov-detalle-ot').classList.remove('open');
+        function cerrarDetalleOT() { document.getElementById('mov-detalle-ot').classList.remove('open'); detalleOTActual = null; }
+
+        function imprimirCotizacionDesdeDetalle() {
+            if (detalleOTActual) imprimirCotizacion(detalleOTActual.id);
+        }
+
+        // ============ PDF DE COTIZACIÓN ============
+        function numeroALetras(numero) {
+            // Implementación simplificada de número a letras para MXN (puedes reemplazar por la completa)
+            const unidades = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
+            const decenas = ['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+            const centenas = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+            function grupo(n) {
+                if(n === 0) return '';
+                if(n === 100) return 'CIEN';
+                let r = '';
+                const c = Math.floor(n/100), d = Math.floor((n%100)/10), u = n%10;
+                if(c) r += centenas[c] + ' ';
+                if(n%100 < 20 && n%100 > 0) { r += unidades[n%100]; }
+                else { if(d) r += decenas[d] + (u?' Y ':''); if(u) r += unidades[u]; }
+                return r.trim();
+            }
+            const entero = Math.floor(numero);
+            const centavos = Math.round((numero - entero) * 100);
+            let texto = '';
+            const millones = Math.floor(entero/1000000);
+            const miles = Math.floor((entero%1000000)/1000);
+            const resto = entero % 1000;
+            if(entero === 0) texto = 'CERO';
+            else {
+                if(millones === 1) texto += 'UN MILLÓN ';
+                else if(millones > 1) texto += grupo(millones) + ' MILLONES ';
+                if(miles === 1) texto += 'MIL ';
+                else if(miles > 1) texto += grupo(miles) + ' MIL ';
+                if(resto) texto += grupo(resto);
+            }
+            return `${texto.trim()} PESOS ${String(centavos).padStart(2,'0')}/100 M.N.`;
+        }
+
+        async function imprimirCotizacion(otId) {
+            const { data: ot, error: e1 } = await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('id', otId).single();
+            if (e1) { toast('Error: ' + e1.message, 'err'); return; }
+            const { data: items, error: e2 } = await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id', otId);
+            if (e2) { toast('Error: ' + e2.message, 'err'); return; }
+
+            const cliente = ot.cliente_tipo === 'agencia' ? ot.agencias : ot.clientes;
+            const doc = new jspdf.jsPDF('p', 'mm', 'a4');
+            const M = 15;
+            let finalY = M;
+
+            // HEADER
+            if (CONFIG.logo_base64) {
+                doc.addImage(CONFIG.logo_base64, 'PNG', M, M, 55, 18);
+                finalY = M + 22;
+            } else {
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text(CONFIG.empresa_nombre || 'Taller', M, M + 8);
+                finalY = M + 14;
+            }
+
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text(CONFIG.empresa_rfc || '', M, finalY);
+            finalY += 4;
+            doc.text(CONFIG.empresa_direccion || '', M, finalY);
+            finalY += 4;
+            doc.text(`${CONFIG.empresa_telefono || ''} · ${CONFIG.empresa_email || ''}`, M, finalY);
+            finalY += 4;
+            doc.text(CONFIG.empresa_web || '', M, finalY);
+
+            // Banda "COTIZACIÓN"
+            finalY = M + 30;
+            doc.setFillColor(10, 15, 44);
+            doc.rect(M, finalY, 180, 8, 'F');
+            doc.setTextColor(255);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('COTIZACIÓN', M + 2, finalY + 5.5);
+            doc.setTextColor(0);
+            finalY += 14;
+
+            // Cajas de datos
+            const boxY = finalY;
+            doc.setDrawColor(0);
+            doc.roundedRect(M, boxY, 90, 30, 2, 2);
+            doc.roundedRect(105, boxY, 90, 30, 2, 2);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CLIENTE', M + 2, boxY + 5);
+            doc.text('DATOS DE COTIZACIÓN', 107, boxY + 5);
+            doc.setFont('helvetica', 'normal');
+            doc.text(ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || ''), M + 2, boxY + 12);
+            doc.text(cliente?.telefono || '', M + 2, boxY + 16);
+            doc.text(cliente?.email || '', M + 2, boxY + 20);
+            doc.text(cliente?.direccion || '', M + 2, boxY + 24);
+            doc.text(ot.numero || '', 107, boxY + 12);
+            doc.text('Fecha: ' + (ot.created_at ? new Date(ot.created_at).toLocaleDateString() : ''), 107, boxY + 16);
+            doc.text('Vigencia: ' + (ot.vigencia || ''), 107, boxY + 20);
+            doc.text('Vendedor: ' + (PERFIL?.nombre || ''), 107, boxY + 24);
+            finalY = boxY + 35;
+
+            // Tabla de trabajos
+            const tableBody = items.map((it, i) => [i+1, it.trabajos?.nombre || '', it.cantidad || 1, it.precio || 0, it.importe || it.precio || 0]);
+            doc.autoTable({
+                startY: finalY,
+                head: [['#', 'Descripción', 'Cant.', 'P. Unitario', 'Total']],
+                body: tableBody,
+                theme: 'striped',
+                headStyles: { fillColor: [10, 15, 44] },
+                styles: { fontSize: 9 },
+                margin: { left: M, right: M }
+            });
+            finalY = doc.lastAutoTable.finalY + 5;
+
+            // Totales
+            const total = ot.costo_total || 0;
+            const subtotal = total; // simplificado, sin IVA
+            doc.text('Subtotal: $' + subtotal.toFixed(2), 130, finalY);
+            finalY += 5;
+            doc.text('TOTAL: $' + total.toFixed(2), 130, finalY);
+            finalY += 8;
+
+            // Monto en letras
+            doc.setFont('helvetica', 'italic');
+            doc.text('Son: ' + numeroALetras(total), M, finalY);
+            finalY += 10;
+
+            // Términos
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text(CONFIG.terminos_cotizacion || '', M, finalY, { maxWidth: 180 });
+            finalY += 20;
+
+            // Footer
+            doc.setFillColor(10, 15, 44);
+            doc.rect(0, 285, 210, 12, 'F');
+            doc.setTextColor(255);
+            doc.text(CONFIG.empresa_nombre || 'Taller', 105, 293, { align: 'center' });
+
+            doc.save(ot.numero + '.pdf');
+        }
+
+        // ============ WHATSAPP RESUMEN ============
+        function copiarResumenWhatsApp() {
+            if (!detalleOTActual) return;
+            const ot = detalleOTActual;
+            const cliente = ot.cliente_tipo === 'agencia' ? 'Agencia' : 'Cliente';
+            let txt = `*Resumen de ${ot.numero || ot.codigo}*\n`;
+            txt += `Placa: ${ot.placa}\n`;
+            txt += `Cliente: ${cliente}\n`;
+            txt += `Total: $${ot.costo_total || 0}\n`;
+            txt += `Estado: ${ot.estado}\n`;
+            navigator.clipboard.writeText(txt);
+            toast('Resumen copiado ✓', 'ok');
         }
 
         // ============ CONSULTA PÚBLICA PARA TÉCNICO ============
@@ -1578,25 +1650,14 @@
                 .order('updated_at', { ascending: false });
             if (error) { toast('Error: ' + error.message, 'err'); return; }
 
-            if (data.length === 0) {
-                cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>';
-                return;
-            }
+            if (data.length === 0) { cont.innerHTML = '<p style="text-align:center; color:var(--sf-text-secondary); padding:20px;">No tienes tareas asignadas.</p>'; return; }
 
             data.forEach(ot => {
                 const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
                 let badge = '';
                 if (ot.estado === 'aprobada') badge = '<span class="badge-aprobada">Pendiente de iniciar</span>';
                 else if (ot.estado === 'en_taller') badge = '<span class="badge-en-taller">En proceso</span>';
-                cont.innerHTML += `
-                    <div class="mis-tarea-item">
-                        <div>
-                            <strong>${escHtml(ot.placa)}</strong> — ${escHtml(clienteNombre)}<br>
-                            <small class="card-codigo">${escHtml(ot.codigo || '')}</small>
-                        </div>
-                        <div>${badge}</div>
-                    </div>
-                `;
+                cont.innerHTML += `<div class="mis-tarea-item"><div><strong>${escHtml(ot.placa)}</strong> — ${escHtml(clienteNombre)}<br><small class="card-codigo">${escHtml(ot.numero || ot.codigo || '')}</small></div><div>${badge}</div></div>`;
             });
         }
     </script>
