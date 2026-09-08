@@ -84,6 +84,32 @@
         /* Tarjetas */
         .card { background: var(--surface); border: 1px solid var(--sf-border); border-radius: var(--r); padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
+        /* Stats del dashboard */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--sf-border);
+            border-radius: var(--r);
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stat-card .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--sf-text-secondary);
+        }
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 8px;
+            color: var(--sf-blue);
+        }
+
         /* Login */
         .auth-wrap { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, #eaf5fe 0%, #f3f3f3 100%); }
         .auth-card { width: 100%; max-width: 400px; padding: 32px; background: var(--sf-white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -117,32 +143,6 @@
         .page-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; }
         .page-desc { color: var(--sf-text-secondary); margin-bottom: 20px; }
 
-        /* Stats del dashboard - CORREGIDO */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--sf-border);
-            border-radius: var(--r);
-            padding: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .stat-card .label {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--sf-text-secondary);
-        }
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-            margin-top: 8px;
-            color: var(--sf-blue);
-        }
-
         /* Tablas */
         table { width: 100%; border-collapse: collapse; background: var(--sf-white); border-radius: var(--r); overflow: hidden; }
         th { background: var(--sf-gray-10); text-align: left; padding: 12px 16px; font-weight: 600; color: var(--sf-text); border-bottom: 1px solid var(--sf-border); }
@@ -165,6 +165,8 @@
         .text-right { text-align: right; }
         .mt-2 { margin-top: 20px; }
         .mb-2 { margin-bottom: 20px; }
+        .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+        .form-col { flex: 1; }
     </style>
 </head>
 <body>
@@ -198,7 +200,10 @@
         </div>
         <div class="layout">
             <aside class="sidebar" id="sidebar">
+                <!-- Navegación dinámica según rol -->
                 <a class="nav-item" data-view="dashboard">Dashboard</a>
+                <a class="nav-item" data-view="nueva-ot">Nueva Cotización</a>
+                <a class="nav-item" data-view="cotizaciones">Cotizaciones</a>
                 <a class="nav-item" data-view="marcas">Marcas</a>
                 <a class="nav-item" data-view="modelos">Modelos</a>
                 <a class="nav-item" data-view="trabajos">Trabajos</a>
@@ -226,10 +231,111 @@
                     </div>
                 </div>
 
+                <!-- Vista Nueva Cotización (OT) -->
+                <div id="view-nueva-ot" class="view" style="display:none;">
+                    <h2 class="page-title">Nueva Cotización</h2>
+                    <p class="page-desc">Registra un vehículo y selecciona los trabajos a realizar.</p>
+                    <div class="card">
+                        <form id="form-nueva-ot">
+                            <!-- Datos del vehículo -->
+                            <h3 style="margin-bottom:12px;">Vehículo</h3>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label class="flbl">Placa</label>
+                                    <input class="inp" type="text" id="ot-placa" placeholder="ABC-123" required>
+                                </div>
+                                <div class="form-col">
+                                    <label class="flbl">Año</label>
+                                    <input class="inp" type="number" id="ot-anio" placeholder="2020">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label class="flbl">Marca</label>
+                                    <select class="inp" id="ot-marca" required>
+                                        <option value="">Selecciona...</option>
+                                    </select>
+                                </div>
+                                <div class="form-col">
+                                    <label class="flbl">Modelo</label>
+                                    <select class="inp" id="ot-modelo" required>
+                                        <option value="">Selecciona...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Cliente -->
+                            <h3 style="margin:20px 0 12px;">Cliente</h3>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label class="flbl">Tipo de cliente</label>
+                                    <select class="inp" id="ot-tipo-cliente" onchange="cambiarTipoCliente()">
+                                        <option value="particular">Particular</option>
+                                        <option value="agencia">Agencia</option>
+                                    </select>
+                                </div>
+                                <div class="form-col" id="div-cliente-particular">
+                                    <label class="flbl">Cliente (Particular)</label>
+                                    <select class="inp" id="ot-cliente-particular">
+                                        <option value="">Selecciona...</option>
+                                    </select>
+                                </div>
+                                <div class="form-col" id="div-cliente-agencia" style="display:none;">
+                                    <label class="flbl">Agencia</label>
+                                    <select class="inp" id="ot-cliente-agencia">
+                                        <option value="">Selecciona...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Trabajos -->
+                            <h3 style="margin:20px 0 12px;">Trabajos a realizar</h3>
+                            <div id="lista-trabajos">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+
+                            <!-- Totales -->
+                            <div style="margin-top:20px; text-align:right;">
+                                <strong>Costo Total Estimado: </strong>
+                                <span style="font-size:20px; font-weight:700; color:var(--sf-blue);" id="ot-total">$0.00</span>
+                            </div>
+                            <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+                                <button type="button" class="btn" onclick="sv('cotizaciones')">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Guardar Cotización</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Vista Cotizaciones (listado y aprobación) -->
+                <div id="view-cotizaciones" class="view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Cotizaciones</h2>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="aprobarSeleccionadas()">Aprobar Seleccionadas</button>
+                            <button class="btn btn-sm" onclick="sv('nueva-ot')">+ Nueva</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="check-all" onchange="toggleAll()"></th>
+                                <th>ID</th>
+                                <th>Placa</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-cotizaciones"></tbody>
+                    </table>
+                </div>
+
                 <!-- Vista Marcas -->
                 <div id="view-marcas" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h2 class="page-title" style="margin-bottom:0;">Marcas</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Marcas</h2>
                         <button class="btn btn-primary" onclick="abrirModal('marca')">+ Nueva Marca</button>
                     </div>
                     <table>
@@ -242,8 +348,8 @@
 
                 <!-- Vista Modelos -->
                 <div id="view-modelos" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h2 class="page-title" style="margin-bottom:0;">Modelos</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Modelos</h2>
                         <button class="btn btn-primary" onclick="abrirModal('modelo')">+ Nuevo Modelo</button>
                     </div>
                     <table>
@@ -256,8 +362,8 @@
 
                 <!-- Vista Trabajos -->
                 <div id="view-trabajos" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h2 class="page-title" style="margin-bottom:0;">Trabajos</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Trabajos</h2>
                         <button class="btn btn-primary" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
                     </div>
                     <table>
@@ -270,8 +376,8 @@
 
                 <!-- Vista Agencias -->
                 <div id="view-agencias" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h2 class="page-title" style="margin-bottom:0;">Agencias</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Agencias</h2>
                         <button class="btn btn-primary" onclick="abrirModal('agencia')">+ Nueva Agencia</button>
                     </div>
                     <table>
@@ -284,8 +390,8 @@
 
                 <!-- Vista Clientes -->
                 <div id="view-clientes" class="view" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h2 class="page-title" style="margin-bottom:0;">Clientes</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 class="page-title">Clientes</h2>
                         <button class="btn btn-primary" onclick="abrirModal('cliente')">+ Nuevo Cliente</button>
                     </div>
                     <table>
@@ -429,11 +535,16 @@
             document.getElementById('app').style.display = 'block';
             document.getElementById('user-info').textContent = 'Usuario: ' + (PERFIL?.nombre || '');
             const rol = PERFIL?.rol;
+            // Ocultar ciertas vistas según rol (por ejemplo, técnico solo ve dashboard y mis tareas)
             if (rol === 'tecnico') {
                 document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                    if (item.dataset.view !== 'dashboard') item.style.display = 'none';
+                    if (item.dataset.view !== 'dashboard' && item.dataset.view !== 'nueva-ot' && item.dataset.view !== 'cotizaciones') {
+                        item.style.display = 'none';
+                    }
                 });
             }
+            // Si es recepcionista o jefe, ocultar gestión de catálogos (solo lectura) - aquí mostramos todo por simplicidad
+            // Podemos ajustar luego.
             sv('dashboard');
             cargarDashboard();
         }
@@ -445,11 +556,14 @@
             if (target) target.style.display = 'block';
             const nav = document.querySelector('.sidebar .nav-item[data-view="' + view + '"]');
             if (nav) nav.classList.add('active');
+            // Cargar datos según vista
             if (view === 'marcas') cargarMarcas();
             if (view === 'modelos') cargarModelos();
             if (view === 'trabajos') cargarTrabajos();
             if (view === 'agencias') cargarAgencias();
             if (view === 'clientes') cargarClientes();
+            if (view === 'nueva-ot') cargarDatosNuevaOT();
+            if (view === 'cotizaciones') cargarCotizaciones();
         }
 
         document.querySelectorAll('.sidebar .nav-item').forEach(item => {
@@ -477,48 +591,11 @@
         // CRUD GENÉRICO
         // ============================================================
         const configs = {
-            marca: {
-                tabla: 'marcas',
-                title: 'Marca',
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true }
-                ]
-            },
-            modelo: {
-                tabla: 'modelos',
-                title: 'Modelo',
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' }
-                ]
-            },
-            trabajo: {
-                tabla: 'trabajos',
-                title: 'Trabajo',
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' },
-                    { name: 'tiempo_est', label: 'Tiempo Est. (min)', type: 'number' }
-                ]
-            },
-            agencia: {
-                tabla: 'agencias',
-                title: 'Agencia',
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'rfc', label: 'RFC', type: 'text' },
-                    { name: 'contacto', label: 'Contacto', type: 'text' }
-                ]
-            },
-            cliente: {
-                tabla: 'clientes',
-                title: 'Cliente',
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'telefono', label: 'Teléfono', type: 'text' },
-                    { name: 'email', label: 'Email', type: 'email' }
-                ]
-            }
+            marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
+            modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
+            trabajo: { tabla: 'trabajos', title: 'Trabajo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' }, { name: 'tiempo_est', label: 'Tiempo Est. (min)', type: 'number' } ] },
+            agencia: { tabla: 'agencias', title: 'Agencia', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'rfc', label: 'RFC', type: 'text' }, { name: 'contacto', label: 'Contacto', type: 'text' } ] },
+            cliente: { tabla: 'clientes', title: 'Cliente', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'telefono', label: 'Teléfono', type: 'text' }, { name: 'email', label: 'Email', type: 'email' } ] }
         };
 
         let currentModal = null;
@@ -597,6 +674,7 @@
             }
 
             const vistaActual = currentModal;
+            const vistaMap = { 'marca': 'marcas', 'modelo': 'modelos', 'trabajo': 'trabajos', 'agencia': 'agencias', 'cliente': 'clientes' };
             try {
                 if (currentEditId) {
                     const { error } = await sb.from(config.tabla).update(datos).eq('id', currentEditId);
@@ -608,7 +686,6 @@
                     toast('Creado ✓', 'ok');
                 }
                 cerrarModal();
-                const vistaMap = { 'marca': 'marcas', 'modelo': 'modelos', 'trabajo': 'trabajos', 'agencia': 'agencias', 'cliente': 'clientes' };
                 sv(vistaMap[vistaActual] || vistaActual);
             } catch (e) {
                 toast('Error: ' + e.message, 'err');
@@ -734,6 +811,230 @@
                 },
                 'Sí, eliminar'
             );
+        }
+
+        // ============================================================
+        // NUEVA COTIZACIÓN (OT)
+        // ============================================================
+        async function cargarDatosNuevaOT() {
+            // Cargar marcas
+            const { data: marcas } = await sb.from('marcas').select('*').eq('activo', true).order('nombre');
+            const selMarca = document.getElementById('ot-marca');
+            selMarca.innerHTML = '<option value="">Selecciona...</option>';
+            marcas.forEach(m => {
+                selMarca.innerHTML += `<option value="${m.id}">${escHtml(m.nombre)}</option>`;
+            });
+
+            // Cargar modelos (inicialmente vacío, se llenará al cambiar marca)
+            const selModelo = document.getElementById('ot-modelo');
+            selModelo.innerHTML = '<option value="">Primero selecciona marca</option>';
+
+            // Cargar clientes particulares
+            const { data: clientes } = await sb.from('clientes').select('*').eq('activo', true).order('nombre');
+            const selCliente = document.getElementById('ot-cliente-particular');
+            selCliente.innerHTML = '<option value="">Selecciona...</option>';
+            clientes.forEach(c => {
+                selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`;
+            });
+
+            // Cargar agencias
+            const { data: agencias } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+            const selAgencia = document.getElementById('ot-cliente-agencia');
+            selAgencia.innerHTML = '<option value="">Selecciona...</option>';
+            agencias.forEach(a => {
+                selAgencia.innerHTML += `<option value="${a.id}">${escHtml(a.nombre)}</option>`;
+            });
+
+            // Cargar trabajos con checkboxes
+            const { data: trabajos } = await sb.from('trabajos').select('*').eq('activo', true).order('nombre');
+            const cont = document.getElementById('lista-trabajos');
+            cont.innerHTML = '';
+            trabajos.forEach(t => {
+                cont.innerHTML += `
+                    <div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);">
+                        <input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()">
+                        <span style="flex:1;">${escHtml(t.nombre)}</span>
+                        <span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} min</span>
+                    </div>
+                `;
+            });
+
+            // Evento para cargar modelos según marca
+            selMarca.addEventListener('change', async () => {
+                const marcaId = selMarca.value;
+                const { data: modelos } = await sb.from('modelos').select('*').eq('marca_id', marcaId).eq('activo', true).order('nombre');
+                selModelo.innerHTML = '<option value="">Selecciona...</option>';
+                modelos.forEach(m => {
+                    selModelo.innerHTML += `<option value="${m.id}">${escHtml(m.nombre)}</option>`;
+                });
+            });
+
+            // Reset total
+            document.getElementById('ot-total').textContent = '$0.00';
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
+                total += parseFloat(chk.dataset.precio || 0);
+            });
+            document.getElementById('ot-total').textContent = '$' + total.toFixed(2);
+        }
+
+        function cambiarTipoCliente() {
+            const tipo = document.getElementById('ot-tipo-cliente').value;
+            if (tipo === 'particular') {
+                document.getElementById('div-cliente-particular').style.display = 'block';
+                document.getElementById('div-cliente-agencia').style.display = 'none';
+            } else {
+                document.getElementById('div-cliente-particular').style.display = 'none';
+                document.getElementById('div-cliente-agencia').style.display = 'block';
+            }
+        }
+
+        // Guardar nueva OT
+        document.getElementById('form-nueva-ot').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const placa = document.getElementById('ot-placa').value.trim();
+            const anio = document.getElementById('ot-anio').value || null;
+            const marcaId = document.getElementById('ot-marca').value;
+            const modeloId = document.getElementById('ot-modelo').value;
+            const tipoCliente = document.getElementById('ot-tipo-cliente').value;
+            const clienteParticularId = document.getElementById('ot-cliente-particular').value || null;
+            const clienteAgenciaId = document.getElementById('ot-cliente-agencia').value || null;
+
+            if (!marcaId || !modeloId) {
+                toast('Selecciona marca y modelo', 'err');
+                return;
+            }
+
+            // Validar cliente según tipo
+            if (tipoCliente === 'particular' && !clienteParticularId) {
+                toast('Selecciona el cliente particular', 'err');
+                return;
+            }
+            if (tipoCliente === 'agencia' && !clienteAgenciaId) {
+                toast('Selecciona la agencia', 'err');
+                return;
+            }
+
+            // Recoger trabajos seleccionados
+            const trabajosSeleccionados = [];
+            let costoTotal = 0;
+            let tiempoTotal = 0;
+            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
+                trabajosSeleccionados.push({
+                    trabajo_id: parseInt(chk.value),
+                    precio: parseFloat(chk.dataset.precio || 0)
+                });
+                costoTotal += parseFloat(chk.dataset.precio || 0);
+                tiempoTotal += parseInt(chk.dataset.tiempo || 0);
+            });
+
+            if (trabajosSeleccionados.length === 0) {
+                toast('Selecciona al menos un trabajo', 'err');
+                return;
+            }
+
+            // Insertar OT
+            const otData = {
+                placa,
+                anio: anio || null,
+                marca_id: marcaId,
+                modelo_id: modeloId,
+                cliente_tipo: tipoCliente,
+                agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
+                cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
+                costo_total: costoTotal,
+                tiempo_est: tiempoTotal,
+                estado: 'cotizacion',
+                flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id))
+            };
+
+            try {
+                const { data, error } = await sb.from('ot').insert(otData).select().single();
+                if (error) throw error;
+
+                // Insertar detalles en ot_trabajos
+                for (const t of trabajosSeleccionados) {
+                    await sb.from('ot_trabajos').insert({
+                        ot_id: data.id,
+                        trabajo_id: t.trabajo_id,
+                        precio: t.precio
+                    });
+                }
+
+                toast('Cotización creada ✓', 'ok');
+                document.getElementById('form-nueva-ot').reset();
+                sv('cotizaciones'); // Ir al listado
+            } catch (err) {
+                toast('Error: ' + err.message, 'err');
+            }
+        });
+
+        // ============================================================
+        // LISTADO DE COTIZACIONES Y APROBACIÓN
+        // ============================================================
+        async function cargarCotizaciones() {
+            const { data, error } = await sb.from('ot')
+                .select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
+                .eq('estado', 'cotizacion')
+                .order('created_at', { ascending: false });
+            if (error) { toast('Error: ' + error.message, 'err'); return; }
+            const tbody = document.getElementById('tabla-cotizaciones');
+            tbody.innerHTML = '';
+            data.forEach(ot => {
+                const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
+                tbody.innerHTML += `<tr>
+                    <td><input type="checkbox" class="chk-ot" value="${ot.id}"></td>
+                    <td>${ot.id}</td>
+                    <td>${escHtml(ot.placa)}</td>
+                    <td>${escHtml(clienteNombre)}</td>
+                    <td>$${ot.costo_total || 0}</td>
+                    <td><span class="badge" style="background:var(--sf-warning); color:white; padding:4px 8px; border-radius:4px;">Cotización</span></td>
+                    <td class="text-right">
+                        <button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function toggleAll() {
+            const checkAll = document.getElementById('check-all');
+            document.querySelectorAll('.chk-ot').forEach(chk => {
+                chk.checked = checkAll.checked;
+            });
+        }
+
+        async function aprobarOT(id) {
+            abrirConfirm('¿Aprobar esta cotización?', async () => {
+                try {
+                    const { error } = await sb.from('ot').update({ estado: 'aprobada' }).eq('id', id);
+                    if (error) throw error;
+                    toast('Cotización aprobada ✓', 'ok');
+                    cargarCotizaciones();
+                } catch (e) {
+                    toast('Error: ' + e.message, 'err');
+                }
+            }, 'Sí, aprobar');
+        }
+
+        async function aprobarSeleccionadas() {
+            const seleccionadas = Array.from(document.querySelectorAll('.chk-ot:checked')).map(chk => chk.value);
+            if (seleccionadas.length === 0) {
+                toast('No hay cotizaciones seleccionadas', 'err');
+                return;
+            }
+            abrirConfirm(`¿Aprobar ${seleccionadas.length} cotizaciones?`, async () => {
+                try {
+                    const { error } = await sb.from('ot').update({ estado: 'aprobada' }).in('id', seleccionadas);
+                    if (error) throw error;
+                    toast('Cotizaciones aprobadas ✓', 'ok');
+                    cargarCotizaciones();
+                } catch (e) {
+                    toast('Error: ' + e.message, 'err');
+                }
+            }, 'Sí, aprobar todas');
         }
     </script>
 </body>
