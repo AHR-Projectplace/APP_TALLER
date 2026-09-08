@@ -383,6 +383,20 @@
                                 </div>
                             </div>
 
+                            <!-- NUEVOS CAMPOS DE ENTREGA -->
+                            <h3 style="margin:20px 0 12px;">Tiempos de entrega</h3>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label class="flbl">Fecha de entrega compromiso</label>
+                                    <input class="inp" type="date" id="ot-fecha-entrega">
+                                </div>
+                                <div class="form-col">
+                                    <label class="flbl">Días estimados (manual, opcional)</label>
+                                    <input class="inp" type="number" id="ot-dias-manual" min="0" step="0.25" placeholder="Ej. 2.5">
+                                    <small style="color:var(--sf-text-secondary);">Si se deja vacío, se calcula con la suma de trabajos.</small>
+                                </div>
+                            </div>
+
                             <h3 style="margin:20px 0 12px;">Cliente</h3>
                             <div class="form-row">
                                 <div class="form-col">
@@ -438,6 +452,7 @@
                                 <th>Placa</th>
                                 <th>Cliente</th>
                                 <th>Total</th>
+                                <th>Fecha entrega</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -542,7 +557,7 @@
                             <h3>Trabajos</h3>
                             <button class="btn btn-primary btn-sm" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button>
                         </div>
-                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
+                        <table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo (días)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
                     </div>
 
                     <div id="tab-agencias" class="tab-content">
@@ -902,7 +917,6 @@
                 selCliente.innerHTML = '<option value="">Todos</option>';
                 clientes.data.forEach(c => selCliente.innerHTML += `<option value="${c.id}">${escHtml(c.nombre)}</option>`);
                 
-                // Aplicar filtros y cargar datos
                 await aplicarFiltrosDashboard();
             } catch (e) { console.warn('Dashboard error:', e.message); }
         }
@@ -913,20 +927,17 @@
                 const clienteId = document.getElementById('filtro-cliente').value;
                 const estado = document.getElementById('filtro-estado').value;
 
-                // Construir query dinámico
                 let query = sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)');
                 if (agenciaId) query = query.eq('agencia_id', agenciaId);
                 if (clienteId) query = query.eq('cliente_id', clienteId);
                 if (estado) query = query.eq('estado', estado);
-                query = query.not('estado', 'is', null); // evitar nulos
                 const { data: ots, error } = await query.order('created_at', { ascending: false });
                 if (error) throw error;
 
-                // Calcular indicadores
                 const hoy = new Date();
                 const hoyISO = hoy.toISOString().split('T')[0];
 
-                // Autos en taller (sin filtro? mejor contamos de ots filtrados? Mantener simple: de todos)
+                // Autos en taller (sin filtro)
                 const { count: tallerCount } = await sb.from('ot').select('*', { count: 'exact', head: true }).eq('estado', 'en_taller');
                 document.getElementById('stat-taller').textContent = tallerCount || 0;
 
@@ -937,7 +948,7 @@
                     .lt('updated_at', hoyISO + 'T23:59:59');
                 document.getElementById('stat-entregas').textContent = entregasHoy || 0;
 
-                // Facturas pendientes (count de OTs completadas sin facturar)
+                // Facturas pendientes
                 const { count: factPend } = await sb.from('ot').select('*', { count: 'exact', head: true })
                     .eq('estado', 'completada')
                     .is('factura_id', null);
@@ -952,7 +963,7 @@
                 });
                 document.getElementById('stat-proximos').textContent = proximos.length;
 
-                // Retrasados (fecha_entrega < hoy y estados aprobada/en_taller)
+                // Retrasados
                 const retrasados = ots.filter(ot => {
                     if (!ot.fecha_entrega) return false;
                     const fecha = new Date(ot.fecha_entrega);
@@ -960,22 +971,22 @@
                 });
                 document.getElementById('stat-retrasados').textContent = retrasados.length;
 
-                // Entregados hoy (completadas con fecha_entrega = hoy o updated_at hoy)
+                // Entregados hoy
                 const entregadosHoy = ots.filter(ot => {
                     return ot.estado === 'completada' && ot.fecha_entrega === hoyISO;
                 });
                 document.getElementById('stat-entregados-hoy').textContent = entregadosHoy.length;
 
-                // KPI Tasa de retraso: (retrasados / total en proceso) *100
+                // KPI Tasa de retraso
                 const totalEnProceso = ots.filter(ot => ['aprobada','en_taller'].includes(ot.estado) && ot.fecha_entrega).length;
                 const tasa = totalEnProceso > 0 ? Math.round((retrasados.length / totalEnProceso) * 100) : 0;
                 document.getElementById('kpi-tasa-retraso').textContent = tasa + '%';
 
-                // KPI Técnico del mes (más completados en el mes actual)
+                // KPI Técnico del mes
                 const { data: tecnicos } = await sb.from('tecnicos').select('*').order('nombre');
                 let maxTecnico = '—';
                 let maxCount = 0;
-                for (const tec of tecnicos) {
+                for (const tec of tecnicos || []) {
                     const { count } = await sb.from('ot')
                         .select('*', { count: 'exact', head: true })
                         .eq('tecnico_id', tec.id)
@@ -985,10 +996,11 @@
                 }
                 document.getElementById('kpi-tecnico-mes').textContent = maxTecnico;
 
-                // KPI Días promedio en taller por agencia (solo completadas con fecha_aprobacion y updated_at)
+                // KPI Días promedio por agencia (corregido)
                 let totalDias = 0;
                 let totalOTs = 0;
-                for (const ag of agencias.data) {
+                const { data: agenciasData } = await sb.from('agencias').select('*').eq('activo', true).order('nombre');
+                for (const ag of agenciasData || []) {
                     const { data: agOTs } = await sb.from('ot')
                         .select('fecha_aprobacion, updated_at')
                         .eq('agencia_id', ag.id)
@@ -1040,7 +1052,7 @@
         const configs = {
             marca: { tabla: 'marcas', title: 'Marca', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true } ] },
             modelo: { tabla: 'modelos', title: 'Modelo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'marca_id', label: 'Marca', type: 'select', options: 'marcas' } ] },
-            trabajo: { tabla: 'trabajos', title: 'Trabajo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' }, { name: 'tiempo_est', label: 'Tiempo Est. (min)', type: 'number' } ] },
+            trabajo: { tabla: 'trabajos', title: 'Trabajo', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'precio_base', label: 'Precio Base', type: 'number', step: '0.01' }, { name: 'tiempo_est', label: 'Tiempo (días)', type: 'number', step: '0.25' } ] },
             agencia: { tabla: 'agencias', title: 'Agencia', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'rfc', label: 'RFC', type: 'text' }, { name: 'contacto', label: 'Contacto', type: 'text' } ] },
             cliente: { tabla: 'clientes', title: 'Cliente', fields: [ { name: 'nombre', label: 'Nombre', type: 'text', required: true }, { name: 'telefono', label: 'Teléfono', type: 'text' }, { name: 'email', label: 'Email', type: 'email' } ] }
         };
@@ -1141,7 +1153,7 @@
                 if (error) { toast('Error: ' + error.message, 'err'); return; }
                 const tbody = document.getElementById('tabla-trabajos');
                 tbody.innerHTML = '';
-                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} min</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`);
+                data.forEach(t => tbody.innerHTML += `<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base || 0}</td><td>${t.tiempo_est || 0} días</td><td>${t.activo ? 'Activo' : 'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo', ${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos', ${t.id}, '${escHtml(t.nombre)}')">Eliminar</button></td></tr>`);
             } catch (e) { toast('Error cargando trabajos: ' + e.message, 'err'); }
         }
 
@@ -1343,7 +1355,11 @@
                 const cont = document.getElementById('lista-trabajos');
                 cont.innerHTML = '';
                 trabajos.forEach(t => {
-                    cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()"><span style="flex:1;">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} min</span></div>`;
+                    cont.innerHTML += `<div style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid var(--sf-border);">
+                        <input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base || 0}" data-tiempo="${t.tiempo_est || 0}" onchange="calcularTotal()">
+                        <span style="flex:1;">${escHtml(t.nombre)}</span>
+                        <span style="color:var(--sf-text-secondary);">$${t.precio_base || 0} | ${t.tiempo_est || 0} días</span>
+                    </div>`;
                 });
 
                 selMarca.addEventListener('change', async () => {
@@ -1359,8 +1375,14 @@
 
         function calcularTotal() {
             let total = 0;
-            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => total += parseFloat(chk.dataset.precio || 0));
+            let tiempoDias = 0;
+            document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
+                total += parseFloat(chk.dataset.precio || 0);
+                tiempoDias += parseFloat(chk.dataset.tiempo || 0);
+            });
             document.getElementById('ot-total').textContent = '$' + total.toFixed(2);
+            // Opcional: mostrar un indicador de días (no obligatorio)
+            // Si el campo manual está vacío, podemos mostrar el automático en un texto
         }
 
         function cambiarTipoCliente() {
@@ -1401,6 +1423,8 @@
                 const tipoCliente = document.getElementById('ot-tipo-cliente').value;
                 const clienteParticularId = document.getElementById('ot-cliente-particular').value || null;
                 const clienteAgenciaId = document.getElementById('ot-cliente-agencia').value || null;
+                const fechaEntrega = document.getElementById('ot-fecha-entrega').value || null;
+                const diasManual = parseFloat(document.getElementById('ot-dias-manual').value) || 0;
 
                 if (!placa) { toast('Ingresa la placa', 'err'); return; }
                 if (!marcaId) { toast('Selecciona una marca', 'err'); return; }
@@ -1409,28 +1433,42 @@
                 if (tipoCliente === 'agencia' && !clienteAgenciaId) { toast('Selecciona la agencia', 'err'); return; }
 
                 const trabajosSeleccionados = [];
-                let costoTotal = 0, tiempoTotal = 0;
+                let costoTotal = 0;
+                let tiempoTotalDias = 0;
                 document.querySelectorAll('.chk-trabajo:checked').forEach(chk => {
-                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: parseFloat(chk.dataset.precio || 0) });
-                    costoTotal += parseFloat(chk.dataset.precio || 0);
-                    tiempoTotal += parseInt(chk.dataset.tiempo || 0);
+                    const precio = parseFloat(chk.dataset.precio || 0);
+                    const tiempo = parseFloat(chk.dataset.tiempo || 0);
+                    trabajosSeleccionados.push({ trabajo_id: parseInt(chk.value), precio: precio, tiempo: tiempo });
+                    costoTotal += precio;
+                    tiempoTotalDias += tiempo;
                 });
 
                 if (trabajosSeleccionados.length === 0) { toast('Selecciona al menos un trabajo', 'err'); return; }
 
-                const codigo = generarCodigoOT();
+                // Generar código base y evitar duplicados
+                const codigoBase = generarCodigoOT();
+                const { data: existentes } = await sb.from('ot').select('codigo').like('codigo', codigoBase + '%').order('codigo', { ascending: false }).limit(1);
+                let codigo = codigoBase;
+                if (existentes && existentes.length > 0) {
+                    const ultimo = existentes[0].codigo.replace(codigoBase, '');
+                    const sufijo = ultimo ? parseInt(ultimo) + 1 : 1;
+                    codigo = codigoBase + sufijo;
+                }
+
                 const numero = 'CT-' + codigo;
                 const vigencia = new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0];
-                // Calcular días estimados (8 horas = 480 min por jornada)
-                const diasEstimados = Math.ceil(tiempoTotal / 480) || 1;
+                // Determinar días estimados: si manual > 0, usar manual; si no, suma de tiempos
+                const diasEstimados = diasManual > 0 ? diasManual : (tiempoTotalDias || 1);
 
                 const otData = {
                     placa, anio: anio || null, marca_id: marcaId, modelo_id: modeloId,
                     cliente_tipo: tipoCliente,
                     agencia_id: tipoCliente === 'agencia' ? clienteAgenciaId : null,
                     cliente_id: tipoCliente === 'particular' ? clienteParticularId : null,
-                    costo_total: costoTotal, tiempo_est: tiempoTotal,
-                    dias_estimados: diasEstimados,
+                    costo_total: costoTotal,
+                    tiempo_est: tiempoTotalDias, // guardamos la suma de días (referencia)
+                    dias_estimados: diasEstimados, // el que mandará (manual o automático)
+                    fecha_entrega: fechaEntrega, // si se capturó
                     estado: 'cotizacion',
                     flujo_trabajo: JSON.stringify(trabajosSeleccionados.map(t => t.trabajo_id)),
                     numero: numero,
@@ -1470,6 +1508,7 @@
                         <td>${escHtml(ot.placa)}</td>
                         <td>${escHtml(clienteNombre)}</td>
                         <td>$${ot.costo_total || 0}</td>
+                        <td>${ot.fecha_entrega || '—'}</td>
                         <td><span class="badge-cotizacion">Cotización</span></td>
                         <td class="text-right">
                             <button class="btn btn-sm btn-primary" onclick="aprobarOT(${ot.id})">Aprobar</button>
@@ -1488,21 +1527,22 @@
         async function aprobarOT(id) {
             abrirConfirm('¿Aprobar esta cotización? Se convertirá en Orden de Trabajo.', async () => {
                 try {
-                    const { data: otActual, error: errGet } = await sb.from('ot').select('*').eq('id', id).single();
-                    if (errGet) throw errGet;
+                    const { data: otActual } = await sb.from('ot').select('*').eq('id', id).single();
                     const nuevoNumero = 'OT-' + (otActual.codigo || '');
                     const fechaAprobacion = new Date().toISOString();
-                    // Calcular fecha entrega = fecha aprobación + días estimados
-                    const dias = otActual.dias_estimados || 1;
-                    const fechaEntrega = new Date();
-                    fechaEntrega.setDate(fechaEntrega.getDate() + dias);
-                    const fechaEntregaISO = fechaEntrega.toISOString().split('T')[0];
-
+                    // Si no se definió fecha_entrega, calcular con dias_estimados
+                    let fechaEntrega = otActual.fecha_entrega;
+                    if (!fechaEntrega) {
+                        const dias = otActual.dias_estimados || 1;
+                        const fe = new Date();
+                        fe.setDate(fe.getDate() + dias);
+                        fechaEntrega = fe.toISOString().split('T')[0];
+                    }
                     const { error } = await sb.from('ot').update({
                         estado: 'aprobada',
                         numero: nuevoNumero,
                         fecha_aprobacion: fechaAprobacion,
-                        fecha_entrega: fechaEntregaISO
+                        fecha_entrega: fechaEntrega
                     }).eq('id', id);
                     if (error) throw error;
                     toast('Cotización aprobada → ' + nuevoNumero + ' ✓', 'ok');
@@ -1520,15 +1560,18 @@
                         const { data: otActual } = await sb.from('ot').select('*').eq('id', id).single();
                         const nuevoNumero = 'OT-' + (otActual?.codigo || '');
                         const fechaAprobacion = new Date().toISOString();
-                        const dias = otActual?.dias_estimados || 1;
-                        const fechaEntrega = new Date();
-                        fechaEntrega.setDate(fechaEntrega.getDate() + dias);
-                        const fechaEntregaISO = fechaEntrega.toISOString().split('T')[0];
+                        let fechaEntrega = otActual?.fecha_entrega;
+                        if (!fechaEntrega) {
+                            const dias = otActual?.dias_estimados || 1;
+                            const fe = new Date();
+                            fe.setDate(fe.getDate() + dias);
+                            fechaEntrega = fe.toISOString().split('T')[0];
+                        }
                         await sb.from('ot').update({
                             estado: 'aprobada',
                             numero: nuevoNumero,
                             fecha_aprobacion: fechaAprobacion,
-                            fecha_entrega: fechaEntregaISO
+                            fecha_entrega: fechaEntrega
                         }).eq('id', id);
                     }
                     toast('Cotizaciones aprobadas ✓', 'ok');
@@ -1578,7 +1621,6 @@
         function generarCardKanban(ot) {
             const clienteNombre = ot.cliente_tipo === 'agencia' ? (ot.agencias?.nombre || '') : (ot.clientes?.nombre || '');
             const tecnicoNombre = ot.tecnicos?.nombre || 'Sin asignar';
-            // Mostrar fecha entrega y estado retrasado
             let fechaEntregaInfo = '';
             if (ot.fecha_entrega) {
                 const hoy = new Date().toISOString().split('T')[0];
@@ -1841,15 +1883,7 @@
             const rows = [];
             document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr => {
                 const cells = Array.from(tr.children).map(td => td.textContent.trim());
-                rows.push({
-                    Agencia: cells[0],
-                    Folio: cells[1],
-                    Placa: cells[2],
-                    'Marca/Modelo': cells[3],
-                    Estado: cells[4],
-                    Total: cells[5],
-                    Factura: cells[6]
-                });
+                rows.push({ Agencia: cells[0], Folio: cells[1], Placa: cells[2], 'Marca/Modelo': cells[3], Estado: cells[4], Total: cells[5], Factura: cells[6] });
             });
             const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
