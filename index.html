@@ -736,20 +736,25 @@ function busquedaGlobal(q){
 // AUTH
 async function initSession(userId){
   try{
-    const {data,error}=await sb.from('perfiles').select('*').eq('id',userId).single();
-    if(error){
+    // maybeSingle() retorna null si no existe — evita error 406
+    const {data:perfil,error}=await sb.from('perfiles').select('*').eq('id',userId).maybeSingle();
+    if(error){toast('Error al cargar perfil: '+error.message,'err');return}
+    if(!perfil){
+      // Perfil no existe — crearlo con datos de auth.users
       const {data:uD}=await sb.auth.getUser();
-      const nuevo={id:userId,nombre:uD?.user_metadata?.nombre||'Sin nombre',email:uD?.email||'',rol:uD?.user_metadata?.rol||'recepcionista',activo:true};
+      const nuevo={id:userId,nombre:uD?.user?.user_metadata?.nombre||uD?.user?.email||'Sin nombre',email:uD?.user?.email||'',rol:uD?.user?.user_metadata?.rol||'recepcionista',activo:true};
       const {error:iE}=await sb.from('perfiles').insert(nuevo);
       if(iE){toast('Error creando perfil: '+iE.message,'err');return}
-      const {data:p2}=await sb.from('perfiles').select('*').eq('id',userId).single();PERFIL=p2;
-    } else {PERFIL=data}
+      const {data:p2}=await sb.from('perfiles').select('*').eq('id',userId).maybeSingle();
+      PERFIL=p2;
+    } else {PERFIL=perfil}
+    if(!PERFIL){toast('No se pudo cargar el perfil de usuario','err');return}
     SESSION={id:userId,email:PERFIL.email,rol:PERFIL.rol};
     await cargarConfiguracion();
     await cargarCategorias();
     await cargarPiezasCatalogo();
     setTimeout(()=>mostrarApp(),100);
-  }catch(e){toast('Error: '+e.message,'err')}
+  }catch(e){toast('Error al iniciar sesión: '+e.message,'err')}
 }
 (async function boot(){
   sb.auth.onAuthStateChange(async(ev,ss)=>{
@@ -963,7 +968,32 @@ async function cambiarEstadoTecnico(id,e){await sb.from('tecnicos').update({acti
 async function cargarUsuarios(){const {data}=await sb.from('perfiles').select('*').order('nombre');const tb=document.getElementById('tabla-usuarios');if(!tb)return;tb.innerHTML='';data.forEach(u=>{if(u.rol==='tecnico')return;tb.innerHTML+=`<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email||'')}</td><td>${u.rol}</td><td>${u.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="cambiarEstadoUsuario('${u.id}',${!u.activo})">${u.activo?'Desactivar':'Activar'}</button></td></tr>`})}
 function abrirModalUsuario(){document.getElementById('usu-nombre').value='';document.getElementById('usu-email').value='';document.getElementById('usu-pass').value='';document.getElementById('usu-rol').value='recepcionista';document.getElementById('mov-usuario').classList.add('open')}
 function cerrarModalUsuario(){document.getElementById('mov-usuario').classList.remove('open')}
-async function guardarUsuario(){const n=document.getElementById('usu-nombre').value.trim(),e=document.getElementById('usu-email').value.trim(),p=document.getElementById('usu-pass').value,r=document.getElementById('usu-rol').value;if(!n||!e||!p){toast('Todos obligatorios','err');return}if(p.length<8){toast('Mínimo 8 chars','err');return}try{const {data:user,error}=await sb.auth.signUp({email:e,password:p,options:{data:{nombre:n,rol:r}}});if(error)throw error;toast('Usuario creado ✓','ok');cerrarModalUsuario();cargarUsuarios()}catch(err){toast('Error: '+err.message,'err')}}
+async function guardarUsuario(){
+  const n=document.getElementById('usu-nombre').value.trim();
+  const e=document.getElementById('usu-email').value.trim();
+  const p=document.getElementById('usu-pass').value;
+  const r=document.getElementById('usu-rol').value;
+  if(!n||!e||!p){toast('Todos los campos son obligatorios','err');return}
+  if(p.length<8){toast('La contraseña debe tener mínimo 8 caracteres','err');return}
+  try{
+    // 1. Crear usuario en Auth con metadatos
+    const {data:authData,error:authErr}=await sb.auth.signUp({
+      email:e, password:p,
+      options:{data:{nombre:n,rol:r}}
+    });
+    if(authErr)throw authErr;
+    const uid=authData?.user?.id;
+    if(!uid){toast('No se obtuvo el ID del usuario','err');return}
+    // 2. Insertar perfil manualmente (por si el trigger no existe)
+    const {error:pErr}=await sb.from('perfiles').upsert({
+      id:uid, nombre:n, email:e, rol:r, activo:true
+    },{onConflict:'id'});
+    if(pErr){toast('Usuario creado pero error en perfil: '+pErr.message,'err')}
+    else{toast('Usuario "'+n+'" creado con rol '+r+' ✓','ok')}
+    cerrarModalUsuario();
+    cargarUsuarios();
+  }catch(err){toast('Error: '+err.message,'err')}
+}
 async function cambiarEstadoUsuario(id,e){await sb.from('perfiles').update({activo:e}).eq('id',id);cargarUsuarios()}
 
 // NUEVA COTIZACIÓN
