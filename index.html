@@ -23,6 +23,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--sf-text);fo
 .btn-secondary{background:var(--sf-gray-20);color:var(--sf-text)}
 .btn-success{background:var(--sf-success);color:#fff;border-color:var(--sf-success)}
 .btn-excel{background:#16a34a;color:#fff;border-color:#16a34a}
+.btn-wa{background:#25d366;color:#fff;border-color:#25d366}
 .btn-icon{padding:8px;min-height:36px;width:36px}
 .inp{width:100%;padding:10px 12px;border:1px solid var(--sf-border);border-radius:var(--rs);font-size:14px;font-family:inherit;background:#fff;transition:all .15s}
 .inp:focus{outline:none;border-color:var(--sf-blue);box-shadow:0 0 0 3px rgba(1,118,211,.12)}
@@ -124,6 +125,12 @@ tr:last-child td{border-bottom:none}
 .tab-btn.active{color:var(--sf-blue);border-bottom-color:var(--sf-blue);font-weight:600}
 .tab-content{display:none}
 .tab-content.active{display:block}
+.subtabs{display:flex;gap:4px;border-bottom:1px solid var(--sf-border);margin-bottom:20px;flex-wrap:wrap}
+.subtab-btn{padding:8px 14px;border:none;background:transparent;color:var(--sf-text-secondary);font-weight:500;cursor:pointer;border-bottom:2px solid transparent;font-size:13px;margin-bottom:-1px;transition:all .15s}
+.subtab-btn:hover{color:var(--sf-text)}
+.subtab-btn.active{color:var(--sf-blue);border-bottom-color:var(--sf-blue);font-weight:600}
+.subtab-content{display:none}
+.subtab-content.active{display:block}
 .consulta-tecnico-wrap{max-width:820px;margin:40px auto;padding:20px}
 .consulta-tecnico-card{background:#fff;border-radius:var(--r-lg);padding:32px;box-shadow:var(--shadow-lg)}
 .chk-flujo-item{display:flex;align-items:center;gap:8px;padding:6px 0}
@@ -144,6 +151,10 @@ tr:last-child td{border-bottom:none}
 .badge-facturada{background:var(--sf-blue);color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
 .badge-cobrada{background:var(--sf-success);color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
 .badge-pendiente{background:var(--sf-gray-40);color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
+.badge-vigente{background:#E8F5EE;color:var(--sf-success);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block;border:1px solid var(--sf-success)}
+.badge-porvencer{background:#FDF3DC;color:var(--sf-warning);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block;border:1px solid var(--sf-warning)}
+.badge-vencida{background:#FAEAEA;color:var(--sf-error);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block;border:1px solid var(--sf-error)}
+.badge-disputa{background:#F0EAFA;color:#4A2A8A;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block;border:1px solid #4A2A8A}
 .iva-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;color:var(--sf-text-secondary)}
 .ots-mini{font-size:11px;font-family:ui-monospace,monospace;color:var(--sf-text-secondary);line-height:1.5}
 .text-right{text-align:right}
@@ -157,6 +168,16 @@ tr:last-child td{border-bottom:none}
 .ot-factura-card .sub-list li{padding:3px 0;border-bottom:1px dotted var(--sf-border);display:flex;justify-content:space-between}
 .ot-factura-card .sub-list li:last-child{border-bottom:none}
 .ot-factura-card h5{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--sf-text-secondary);margin:10px 0 4px;font-weight:700}
+.aging-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}
+.aging-card{background:#fff;border:1px solid var(--sf-border);border-radius:var(--rs);padding:14px;text-align:center}
+.aging-card .aging-label{font-size:11px;text-transform:uppercase;color:var(--sf-text-secondary);font-weight:600;letter-spacing:.3px}
+.aging-card .aging-value{font-size:20px;font-weight:700;margin-top:6px}
+.aging-card.current .aging-value{color:var(--sf-success)}
+.aging-card.range1 .aging-value{color:var(--sf-warning)}
+.aging-card.range2 .aging-value{color:#e67e22}
+.aging-card.range3 .aging-value{color:var(--sf-error)}
+.aging-card.range4 .aging-value{color:#7f0000}
+.nota-card{background:var(--surface-2);border-left:3px solid var(--sf-blue);padding:8px 12px;margin-top:8px;font-size:12px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -350,7 +371,28 @@ tr:last-child td{border-bottom:none}
 
 <!-- FACTURACIÓN -->
 <div id="view-facturacion" class="view" style="display:none">
-<div class="page-header"><h2 class="page-title">Facturación</h2><p class="page-desc">Flujo B2B: Pendiente de facturar → Facturada → Cobrada.</p></div>
+<div class="page-header"><h2 class="page-title">Facturación</h2><p class="page-desc">Gestión de facturas, estados de cuenta y conciliación.</p></div>
+<div class="subtabs">
+<button class="subtab-btn active" data-subtab="facturas" onclick="cambiarSubtab('facturas')">Facturas emitidas</button>
+<button class="subtab-btn" data-subtab="asignar" onclick="cambiarSubtab('asignar')">Asignar factura</button>
+<button class="subtab-btn" data-subtab="estadocuenta" onclick="cambiarSubtab('estadocuenta')">📊 Estado de Cuenta</button>
+<button class="subtab-btn" data-subtab="conciliacion" onclick="cambiarSubtab('conciliacion')">Conciliación</button>
+</div>
+
+<!-- Subtab: Facturas emitidas -->
+<div id="subtab-facturas" class="subtab-content active">
+<div class="card">
+<div class="table-toolbar">
+<input class="inp" id="search-facturas" placeholder="Buscar número, agencia, OT..." oninput="filtrarTabla('search-facturas','facturas-tbody')">
+<div class="spacer"></div>
+<button class="btn btn-excel btn-sm" onclick="exportarFacturasExcel()">📊 Exportar Excel completo</button>
+</div>
+<div id="facturas-lista"></div>
+</div>
+</div>
+
+<!-- Subtab: Asignar factura -->
+<div id="subtab-asignar" class="subtab-content">
 <div class="card">
 <h3 style="font-weight:700;margin-bottom:14px">OTs pendientes de facturar</h3>
 <div class="table-toolbar">
@@ -360,29 +402,74 @@ tr:last-child td{border-bottom:none}
 <div id="factura-ot-lista"></div>
 </div>
 <div class="card mt-2">
-<h3 style="font-weight:700;margin-bottom:14px">Asignar factura</h3>
+<h3 style="font-weight:700;margin-bottom:14px">Datos de la factura</h3>
 <div class="form-row">
 <div class="form-col"><label class="flbl">Número de factura</label><input class="inp" type="text" id="factura-numero" placeholder="A-1234"></div>
-<div class="form-col" style="display:flex;align-items:flex-end"><button class="btn btn-primary" onclick="asignarFactura()">Vincular factura</button></div>
+<div class="form-col"><label class="flbl">Días de crédito</label><input class="inp" type="number" id="factura-dias-credito" value="30" min="0"><small style="color:var(--sf-text-secondary);font-size:11px">Se autocompleta con el crédito de la agencia</small></div>
+</div>
+<div class="form-row">
+<div class="form-col"><label class="flbl">Notas / Promesa de pago (opcional)</label><input class="inp" type="text" id="factura-notas" placeholder="Ej. Prometió pagar el 15/09"></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:10px"><button class="btn btn-primary" onclick="asignarFactura()">Vincular factura</button></div>
 </div>
 </div>
-<div class="card mt-2">
-<h3 style="font-weight:700;margin-bottom:14px">Facturas emitidas</h3>
+
+<!-- Subtab: Estado de Cuenta -->
+<div id="subtab-estadocuenta" class="subtab-content">
+<div class="card">
 <div class="table-toolbar">
-<input class="inp" id="search-facturas" placeholder="Buscar número, agencia, OT..." oninput="filtrarTabla('search-facturas','facturas-tbody')">
+<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+<div><label class="flbl">Agencia</label><select class="inp" id="ec-agencia" onchange="cargarEstadoCuenta()" style="min-width:220px"><option value="">Todas (consolidado)</option></select></div>
+<div><label class="flbl">Desde</label><input class="inp" type="date" id="ec-desde" onchange="cargarEstadoCuenta()"></div>
+<div><label class="flbl">Hasta</label><input class="inp" type="date" id="ec-hasta" onchange="cargarEstadoCuenta()"></div>
+<div><label class="flbl">Estatus</label><select class="inp" id="ec-estatus" onchange="cargarEstadoCuenta()"><option value="">Todas</option><option value="vigente">Vigentes</option><option value="porvencer">Por vencer (≤5d)</option><option value="vencida">Vencidas</option><option value="cobrada">Cobradas</option><option value="disputa">En disputa</option></select></div>
+</div>
 <div class="spacer"></div>
-<button class="btn btn-excel btn-sm" onclick="exportarFacturasExcel()">📊 Exportar Excel completo</button>
 </div>
-<div id="facturas-lista"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+<button class="btn btn-primary btn-sm" onclick="descargarEstadoCuentaPDF()">📄 PDF</button>
+<button class="btn btn-excel btn-sm" onclick="descargarEstadoCuentaExcel()">📊 Excel</button>
+<button class="btn btn-wa btn-sm" onclick="copiarEstadoCuentaWA()">💬 WhatsApp</button>
+<button class="btn btn-sm btn-secondary" onclick="limpiarEstadoCuenta()">Limpiar filtros</button>
 </div>
+</div>
+
+<div class="stat-grid" style="margin-top:20px">
+<div class="stat-card"><div class="label">Total facturado</div><div class="value" id="ec-total-facturado" style="font-size:24px">$0.00</div><div class="foot">En el periodo</div></div>
+<div class="stat-card success"><div class="label">Total cobrado</div><div class="value" id="ec-total-cobrado" style="font-size:24px">$0.00</div><div class="foot">Pagado por agencia</div></div>
+<div class="stat-card warning"><div class="label">Pendiente de pago</div><div class="value" id="ec-total-pendiente" style="font-size:24px">$0.00</div><div class="foot">Vigentes + por vencer</div></div>
+<div class="stat-card danger"><div class="label">Vencido</div><div class="value" id="ec-total-vencido" style="font-size:24px">$0.00</div><div class="foot">Requiere acción</div></div>
+</div>
+
 <div class="card mt-2">
-<h3 style="font-weight:700;margin-bottom:14px">Conciliación por agencia</h3>
+<h3 style="font-weight:700;margin-bottom:14px">Aging de saldos</h3>
+<div class="aging-grid">
+<div class="aging-card current"><div class="aging-label">Corriente</div><div class="aging-value" id="aging-corriente">$0</div><div style="font-size:11px;color:var(--sf-text-secondary);margin-top:4px" id="aging-corriente-count">0 facturas</div></div>
+<div class="aging-card range1"><div class="aging-label">1-30 días</div><div class="aging-value" id="aging-1-30">$0</div><div style="font-size:11px;color:var(--sf-text-secondary);margin-top:4px" id="aging-1-30-count">0 facturas</div></div>
+<div class="aging-card range2"><div class="aging-label">31-60 días</div><div class="aging-value" id="aging-31-60">$0</div><div style="font-size:11px;color:var(--sf-text-secondary);margin-top:4px" id="aging-31-60-count">0 facturas</div></div>
+<div class="aging-card range3"><div class="aging-label">61-90 días</div><div class="aging-value" id="aging-61-90">$0</div><div style="font-size:11px;color:var(--sf-text-secondary);margin-top:4px" id="aging-61-90-count">0 facturas</div></div>
+<div class="aging-card range4"><div class="aging-label">+90 días</div><div class="aging-value" id="aging-90-mas">$0</div><div style="font-size:11px;color:var(--sf-text-secondary);margin-top:4px" id="aging-90-mas-count">0 facturas</div></div>
+</div>
+</div>
+
+<div class="card mt-2">
+<h3 style="font-weight:700;margin-bottom:14px">Detalle de facturas</h3>
+<table id="tbl-estadocuenta"><thead><tr>
+<th>Factura</th><th>Agencia</th><th>Fecha</th><th>Días crédito</th><th>Vence</th><th>Días restantes</th><th>Monto</th><th>Estatus</th><th class="text-right">Acciones</th>
+</tr></thead><tbody id="ec-tbody"></tbody></table>
+</div>
+</div>
+
+<!-- Subtab: Conciliación -->
+<div id="subtab-conciliacion" class="subtab-content">
+<div class="card">
 <div class="table-toolbar">
 <input class="inp" id="search-conciliacion" placeholder="Buscar agencia..." oninput="filtrarTabla('search-conciliacion','conciliacion-tbody')">
 <div class="spacer"></div>
 <button class="btn btn-excel btn-sm" onclick="exportarElementoExcel('tbl-conciliacion','Conciliacion')">📊 Excel</button>
 </div>
-<table id="tbl-conciliacion"><thead><tr><th>Agencia</th><th>Pendiente de facturar</th><th>Facturadas</th><th>Cobradas</th><th>Total $ pendiente</th></tr></thead><tbody id="conciliacion-tbody"></tbody></table>
+<table id="tbl-conciliacion"><thead><tr><th>Agencia</th><th>Días crédito</th><th>Pendiente de facturar</th><th>Facturadas</th><th>Cobradas</th><th>Vencidas</th><th>Total $ pendiente</th></tr></thead><tbody id="conciliacion-tbody"></tbody></table>
+</div>
 </div>
 </div>
 
@@ -432,7 +519,7 @@ tr:last-child td{border-bottom:none}
 </div>
 <div id="tab-agencias" class="tab-content">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-weight:700">Agencias</h3><button class="btn btn-primary btn-sm" onclick="abrirModal('agencia')">+ Nueva Agencia</button></div>
-<table><thead><tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Estado</th><th class="text-right">Acciones</th></tr></thead><tbody id="tabla-agencias"></tbody></table>
+<table><thead><tr><th>ID</th><th>Nombre</th><th>RFC</th><th>Contacto</th><th>Días crédito</th><th>Estado</th><th class="text-right">Acciones</th></tr></thead><tbody id="tabla-agencias"></tbody></table>
 </div>
 <div id="tab-clientes" class="tab-content">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-weight:700">Clientes</h3><button class="btn btn-primary btn-sm" onclick="abrirModal('cliente')">+ Nuevo Cliente</button></div>
@@ -465,7 +552,6 @@ tr:last-child td{border-bottom:none}
 <p style="font-size:11px;color:var(--sf-text-secondary);margin-top:8px">PNG, JPG, SVG o WebP. Se recomienda formato horizontal y fondo transparente. Máximo 500 KB.</p>
 </div>
 </div>
-
 <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--sf-text-secondary);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--sf-border)">Datos de la empresa</h4>
 <label class="flbl">Nombre empresa</label><input class="inp" type="text" id="cfg-nombre"><br><br>
 <label class="flbl">RFC</label><input class="inp" type="text" id="cfg-rfc"><br><br>
@@ -475,7 +561,6 @@ tr:last-child td{border-bottom:none}
 <label class="flbl">Sitio web</label><input class="inp" type="text" id="cfg-web"><br><br>
 <label class="flbl">Banco</label><input class="inp" type="text" id="cfg-banco"><br><br>
 <label class="flbl">Cuenta</label><input class="inp" type="text" id="cfg-cuenta"><br><br>
-
 <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--sf-text-secondary);margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--sf-border)">Texto de la cotización</h4>
 <label class="flbl">Condiciones de pago</label><textarea class="inp" id="cfg-condiciones" rows="2"></textarea><br><br>
 <label class="flbl">Términos de cotización</label><textarea class="inp" id="cfg-terminos" rows="3"></textarea>
@@ -510,7 +595,11 @@ tr:last-child td{border-bottom:none}
 <div class="mov" id="mov-detalle-ot"><div class="mo" style="max-width:750px"><div class="moh" id="detalle-titulo">Detalle</div><div class="mob" id="detalle-contenido"></div><div class="mof"><button class="btn" onclick="cerrarDetalleOT()">Cerrar</button><button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button><button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button></div></div></div>
 <div class="mov" id="mov-editar-flujo"><div class="mo"><div class="moh">Editar trabajos</div><div class="mob" id="editar-flujo-body"></div><div class="mof"><button class="btn" onclick="cerrarEditarFlujo()">Cancelar</button><button class="btn btn-primary" onclick="guardarFlujoOT()">Guardar</button></div></div></div>
 <div class="mov" id="mov-ver-ots-factura"><div class="mo" style="max-width:820px"><div class="moh" id="ver-ots-titulo">OTs de la factura</div><div class="mob" id="ver-ots-contenido"></div><div class="mof"><button class="btn" onclick="cerrarVerOTsFactura()">Cerrar</button></div></div></div>
-<div class="mov" id="mov-notificaciones"><div class="mo" style="max-width:520px"><div class="moh">Notificaciones</div><div class="mob" id="notif-contenido"></div><div class="mof"><button class="btn" onclick="cerrarNotificaciones()">Cerrar</button></div></div></div>
+<div class="mov" id="mov-notificaciones"><div class="mo" style="max-width:600px"><div class="moh">Notificaciones</div><div class="mob" id="notif-contenido"></div><div class="mof"><button class="btn" onclick="cerrarNotificaciones()">Cerrar</button></div></div></div>
+<div class="mov" id="mov-notas-factura"><div class="mo"><div class="moh">Notas de factura</div><div class="mob">
+<label class="flbl">Notas / Promesa de pago</label>
+<textarea class="inp" id="notas-texto" rows="3" placeholder="Ej. La agencia prometió pagar el 15/09"></textarea>
+</div><div class="mof"><button class="btn" onclick="cerrarNotasFactura()">Cancelar</button><button class="btn btn-primary" onclick="guardarNotasFactura()">Guardar</button></div></div></div>
 <div id="toast"></div>
 
 <script>
@@ -518,6 +607,8 @@ const SUPABASE_URL='https://jcknyppkhorqgoieafkh.supabase.co';
 const SUPABASE_ANON='sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 let SESSION=null,PERFIL=null,confirmCallback=null,otAsignarId=null,CONFIG={},detalleOTActual=null,otEditarFlujoId=null,categoriasCache=[],piezasCatalogoCache=[],piezasTmp=[],logoBase64Tmp=undefined;
+let facturaIdNotas=null;
+let estadoCuentaData=[];
 
 function escHtml(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 function toast(msg,tipo=''){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(tipo?' '+tipo:'');t.style.background=tipo==='err'?'#ba0517':tipo==='ok'?'#2e844a':'#1a1916';setTimeout(()=>t.className='',3000)}
@@ -527,6 +618,29 @@ function ejecutarConfirm(){if(confirmCallback)confirmCallback();cerrarConfirm()}
 document.getElementById('confirm-ok').addEventListener('click',ejecutarConfirm);
 
 function iniciales(nombre){if(!nombre)return'?';const p=nombre.trim().split(' ');if(p.length===1)return p[0].substring(0,2).toUpperCase();return (p[0][0]+p[1][0]).toUpperCase()}
+function fmt$(n){return'$'+Number(n||0).toFixed(2)}
+
+// ============ ESTADO DE CUENTA HELPERS ============
+function calcEstatusFactura(f){
+  if(f.estado_pago==='cobrada')return{tipo:'cobrada',label:'Cobrada',badge:'badge-cobrada'};
+  if(f.estado_pago==='disputa')return{tipo:'disputa',label:'En disputa',badge:'badge-disputa'};
+  if(!f.fecha_vencimiento)return{tipo:'vigente',label:'Vigente',badge:'badge-vigente'};
+  const hoy=new Date();const vence=new Date(f.fecha_vencimiento);
+  const diff=Math.ceil((vence-hoy)/(1000*60*60*24));
+  if(diff<0)return{tipo:'vencida',label:`Vencida ${Math.abs(diff)}d`,badge:'badge-vencida',dias:diff};
+  if(diff<=5)return{tipo:'porvencer',label:`Por vencer (${diff}d)`,badge:'badge-porvencer',dias:diff};
+  return{tipo:'vigente',label:`Vigente (${diff}d)`,badge:'badge-vigente',dias:diff};
+}
+function calcAging(fechaVencimiento){
+  if(!fechaVencimiento)return'corriente';
+  const hoy=new Date();const vence=new Date(fechaVencimiento);
+  const dias=Math.floor((hoy-vence)/(1000*60*60*24));
+  if(dias<0)return'corriente';
+  if(dias<=30)return'r1_30';
+  if(dias<=60)return'r31_60';
+  if(dias<=90)return'r61_90';
+  return'r90_mas';
+}
 
 // LOGOUT
 function doLogout(){
@@ -550,11 +664,7 @@ function onLogoSeleccionado(input){
   const file=input.files[0];if(!file)return;
   if(file.size>500*1024){toast('El archivo no debe superar 500 KB','err');input.value='';return}
   const reader=new FileReader();
-  reader.onload=e=>{
-    logoBase64Tmp=e.target.result;
-    mostrarPreviewLogo(logoBase64Tmp);
-    toast('Logo cargado — recuerda Guardar cambios','ok');
-  };
+  reader.onload=e=>{logoBase64Tmp=e.target.result;mostrarPreviewLogo(logoBase64Tmp);toast('Logo cargado — recuerda Guardar cambios','ok')};
   reader.readAsDataURL(file);
 }
 function mostrarPreviewLogo(base64){
@@ -565,12 +675,7 @@ function mostrarPreviewLogo(base64){
   if(base64){img.src=base64;img.style.display='block';empty.style.display='none';btnQ.style.display='inline-flex'}
   else{img.src='';img.style.display='none';empty.style.display='block';btnQ.style.display='none'}
 }
-function quitarLogo(){
-  logoBase64Tmp=null;
-  mostrarPreviewLogo(null);
-  document.getElementById('logo-input').value='';
-  toast('Logo quitado — recuerda Guardar cambios','ok');
-}
+function quitarLogo(){logoBase64Tmp=null;mostrarPreviewLogo(null);document.getElementById('logo-input').value='';toast('Logo quitado — recuerda Guardar cambios','ok')}
 
 // BÚSQUEDA Y ORDEN
 function filtrarTabla(inputId,tbodyId){
@@ -594,8 +699,7 @@ function ordenarTabla(tablaId,colIndex){
   th.classList.add(sortState[key]);
   const rows=Array.from(tb.querySelectorAll('tr'));
   rows.sort((a,b)=>{
-    const av=(a.children[colIndex]?.textContent||'').trim();
-    const bv=(b.children[colIndex]?.textContent||'').trim();
+    const av=(a.children[colIndex]?.textContent||'').trim();const bv=(b.children[colIndex]?.textContent||'').trim();
     const an=parseFloat(av.replace(/[^0-9.\-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.\-]/g,''));
     let cmp;if(!isNaN(an)&&!isNaN(bn)&&av.match(/\d/)&&bv.match(/\d/))cmp=an-bn;else cmp=av.toLowerCase().localeCompare(bv.toLowerCase());
     return sortState[key]==='asc'?cmp:-cmp;
@@ -608,8 +712,7 @@ function exportarElementoExcel(tablaId,nombre){
   const rows=[];
   table.querySelectorAll('tbody tr').forEach(tr=>{
     if(tr.style.display==='none')return;
-    const row={};
-    Array.from(tr.children).forEach((td,i)=>{const h=headers[i];if(!h)return;const clone=td.cloneNode(true);clone.querySelectorAll('button,input').forEach(x=>x.remove());row[h]=clone.textContent.trim()});
+    const row={};Array.from(tr.children).forEach((td,i)=>{const h=headers[i];if(!h)return;const clone=td.cloneNode(true);clone.querySelectorAll('button,input').forEach(x=>x.remove());row[h]=clone.textContent.trim()});
     rows.push(row);
   });
   if(rows.length===0){toast('Sin datos visibles','err');return}
@@ -626,8 +729,7 @@ function exportarElementoExcel2(table,nombre){
   const rows=[];
   table.querySelectorAll('tbody tr').forEach(tr=>{
     if(tr.style.display==='none')return;
-    const row={};
-    Array.from(tr.children).forEach((td,i)=>{const h=headers[i];if(!h)return;const clone=td.cloneNode(true);clone.querySelectorAll('button,input').forEach(x=>x.remove());row[h]=clone.textContent.trim()});
+    const row={};Array.from(tr.children).forEach((td,i)=>{const h=headers[i];if(!h)return;const clone=td.cloneNode(true);clone.querySelectorAll('button,input').forEach(x=>x.remove());row[h]=clone.textContent.trim()});
     rows.push(row);
   });
   if(rows.length===0){toast('Sin datos','err');return}
@@ -746,28 +848,43 @@ function sv(view){
   if(view==='nueva-ot')cargarDatosNuevaOT();
   if(view==='cotizaciones')cargarCotizaciones();
   if(view==='taller')cargarTaller();
-  if(view==='facturacion'){cargarAgenciasFactura();cargarFacturasLista();cargarConciliacion()}
+  if(view==='facturacion'){cambiarSubtab('facturas');cargarFacturasLista();cargarAgenciasFactura();cargarAgenciasEstadoCuenta();cargarAgenciasCredito()}
   if(view==='admin')cargarAdmin();
 }
 document.querySelectorAll('.sidebar .nav-item').forEach(i=>i.addEventListener('click',()=>sv(i.dataset.view)));
 
-// NOTIFICACIONES
+function cambiarSubtab(tab){
+  document.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.subtab-content').forEach(c=>c.classList.remove('active'));
+  const b=document.querySelector(`.subtab-btn[data-subtab="${tab}"]`);if(b)b.classList.add('active');
+  const c=document.getElementById('subtab-'+tab);if(c)c.classList.add('active');
+  if(tab==='estadocuenta')cargarEstadoCuenta();
+  if(tab==='conciliacion')cargarConciliacion();
+  if(tab==='asignar')cargarAgenciasFactura();
+}
+
+// NOTIFICACIONES (incluye facturas vencidas)
 async function actualizarNotifDot(){
+  const hoy=new Date().toISOString().split('T')[0];
   const {data:ots}=await sb.from('ot').select('fecha_entrega').in('estado',['aprobada','en_taller']).not('fecha_entrega','is',null);
-  if(!ots)return;
-  const proximos=ots.filter(o=>{const d=diasHabilesEntre(new Date(),new Date(o.fecha_entrega));return d>=0&&d<=2});
-  const retrasados=ots.filter(o=>new Date(o.fecha_entrega)<new Date());
-  const dot=document.getElementById('notif-dot');if(dot)dot.classList.toggle('show',(proximos.length+retrasados.length)>0);
+  const {data:fs}=await sb.from('facturas').select('fecha_vencimiento').neq('estado_pago','cobrada').not('fecha_vencimiento','is',null);
+  const notifOTs=ots?ots.filter(o=>{const d=diasHabilesEntre(new Date(),new Date(o.fecha_entrega));return d>=0&&d<=2}).length+ots.filter(o=>new Date(o.fecha_entrega)<new Date()).length:0;
+  const notifFac=fs?fs.filter(f=>new Date(f.fecha_vencimiento)<new Date()).length:0;
+  const dot=document.getElementById('notif-dot');if(dot)dot.classList.toggle('show',(notifOTs+notifFac)>0);
 }
 async function verNotificaciones(){
   const c=document.getElementById('notif-contenido');c.innerHTML='<p>Cargando...</p>';
   const {data:ots}=await sb.from('ot').select('numero,codigo,placa,fecha_entrega,estado').in('estado',['aprobada','en_taller']).not('fecha_entrega','is',null);
-  if(!ots||ots.length===0){c.innerHTML='<p style="color:#888">Sin notificaciones.</p>';document.getElementById('mov-notificaciones').classList.add('open');return}
-  const proximos=ots.filter(o=>{const d=diasHabilesEntre(new Date(),new Date(o.fecha_entrega));return d>=0&&d<=2});
-  const retrasados=ots.filter(o=>new Date(o.fecha_entrega)<new Date());
+  const {data:fs}=await sb.from('facturas').select('*, agencias(nombre)').neq('estado_pago','cobrada').not('fecha_vencimiento','is',null);
+  const proximos=(ots||[]).filter(o=>{const d=diasHabilesEntre(new Date(),new Date(o.fecha_entrega));return d>=0&&d<=2});
+  const retrasados=(ots||[]).filter(o=>new Date(o.fecha_entrega)<new Date());
+  const vencidas=(fs||[]).filter(f=>new Date(f.fecha_vencimiento)<new Date());
+  const porVencer=(fs||[]).filter(f=>{const d=Math.ceil((new Date(f.fecha_vencimiento)-new Date())/(1000*60*60*24));return d>=0&&d<=5});
   let h='';
-  if(retrasados.length>0){h+=`<h4 style="color:var(--sf-error);margin-bottom:8px">⚠️ ${retrasados.length} retrasados</h4><ul style="margin-left:18px;margin-bottom:14px;font-size:13px">`;retrasados.forEach(o=>h+=`<li><strong>${escHtml(o.numero||o.codigo)}</strong> — ${escHtml(o.placa)}</li>`);h+='</ul>'}
-  if(proximos.length>0){h+=`<h4 style="color:var(--sf-warning);margin-bottom:8px">📅 ${proximos.length} próximos a entregar</h4><ul style="margin-left:18px;font-size:13px">`;proximos.forEach(o=>h+=`<li><strong>${escHtml(o.numero||o.codigo)}</strong> — ${escHtml(o.placa)} (${o.fecha_entrega})</li>`);h+='</ul>'}
+  if(retrasados.length>0){h+=`<h4 style="color:var(--sf-error);margin-bottom:8px">⚠️ ${retrasados.length} OTs retrasadas</h4><ul style="margin-left:18px;margin-bottom:14px;font-size:13px">`;retrasados.forEach(o=>h+=`<li><strong>${escHtml(o.numero||o.codigo)}</strong> — ${escHtml(o.placa)}</li>`);h+='</ul>'}
+  if(proximos.length>0){h+=`<h4 style="color:var(--sf-warning);margin-bottom:8px">📅 ${proximos.length} OTs próximas a entregar</h4><ul style="margin-left:18px;margin-bottom:14px;font-size:13px">`;proximos.forEach(o=>h+=`<li><strong>${escHtml(o.numero||o.codigo)}</strong> — ${escHtml(o.placa)} (${o.fecha_entrega})</li>`);h+='</ul>'}
+  if(vencidas.length>0){h+=`<h4 style="color:var(--sf-error);margin-bottom:8px">💸 ${vencidas.length} facturas vencidas</h4><ul style="margin-left:18px;margin-bottom:14px;font-size:13px">`;vencidas.forEach(f=>h+=`<li><strong>${escHtml(f.numero)}</strong> — ${escHtml(f.agencias?.nombre||'')} (venció ${f.fecha_vencimiento})</li>`);h+='</ul>'}
+  if(porVencer.length>0){h+=`<h4 style="color:var(--sf-warning);margin-bottom:8px">⏰ ${porVencer.length} facturas por vencer (≤5d)</h4><ul style="margin-left:18px;font-size:13px">`;porVencer.forEach(f=>h+=`<li><strong>${escHtml(f.numero)}</strong> — ${escHtml(f.agencias?.nombre||'')} (${f.fecha_vencimiento})</li>`);h+='</ul>'}
   if(!h)h='<p style="color:#888">Todo en orden.</p>';
   c.innerHTML=h;document.getElementById('mov-notificaciones').classList.add('open');
 }
@@ -811,7 +928,7 @@ const configs={
   marca:{tabla:'marcas',title:'Marca',fields:[{name:'nombre',label:'Nombre',type:'text',required:true}]},
   modelo:{tabla:'modelos',title:'Modelo',fields:[{name:'nombre',label:'Nombre',type:'text',required:true},{name:'marca_id',label:'Marca',type:'select',options:'marcas'}]},
   trabajo:{tabla:'trabajos',title:'Trabajo',fields:[{name:'nombre',label:'Nombre',type:'text',required:true},{name:'precio_base',label:'Precio Base',type:'number',step:'0.01'},{name:'tiempo_est',label:'Tiempo (días hábiles)',type:'number',step:'1'},{name:'categoria_id',label:'Categoría',type:'select',options:'categorias'}]},
-  agencia:{tabla:'agencias',title:'Agencia',fields:[{name:'nombre',label:'Nombre',type:'text',required:true},{name:'rfc',label:'RFC',type:'text'},{name:'contacto',label:'Contacto',type:'text'}]},
+  agencia:{tabla:'agencias',title:'Agencia',fields:[{name:'nombre',label:'Nombre',type:'text',required:true},{name:'rfc',label:'RFC',type:'text'},{name:'contacto',label:'Contacto',type:'text'},{name:'dias_credito',label:'Días de crédito',type:'number',step:'1'}]},
   cliente:{tabla:'clientes',title:'Cliente',fields:[{name:'nombre',label:'Nombre',type:'text',required:true},{name:'telefono',label:'Teléfono',type:'text'},{name:'email',label:'Email',type:'email'}]}
 };
 let currentModal=null,currentEditId=null;
@@ -842,7 +959,7 @@ document.getElementById('crud-save').addEventListener('click',async()=>{
 async function cargarMarcas(){const {data}=await sb.from('marcas').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-marcas');if(!tb)return;tb.innerHTML='';data.forEach(m=>tb.innerHTML+=`<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca',${m.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas',${m.id},'${escHtml(m.nombre)}')">Eliminar</button></td></tr>`)}
 async function cargarModelos(){const {data}=await sb.from('modelos').select('*, marcas(nombre)').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-modelos');if(!tb)return;tb.innerHTML='';data.forEach(m=>tb.innerHTML+=`<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre||'')}</td><td>${m.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo',${m.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos',${m.id},'${escHtml(m.nombre)}')">Eliminar</button></td></tr>`)}
 async function cargarTrabajos(){const {data}=await sb.from('trabajos').select('*, categorias(nombre)').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-trabajos');if(!tb)return;tb.innerHTML='';data.forEach(t=>tb.innerHTML+=`<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base||0}</td><td>${t.tiempo_est||0}</td><td>${escHtml(t.categorias?.nombre||'Sin cat.')}</td><td>${t.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo',${t.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos',${t.id},'${escHtml(t.nombre)}')">Eliminar</button></td></tr>`)}
-async function cargarAgencias(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-agencias');if(!tb)return;tb.innerHTML='';data.forEach(a=>tb.innerHTML+=`<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc||'')}</td><td>${escHtml(a.contacto||'')}</td><td>${a.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia',${a.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias',${a.id},'${escHtml(a.nombre)}')">Eliminar</button></td></tr>`)}
+async function cargarAgencias(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-agencias');if(!tb)return;tb.innerHTML='';data.forEach(a=>tb.innerHTML+=`<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc||'')}</td><td>${escHtml(a.contacto||'')}</td><td>${a.dias_credito||30}</td><td>${a.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia',${a.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias',${a.id},'${escHtml(a.nombre)}')">Eliminar</button></td></tr>`)}
 async function cargarClientes(){const {data}=await sb.from('clientes').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-clientes');if(!tb)return;tb.innerHTML='';data.forEach(c=>tb.innerHTML+=`<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono||'')}</td><td>${escHtml(c.email||'')}</td><td>${c.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente',${c.id})">Editar</button> <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes',${c.id},'${escHtml(c.nombre)}')">Eliminar</button></td></tr>`)}
 async function eliminarRegistro(tabla,id,desc){abrirConfirm(`¿Eliminar "${desc}"?`,async()=>{const {error}=await sb.from(tabla).update({activo:false}).eq('id',id);if(error){toast('Error','err');return}toast('Eliminado ✓','ok');cargarAdmin()},'Sí, eliminar')}
 async function cargarAdmin(){const t=document.querySelector('.tab-btn.active')?.dataset.tab||'marcas';await Promise.all([cargarMarcas(),cargarModelos(),cargarTrabajos(),cargarPiezasAdmin(),cargarCategoriasAdmin(),cargarAgencias(),cargarClientes(),cargarTecnicos(),cargarUsuarios()]);cambiarTabAdmin(t)}
@@ -1096,20 +1213,8 @@ async function verTrabajos(id){
     document.getElementById('mov-detalle-ot').classList.add('open');
   }catch(e){toast('Error: '+e.message,'err')}
 }
-async function marcarPiezaRecibida(piezaId,otId){
-  const {error}=await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('id',piezaId);
-  if(error){toast('Error: '+error.message,'err');return}
-  const {data:pz}=await sb.from('ot_piezas').select('recibida').eq('ot_id',otId);
-  const pend=pz.filter(p=>!p.recibida);
-  if(pend.length===0){await sb.from('ot').update({esperando_refaccion:false,eta_refaccion:null}).eq('id',otId);toast('Pieza recibida ✓ — Todas las piezas en taller','ok')}
-  else toast('Pieza recibida ✓ ('+pend.length+' pendiente'+(pend.length>1?'s':'')+')','ok');
-  await verTrabajos(otId);cargarTaller();
-}
-async function marcarTodasRecibidas(otId){
-  await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('ot_id',otId).eq('recibida',false);
-  await sb.from('ot').update({esperando_refaccion:false,eta_refaccion:null}).eq('id',otId);
-  toast('Todas las piezas recibidas ✓','ok');await verTrabajos(otId);cargarTaller();
-}
+async function marcarPiezaRecibida(piezaId,otId){const {error}=await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('id',piezaId);if(error){toast('Error: '+error.message,'err');return}const {data:pz}=await sb.from('ot_piezas').select('recibida').eq('ot_id',otId);const pend=pz.filter(p=>!p.recibida);if(pend.length===0){await sb.from('ot').update({esperando_refaccion:false,eta_refaccion:null}).eq('id',otId);toast('Pieza recibida ✓ — Todas las piezas en taller','ok')}else toast('Pieza recibida ✓ ('+pend.length+' pendiente'+(pend.length>1?'s':'')+')','ok');await verTrabajos(otId);cargarTaller()}
+async function marcarTodasRecibidas(otId){await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('ot_id',otId).eq('recibida',false);await sb.from('ot').update({esperando_refaccion:false,eta_refaccion:null}).eq('id',otId);toast('Todas las piezas recibidas ✓','ok');await verTrabajos(otId);cargarTaller()}
 function cerrarDetalleOT(){document.getElementById('mov-detalle-ot').classList.remove('open');detalleOTActual=null}
 function imprimirCotizacionDesdeDetalle(){if(detalleOTActual)imprimirCotizacion(detalleOTActual.id)}
 function abrirEditarFlujo(id){otEditarFlujoId=id;sb.from('ot_trabajos').select('*').eq('ot_id',id).then(async({data:tj})=>{const {data:todos}=await sb.from('trabajos').select('*').eq('activo',true).order('nombre');let h='';todos.forEach(t=>{const sel=tj.some(x=>x.trabajo_id===t.id);h+=`<div class="chk-flujo-item"><input type="checkbox" class="chk-flujo-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" ${sel?'checked':''}><span>${escHtml(t.nombre)} — $${t.precio_base||0}</span></div>`});document.getElementById('editar-flujo-body').innerHTML=h;document.getElementById('mov-editar-flujo').classList.add('open')})}
@@ -1117,40 +1222,110 @@ function cerrarEditarFlujo(){document.getElementById('mov-editar-flujo').classLi
 async function guardarFlujoOT(){const id=otEditarFlujoId;const sel=Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(c=>({trabajo_id:parseInt(c.value),precio:parseFloat(c.dataset.precio||0)}));if(sel.length===0){toast('Selecciona al menos 1','err');return}await sb.from('ot_trabajos').delete().eq('ot_id',id);for(const t of sel)await sb.from('ot_trabajos').insert({ot_id:id,trabajo_id:t.trabajo_id,precio:t.precio});const cT=sel.reduce((s,t)=>s+t.precio,0);const {data:ot}=await sb.from('ot').select('iva_porcentaje,iva_monto').eq('id',id).single();const subtotal=cT;const ivaMonto=(ot?.iva_porcentaje||0)>0?subtotal*(ot.iva_porcentaje/100):(ot?.iva_monto||0);await sb.from('ot').update({costo_total:subtotal+ivaMonto}).eq('id',id);toast('Actualizado ✓','ok');cerrarEditarFlujo();cargarTaller()}
 
 // FACTURACIÓN
-async function cargarAgenciasFactura(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');s.innerHTML='<option value="">Selecciona agencia...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`)}
+async function cargarAgenciasFactura(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');s.innerHTML='<option value="">Selecciona agencia...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}" data-dias="${a.dias_credito||30}">${escHtml(a.nombre)}</option>`)}
+async function cargarAgenciasCredito(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');if(s)s.innerHTML='<option value="">Selecciona agencia...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}" data-dias="${a.dias_credito||30}">${escHtml(a.nombre)}</option>`)}
+async function cargarAgenciasEstadoCuenta(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('ec-agencia');s.innerHTML='<option value="">Todas (consolidado)</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`)}
 async function cargarOTsFacturables(){
-  const id=document.getElementById('factura-agencia').value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';
+  const sel=document.getElementById('factura-agencia');const id=sel.value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';
+  // Autocompletar días de crédito de la agencia
+  if(sel.selectedOptions[0]?.dataset?.dias){
+    document.getElementById('factura-dias-credito').value=sel.selectedOptions[0].dataset.dias;
+  }
   if(!id){c.innerHTML='<p style="color:#888;padding:12px">Selecciona una agencia para ver sus OTs pendientes.</p>';return}
   const {data:ots}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre)').eq('agencia_id',id).eq('estado','completada').is('factura_id',null).order('updated_at',{ascending:false});
   if(ots.length===0){c.innerHTML='<p style="color:#888;padding:12px">No hay OTs completadas sin facturar.</p>';return}
   c.innerHTML=`<table><thead><tr><th style="width:40px"><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th><th class="text-right">Acciones</th></tr></thead><tbody id="tbody-facturables">${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${(o.total_con_iva||o.costo_total||0).toFixed(2)}</td><td class="text-right"><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})" title="Descargar PDF">📄 PDF</button></td></tr>`).join('')}</tbody></table>`;
 }
 function toggleAllOT(){const a=document.getElementById('check-all-ot').checked;document.querySelectorAll('.chk-ot-factura').forEach(c=>c.checked=a)}
-async function asignarFactura(){const aId=document.getElementById('factura-agencia').value,num=document.getElementById('factura-numero').value.trim();const sel=Array.from(document.querySelectorAll('.chk-ot-factura:checked')).map(c=>parseInt(c.value));if(!aId||!num||sel.length===0){toast('Completa todos los campos','err');return}const {data:ots}=await sb.from('ot').select('total_con_iva,costo_total').in('id',sel);const mT=ots.reduce((s,o)=>s+(o.total_con_iva||o.costo_total||0),0);const {data:f,error}=await sb.from('facturas').insert({numero:num,agencia_id:aId,monto_total:mT,estado_pago:'facturada'}).select('id').single();if(error){toast('Error: '+error.message,'err');return}await sb.from('ot').update({factura_id:f.id}).in('id',sel);toast('Factura vinculada ✓','ok');document.getElementById('factura-numero').value='';cargarOTsFacturables();cargarFacturasLista();cargarConciliacion();cargarDashboard()}
+async function asignarFactura(){
+  const aId=document.getElementById('factura-agencia').value;
+  const num=document.getElementById('factura-numero').value.trim();
+  const dias=parseInt(document.getElementById('factura-dias-credito').value)||30;
+  const notas=document.getElementById('factura-notas').value.trim();
+  const sel=Array.from(document.querySelectorAll('.chk-ot-factura:checked')).map(c=>parseInt(c.value));
+  if(!aId||!num||sel.length===0){toast('Completa agencia, número de factura y selecciona OTs','err');return}
+  const {data:ots}=await sb.from('ot').select('total_con_iva,costo_total').in('id',sel);
+  const mT=ots.reduce((s,o)=>s+(o.total_con_iva||o.costo_total||0),0);
+  const hoy=new Date();
+  const vence=new Date(hoy);vence.setDate(vence.getDate()+dias);
+  const {data:f,error}=await sb.from('facturas').insert({
+    numero:num, agencia_id:aId, monto_total:mT, estado_pago:'facturada',
+    dias_credito:dias, fecha_vencimiento:vence.toISOString().split('T')[0],
+    notas:notas||null
+  }).select('id').single();
+  if(error){toast('Error: '+error.message,'err');return}
+  await sb.from('ot').update({factura_id:f.id}).in('id',sel);
+  toast('Factura vinculada ✓ — Vence '+vence.toISOString().split('T')[0],'ok');
+  document.getElementById('factura-numero').value='';document.getElementById('factura-notas').value='';
+  cargarOTsFacturables();cargarFacturasLista();cargarConciliacion();cargarDashboard();
+}
 
 async function cargarFacturasLista(){
   const c=document.getElementById('facturas-lista');if(!c)return;c.innerHTML='<p>Cargando...</p>';
-  const {data:fs,error}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false}).limit(50);
+  const {data:fs,error}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false}).limit(100);
   if(error){c.innerHTML='<p style="color:red">Error: '+error.message+'</p>';return}
   if(!fs||fs.length===0){c.innerHTML='<p style="color:#888">Sin facturas registradas.</p>';return}
   const facturaIds=fs.map(f=>f.id);
   const {data:ots}=await sb.from('ot').select('id, numero, codigo, placa, costo_total, total_con_iva, factura_id').in('factura_id',facturaIds);
   const otsPorFactura={};(ots||[]).forEach(o=>{if(!otsPorFactura[o.factura_id])otsPorFactura[o.factura_id]=[];otsPorFactura[o.factura_id].push(o)});
-  let h='<table><thead><tr><th>Número</th><th>Agencia</th><th>Monto</th><th>Fecha</th><th>Estado</th><th>OTs vinculadas</th><th class="text-right">Acciones</th></tr></thead><tbody id="facturas-tbody">';
+  let h='<table><thead><tr><th>Número</th><th>Agencia</th><th>Monto</th><th>Fecha</th><th>Vence</th><th>Estatus</th><th>OTs</th><th class="text-right">Acciones</th></tr></thead><tbody id="facturas-tbody">';
   fs.forEach(f=>{
-    const badge=f.estado_pago==='cobrada'?'<span class="badge-cobrada">Cobrada</span>':'<span class="badge-facturada">Facturada</span>';
-    const btnCobrar=f.estado_pago==='cobrada'?'':`<button class="btn btn-sm btn-success" onclick="marcarCobrada(${f.id})">Marcar cobrada</button>`;
+    const est=calcEstatusFactura(f);
     const otsF=otsPorFactura[f.id]||[];
     let otsTxt='';
     if(otsF.length===0){otsTxt='<span style="color:#888">Sin OTs</span>'}
     else if(otsF.length<=3){otsTxt=otsF.map(o=>`<div class="ots-mini">${escHtml(o.numero||o.codigo||'')} · ${escHtml(o.placa||'')}</div>`).join('')}
-    else{otsTxt=`<div style="font-size:11px">${otsF.length} OTs vinculadas</div>`}
-    const btnVerOTs=otsF.length>0?`<button class="btn btn-sm" onclick="verOTsFactura(${f.id})">Ver OTs (${otsF.length})</button>`:'';
-    h+=`<tr><td><strong>${escHtml(f.numero)}</strong></td><td>${escHtml(f.agencias?.nombre||'')}</td><td>$${(f.monto_total||0).toFixed(2)}</td><td>${f.fecha||''}</td><td>${badge}</td><td style="max-width:240px">${otsTxt}</td><td class="text-right"><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">${btnVerOTs}${btnCobrar}</div></td></tr>`;
+    else{otsTxt=`<div style="font-size:11px">${otsF.length} OTs</div>`}
+    const btnVer=otsF.length>0?`<button class="btn btn-sm" onclick="verOTsFactura(${f.id})">Ver OTs (${otsF.length})</button>`:'';
+    const btnCobrar=est.tipo==='cobrada'?'':`<button class="btn btn-sm btn-success" onclick="marcarCobrada(${f.id})">Cobrar</button>`;
+    const btnDisputa=est.tipo==='disputa'?'':`<button class="btn btn-sm btn-secondary" onclick="cambiarEstatusFactura(${f.id},'disputa')" title="Marcar en disputa">⚠️</button>`;
+    const btnNotas=`<button class="btn btn-sm btn-secondary" onclick="abrirNotasFactura(${f.id})" title="${f.notas?escHtml(f.notas):'Agregar nota'}">📝</button>`;
+    const btnWA=`<button class="btn btn-sm btn-wa" onclick="recordatorioWhatsApp(${f.id})" title="Recordatorio WhatsApp">💬</button>`;
+    h+=`<tr><td><strong>${escHtml(f.numero)}</strong>${f.notas?`<div class="nota-card" style="font-size:11px;margin-top:4px">${escHtml(f.notas)}</div>`:''}</td><td>${escHtml(f.agencias?.nombre||'')}</td><td>$${(f.monto_total||0).toFixed(2)}</td><td>${f.fecha||''}</td><td>${f.fecha_vencimiento||'—'}</td><td><span class="${est.badge}">${est.label}</span></td><td style="max-width:200px">${otsTxt}</td><td class="text-right"><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">${btnVer}${btnWA}${btnNotas}${btnDisputa}${btnCobrar}</div></td></tr>`;
   });
   h+='</tbody></table>';c.innerHTML=h;
 }
 
+// NOTAS FACTURA
+function abrirNotasFactura(id){facturaIdNotas=id;sb.from('facturas').select('notas').eq('id',id).single().then(({data})=>{document.getElementById('notas-texto').value=data?.notas||'';document.getElementById('mov-notas-factura').classList.add('open')})}
+function cerrarNotasFactura(){document.getElementById('mov-notas-factura').classList.remove('open');facturaIdNotas=null}
+async function guardarNotasFactura(){const t=document.getElementById('notas-texto').value.trim();const {error}=await sb.from('facturas').update({notas:t||null}).eq('id',facturaIdNotas);if(error){toast('Error: '+error.message,'err');return}toast('Nota guardada ✓','ok');cerrarNotasFactura();cargarFacturasLista()}
+
+// CAMBIAR ESTATUS (disputa / facturada)
+async function cambiarEstatusFactura(id,estatus){
+  abrirConfirm('¿Marcar esta factura como EN DISPUTA?','Sí, marcar',async()=>{
+    const {error}=await sb.from('facturas').update({estado_pago:estatus}).eq('id',id);
+    if(error){toast('Error','err');return}
+    toast('Estatus actualizado ✓','ok');cargarFacturasLista();cargarConciliacion();
+  });
+}
+// Reestructurar para pasar callback correcto
+cambiarEstatusFactura=async function(id,estatus){
+  abrirConfirm(`¿Marcar esta factura como "${estatus}"?`,async()=>{
+    const {error}=await sb.from('facturas').update({estado_pago:estatus}).eq('id',id);
+    if(error){toast('Error: '+error.message,'err');return}
+    toast('Estatus actualizado ✓','ok');cargarFacturasLista();cargarConciliacion();
+  },'Sí, cambiar');
+};
+
+// RECORDATORIO WHATSAPP
+async function recordatorioWhatsApp(id){
+  const {data:f}=await sb.from('facturas').select('*, agencias(nombre)').eq('id',id).single();
+  if(!f)return;
+  const est=calcEstatusFactura(f);
+  const hoy=new Date().toISOString().split('T')[0];
+  let txt=`*RECORDATORIO DE PAGO*\n${CONFIG.empresa_nombre||'Taller H&P'}\n\n`;
+  txt+=`Factura: ${f.numero}\nMonto: $${(f.monto_total||0).toFixed(2)}\n`;
+  txt+=`Fecha: ${f.fecha}\nVence: ${f.fecha_vencimiento}\n`;
+  if(est.tipo==='vencida'){txt+=`\n⚠️ *VENCIDA hace ${Math.abs(est.dias)} días*\n`}
+  else if(est.tipo==='porvencer'){txt+=`\n⏰ *Vence en ${est.dias} días*\n`}
+  txt+=`\nTe agradecemos tu pronto pago.`;
+  if(CONFIG.banco)txt+=`\n\nDatos bancarios:\n${CONFIG.banco}\nCuenta: ${CONFIG.cuenta_bancaria||''}`;
+  navigator.clipboard.writeText(txt);
+  toast('Recordatorio copiado ✓ Pégalo en WhatsApp','ok');
+}
+
+// VER OTs DE FACTURA
 async function verOTsFactura(facturaId){
   try{
     const {data:f}=await sb.from('facturas').select('*, agencias(nombre)').eq('id',facturaId).single();
@@ -1159,7 +1334,9 @@ async function verOTsFactura(facturaId){
     document.getElementById('ver-ots-titulo').textContent='Factura '+f.numero+' — '+ots.length+' OTs';
     let h=`<div style="background:var(--sf-blue-light);padding:16px;border-radius:var(--rs);margin-bottom:18px">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><strong>Agencia:</strong> ${escHtml(f.agencias?.nombre||'')}</div><div><strong>Monto factura:</strong> $${(f.monto_total||0).toFixed(2)}</div></div>
-      <div style="display:flex;justify-content:space-between"><div><strong>Fecha:</strong> ${f.fecha||''}</div><div><strong>Estado:</strong> ${f.estado_pago==='cobrada'?'Cobrada':'Facturada'}</div></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><strong>Fecha:</strong> ${f.fecha||''}</div><div><strong>Vence:</strong> ${f.fecha_vencimiento||'—'}</div></div>
+      <div style="display:flex;justify-content:space-between"><div><strong>Días crédito:</strong> ${f.dias_credito||30}</div><div><strong>Estatus:</strong> ${f.estado_pago==='cobrada'?'Cobrada':f.estado_pago==='disputa'?'En disputa':'Facturada'}</div></div>
+      ${f.notas?`<div class="nota-card" style="margin-top:10px">📝 ${escHtml(f.notas)}</div>`:''}
     </div>`;
     if(ots.length===0){h+='<p style="color:#888">Esta factura no tiene OTs vinculadas.</p>'}
     else{
@@ -1195,6 +1372,251 @@ async function marcarCobrada(fid){
   },'Sí, cobrada');
 }
 
+// ============ ESTADO DE CUENTA ============
+async function cargarEstadoCuenta(){
+  const agId=document.getElementById('ec-agencia').value;
+  const desde=document.getElementById('ec-desde').value;
+  const hasta=document.getElementById('ec-hasta').value;
+  const estatusFiltro=document.getElementById('ec-estatus').value;
+
+  let q=sb.from('facturas').select('*, agencias(id, nombre, dias_credito)').neq('estado_pago','cancelada');
+  if(agId)q=q.eq('agencia_id',agId);
+  if(desde)q=q.gte('fecha',desde);
+  if(hasta)q=q.lte('fecha',hasta);
+  const {data:fs,error}=await q.order('fecha',{ascending:false});
+  if(error){toast('Error: '+error.message,'err');return}
+
+  // Cargar OTs pendientes de facturar (también van al estado de cuenta si es una agencia específica)
+  let otsSinFacturar=[];
+  if(agId){
+    const {data:otsPend}=await sb.from('ot').select('id, numero, codigo, placa, total_con_iva, costo_total, fecha_entrega, marcas(nombre), modelos(nombre)').eq('agencia_id',agId).eq('estado','completada').is('factura_id',null);
+    otsSinFacturar=otsPend||[];
+  }
+
+  // Calcular KPIs
+  let totalFacturado=0,totalCobrado=0,totalPendiente=0,totalVencido=0;
+  const aging={corriente:{monto:0,count:0},r1_30:{monto:0,count:0},r31_60:{monto:0,count:0},r61_90:{monto:0,count:0},r90_mas:{monto:0,count:0}};
+  const filtradas=[];
+  (fs||[]).forEach(f=>{
+    const est=calcEstatusFactura(f);
+    totalFacturado+=(f.monto_total||0);
+    if(est.tipo==='cobrada'){totalCobrado+=(f.monto_total||0)}
+    else if(est.tipo==='vencida'){totalVencido+=(f.monto_total||0);totalPendiente+=(f.monto_total||0)}
+    else if(est.tipo==='vigente'||est.tipo==='porvencer'){totalPendiente+=(f.monto_total||0)}
+    // Aging solo para no cobradas
+    if(est.tipo!=='cobrada'){
+      const ag=calcAging(f.fecha_vencimiento);
+      aging[ag].monto+=(f.monto_total||0);
+      aging[ag].count++;
+    }
+    // Aplicar filtro de estatus
+    if(!estatusFiltro||est.tipo===estatusFiltro)filtradas.push({...f,est});
+  });
+
+  // Pintar KPIs
+  document.getElementById('ec-total-facturado').textContent=fmt$(totalFacturado);
+  document.getElementById('ec-total-cobrado').textContent=fmt$(totalCobrado);
+  document.getElementById('ec-total-pendiente').textContent=fmt$(totalPendiente);
+  document.getElementById('ec-total-vencido').textContent=fmt$(totalVencido);
+
+  // Aging
+  document.getElementById('aging-corriente').textContent=fmt$(aging.corriente.monto);
+  document.getElementById('aging-corriente-count').textContent=aging.corriente.count+' facturas';
+  document.getElementById('aging-1-30').textContent=fmt$(aging.r1_30.monto);
+  document.getElementById('aging-1-30-count').textContent=aging.r1_30.count+' facturas';
+  document.getElementById('aging-31-60').textContent=fmt$(aging.r31_60.monto);
+  document.getElementById('aging-31-60-count').textContent=aging.r31_60.count+' facturas';
+  document.getElementById('aging-61-90').textContent=fmt$(aging.r61_90.monto);
+  document.getElementById('aging-61-90-count').textContent=aging.r61_90.count+' facturas';
+  document.getElementById('aging-90-mas').textContent=fmt$(aging.r90_mas.monto);
+  document.getElementById('aging-90-mas-count').textContent=aging.r90_mas.count+' facturas';
+
+  // Guardar para exportación
+  estadoCuentaData={facturas:filtradas,otsSinFacturar,agId,desde,hasta,estatusFiltro,totales:{totalFacturado,totalCobrado,totalPendiente,totalVencido,aging}};
+
+  // Pintar tabla
+  const tb=document.getElementById('ec-tbody');tb.innerHTML='';
+  if(filtradas.length===0&&otsSinFacturar.length===0){
+    tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#888">Sin facturas en el periodo seleccionado.</td></tr>';
+  } else {
+    filtradas.forEach(f=>{
+      let dr='—';
+      if(f.fecha_vencimiento&&f.est.tipo!=='cobrada'){
+        const d=Math.ceil((new Date(f.fecha_vencimiento)-new Date())/(1000*60*60*24));
+        dr=d<0?`<span style="color:var(--sf-error)">${d} d</span>`:`${d} d`;
+      }
+      tb.innerHTML+=`<tr>
+        <td><strong>${escHtml(f.numero)}</strong>${f.notas?`<div class="nota-card" style="font-size:11px">${escHtml(f.notas)}</div>`:''}</td>
+        <td>${escHtml(f.agencias?.nombre||'')}</td>
+        <td>${f.fecha||''}</td>
+        <td>${f.dias_credito||30}</td>
+        <td>${f.fecha_vencimiento||'—'}</td>
+        <td>${dr}</td>
+        <td>$${(f.monto_total||0).toFixed(2)}</td>
+        <td><span class="${f.est.badge}">${f.est.label}</span></td>
+        <td class="text-right">
+          <button class="btn btn-sm" onclick="cambiarEstatusFactura(${f.id},'disputa')" title="Marcar en disputa">⚠️</button>
+          ${f.est.tipo!=='cobrada'?`<button class="btn btn-sm btn-success" onclick="marcarCobrada(${f.id}).then(cargarEstadoCuenta)" title="Cobrar">✓</button>`:''}
+          <button class="btn btn-sm btn-wa" onclick="recordatorioWhatsApp(${f.id})" title="Recordatorio">💬</button>
+        </td>
+      </tr>`;
+    });
+    // Añadir OTs pendientes de facturar
+    otsSinFacturar.forEach(o=>{
+      const monto=o.total_con_iva||o.costo_total||0;
+      tb.innerHTML+=`<tr style="background:#FFF9E6">
+        <td><strong>${escHtml(o.numero||o.codigo)}</strong> <small style="color:#888">(sin facturar)</small></td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>$${monto.toFixed(2)}</td>
+        <td><span class="badge-pendiente">Pendiente facturar</span></td>
+        <td class="text-right"><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})">📄</button></td>
+      </tr>`;
+    });
+  }
+}
+function limpiarEstadoCuenta(){
+  document.getElementById('ec-agencia').value='';
+  document.getElementById('ec-desde').value='';
+  document.getElementById('ec-hasta').value='';
+  document.getElementById('ec-estatus').value='';
+  cargarEstadoCuenta();
+}
+
+// PDF de Estado de Cuenta
+function descargarEstadoCuentaPDF(){
+  if(!estadoCuentaData.facturas){toast('Primero carga el estado de cuenta','err');return}
+  const {facturas,otsSinFacturar,agId,totales}=estadoCuentaData;
+  const agNombre=agId?document.getElementById('ec-agencia').selectedOptions[0]?.textContent:'Consolidado';
+  const doc=new jspdf.jsPDF('p','mm','a4');
+  const M=15;let y=M;
+  // Header
+  if(CONFIG.logo_base64){try{doc.addImage(CONFIG.logo_base64,'PNG',M,M,50,18)}catch(e){}}
+  else{doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+10)}
+  doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text(CONFIG.empresa_nombre||'Taller',195,M+3,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(8);
+  doc.text(CONFIG.empresa_rfc||'',195,M+8,{align:'right'});
+  doc.text(CONFIG.empresa_direccion||'',195,M+12,{align:'right'});
+  doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`,195,M+16,{align:'right'});
+  y=M+26;
+  doc.setFillColor(10,15,44);doc.rect(M,y,180,8,'F');doc.setTextColor(255);doc.setFontSize(12);doc.setFont('helvetica','bold');
+  doc.text('ESTADO DE CUENTA',105,y+5.5,{align:'center'});doc.setTextColor(0);y+=14;
+  // Info
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text('Cliente: '+agNombre,M,y);y+=6;
+  doc.text('Fecha de emisión: '+new Date().toLocaleDateString(),M,y);y+=6;
+  if(estadoCuentaData.desde||estadoCuentaData.hasta){doc.text(`Periodo: ${estadoCuentaData.desde||'—'} a ${estadoCuentaData.hasta||'—'}`,M,y);y+=6}
+  y+=4;
+  // KPIs
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Resumen',M,y);y+=6;
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text(`Total facturado: ${fmt$(totales.totalFacturado)}`,M,y);y+=5;
+  doc.text(`Total cobrado: ${fmt$(totales.totalCobrado)}`,M,y);y+=5;
+  doc.text(`Pendiente de pago: ${fmt$(totales.totalPendiente)}`,M,y);y+=5;
+  doc.setTextColor(165,42,42);doc.text(`Vencido: ${fmt$(totales.totalVencido)}`,M,y);y+=6;doc.setTextColor(0);
+  // Aging
+  doc.setFont('helvetica','bold');doc.text('Aging de saldos',M,y);y+=5;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);
+  const ag=totales.aging;
+  doc.text(`Corriente: ${fmt$(ag.corriente.monto)} (${ag.corriente.count})`,M,y);y+=4;
+  doc.text(`1-30 días: ${fmt$(ag.r1_30.monto)} (${ag.r1_30.count})`,M,y);y+=4;
+  doc.text(`31-60 días: ${fmt$(ag.r31_60.monto)} (${ag.r31_60.count})`,M,y);y+=4;
+  doc.text(`61-90 días: ${fmt$(ag.r61_90.monto)} (${ag.r61_90.count})`,M,y);y+=4;
+  doc.text(`+90 días: ${fmt$(ag.r90_mas.monto)} (${ag.r90_mas.count})`,M,y);y+=6;
+  // Tabla facturas
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Detalle de facturas',M,y);y+=2;
+  const tBody=facturas.map(f=>[f.numero,f.agencias?.nombre||'',f.fecha||'',f.fecha_vencimiento||'',fmt$(f.monto_total||0),f.est.label]);
+  doc.autoTable({startY:y+2,head:[['Factura','Agencia','Fecha','Vence','Monto','Estatus']],body:tBody,theme:'striped',headStyles:{fillColor:[10,15,44]},styles:{fontSize:8},margin:{left:M,right:M}});
+  y=doc.lastAutoTable.finalY+6;
+  // OTs pendientes de facturar
+  if(otsSinFacturar&&otsSinFacturar.length>0){
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('OTs pendientes de facturar',M,y);y+=2;
+    const oBody=otsSinFacturar.map(o=>[o.numero||o.codigo||'',o.placa||'',fmt$(o.total_con_iva||o.costo_total||0)]);
+    doc.autoTable({startY:y+2,head:[['OT','Placa','Monto']],body:oBody,theme:'striped',headStyles:{fillColor:[254,147,57]},styles:{fontSize:8},margin:{left:M,right:M}});
+    y=doc.lastAutoTable.finalY+6;
+  }
+  // Footer
+  doc.setFillColor(10,15,44);doc.rect(0,285,210,12,'F');doc.setTextColor(255);
+  doc.setFontSize(8);doc.text(CONFIG.empresa_nombre||'Taller',105,293,{align:'center'});
+  doc.save('EstadoCuenta_'+agNombre.replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf');
+  toast('PDF generado ✓','ok');
+}
+
+// Excel de Estado de Cuenta
+function descargarEstadoCuentaExcel(){
+  if(!estadoCuentaData.facturas){toast('Primero carga el estado de cuenta','err');return}
+  const {facturas,otsSinFacturar,totales}=estadoCuentaData;
+  // Hoja 1: Resumen
+  const resumen=[
+    ['RESUMEN ESTADO DE CUENTA'],
+    ['Agencia',document.getElementById('ec-agencia').selectedOptions[0]?.textContent||'Consolidado'],
+    ['Fecha',new Date().toLocaleDateString()],
+    ['Periodo',`${estadoCuentaData.desde||'—'} a ${estadoCuentaData.hasta||'—'}`],
+    [],
+    ['Total facturado',totales.totalFacturado.toFixed(2)],
+    ['Total cobrado',totales.totalCobrado.toFixed(2)],
+    ['Pendiente de pago',totales.totalPendiente.toFixed(2)],
+    ['Vencido',totales.totalVencido.toFixed(2)],
+    [],
+    ['AGING'],
+    ['Corriente',totales.aging.corriente.monto.toFixed(2),totales.aging.corriente.count+' facturas'],
+    ['1-30 días',totales.aging.r1_30.monto.toFixed(2),totales.aging.r1_30.count+' facturas'],
+    ['31-60 días',totales.aging.r31_60.monto.toFixed(2),totales.aging.r31_60.count+' facturas'],
+    ['61-90 días',totales.aging.r61_90.monto.toFixed(2),totales.aging.r61_90.count+' facturas'],
+    ['+90 días',totales.aging.r90_mas.monto.toFixed(2),totales.aging.r90_mas.count+' facturas']
+  ];
+  // Hoja 2: Facturas
+  const fs=[['Factura','Agencia','Fecha','Días crédito','Vence','Días restantes','Monto','Estatus','Notas']];
+  facturas.forEach(f=>{
+    let dr='';
+    if(f.fecha_vencimiento&&f.est.tipo!=='cobrada'){const d=Math.ceil((new Date(f.fecha_vencimiento)-new Date())/(1000*60*60*24));dr=d}
+    fs.push([f.numero,f.agencias?.nombre||'',f.fecha||'',f.dias_credito||30,f.fecha_vencimiento||'',dr,(f.monto_total||0).toFixed(2),f.est.label,f.notas||'']);
+  });
+  // Hoja 3: OTs pendientes
+  const ots=[['OT','Placa','Marca/Modelo','Monto']];
+  (otsSinFacturar||[]).forEach(o=>{ots.push([o.numero||o.codigo||'',o.placa||'',((o.marcas?.nombre||'')+' '+(o.modelos?.nombre||'')).trim(),(o.total_con_iva||o.costo_total||0).toFixed(2)])});
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(resumen),'Resumen');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(fs),'Facturas');
+  if(ots.length>1)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ots),'OTs_Pendientes');
+  const agNombre=document.getElementById('ec-agencia').selectedOptions[0]?.textContent||'Consolidado';
+  XLSX.writeFile(wb,`EstadoCuenta_${agNombre.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Excel generado ✓ (3 hojas)','ok');
+}
+
+// WhatsApp Estado de Cuenta
+function copiarEstadoCuentaWA(){
+  if(!estadoCuentaData.facturas){toast('Primero carga el estado de cuenta','err');return}
+  const {facturas,totales,agId}=estadoCuentaData;
+  const agNombre=agId?document.getElementById('ec-agencia').selectedOptions[0]?.textContent:'Consolidado';
+  let txt=`*ESTADO DE CUENTA*\n`;
+  txt+=`${CONFIG.empresa_nombre||'Taller H&P'}\n`;
+  txt+=`Cliente: ${agNombre}\n`;
+  txt+=`Fecha: ${new Date().toLocaleDateString()}\n\n`;
+  txt+=`*Resumen:*\n`;
+  txt+=`Total facturado: ${fmt$(totales.totalFacturado)}\n`;
+  txt+=`Total cobrado: ${fmt$(totales.totalCobrado)}\n`;
+  txt+=`Pendiente: ${fmt$(totales.totalPendiente)}\n`;
+  if(totales.totalVencido>0)txt+=`⚠️ *Vencido: ${fmt$(totales.totalVencido)}*\n`;
+  txt+=`\n*Facturas pendientes:*\n`;
+  const pendientes=facturas.filter(f=>f.est.tipo!=='cobrada');
+  if(pendientes.length===0)txt+=`Sin facturas pendientes ✓\n`;
+  else{
+    pendientes.slice(0,10).forEach(f=>{
+      txt+=`• ${f.numero} — ${fmt$(f.monto_total||0)} (${f.est.label})\n`;
+    });
+    if(pendientes.length>10)txt+=`...y ${pendientes.length-10} más\n`;
+  }
+  txt+=`\nAdjunto PDF con el detalle completo.`;
+  navigator.clipboard.writeText(txt);
+  toast('Estado de cuenta copiado ✓','ok');
+}
+
 async function exportarFacturasExcel(){
   try{
     const {data:fs}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false});
@@ -1205,7 +1627,7 @@ async function exportarFacturasExcel(){
     let trabajosPorOT={};if(otIds.length>0){const {data:tjs}=await sb.from('ot_trabajos').select('ot_id, precio, cantidad, trabajos(nombre)').in('ot_id',otIds);(tjs||[]).forEach(t=>{if(!trabajosPorOT[t.ot_id])trabajosPorOT[t.ot_id]=[];trabajosPorOT[t.ot_id].push(t)})}
     let piezasPorOT={};if(otIds.length>0){const {data:pzs}=await sb.from('ot_piezas').select('ot_id, descripcion, cantidad, precio, tiempo_entrega, recibida').in('ot_id',otIds);(pzs||[]).forEach(p=>{if(!piezasPorOT[p.ot_id])piezasPorOT[p.ot_id]=[];piezasPorOT[p.ot_id].push(p)})}
     const sheet1=[];const otsPorFactura={};(ots||[]).forEach(o=>{if(!otsPorFactura[o.factura_id])otsPorFactura[o.factura_id]=[];otsPorFactura[o.factura_id].push(o)});
-    fs.forEach(f=>{const otsF=otsPorFactura[f.id]||[];if(otsF.length===0){sheet1.push({Factura:f.numero,Agencia:f.agencias?.nombre||'',Monto_Factura:(f.monto_total||0).toFixed(2),Fecha:f.fecha||'',Estado_Pago:f.estado_pago==='cobrada'?'Cobrada':'Facturada',Folio_OT:'',Placa:'',Marca_Modelo:'',Cliente:'',Monto_OT:''})}else{otsF.forEach(o=>{const clienteN=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');sheet1.push({Factura:f.numero,Agencia:f.agencias?.nombre||'',Monto_Factura:(f.monto_total||0).toFixed(2),Fecha:f.fecha||'',Estado_Pago:f.estado_pago==='cobrada'?'Cobrada':'Facturada',Folio_OT:o.numero||o.codigo||'',Placa:o.placa||'',Marca_Modelo:((o.marcas?.nombre||'')+' '+(o.modelos?.nombre||'')).trim(),Cliente:clienteN,Monto_OT:(o.total_con_iva||o.costo_total||0).toFixed(2)})})}});
+    fs.forEach(f=>{const otsF=otsPorFactura[f.id]||[];if(otsF.length===0){sheet1.push({Factura:f.numero,Agencia:f.agencias?.nombre||'',Monto_Factura:(f.monto_total||0).toFixed(2),Fecha:f.fecha||'',Vence:f.fecha_vencimiento||'',Dias_Credito:f.dias_credito||30,Estatus:f.estado_pago,Folio_OT:'',Placa:'',Marca_Modelo:'',Cliente:'',Monto_OT:''})}else{otsF.forEach(o=>{const clienteN=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');sheet1.push({Factura:f.numero,Agencia:f.agencias?.nombre||'',Monto_Factura:(f.monto_total||0).toFixed(2),Fecha:f.fecha||'',Vence:f.fecha_vencimiento||'',Dias_Credito:f.dias_credito||30,Estatus:f.estado_pago,Folio_OT:o.numero||o.codigo||'',Placa:o.placa||'',Marca_Modelo:((o.marcas?.nombre||'')+' '+(o.modelos?.nombre||'')).trim(),Cliente:clienteN,Monto_OT:(o.total_con_iva||o.costo_total||0).toFixed(2)})})}});
     const sheet2=[];(ots||[]).forEach(o=>{const tjs=trabajosPorOT[o.id]||[];const factNum=fs.find(f=>f.id===o.factura_id)?.numero||'';if(tjs.length===0){sheet2.push({Factura:factNum,Folio_OT:o.numero||o.codigo||'',Placa:o.placa||'',Tipo:'—',Descripcion:'Sin trabajos registrados',Cantidad:'',Precio:'',Subtotal:''})}else{tjs.forEach(t=>{sheet2.push({Factura:factNum,Folio_OT:o.numero||o.codigo||'',Placa:o.placa||'',Tipo:'Trabajo',Descripcion:t.trabajos?.nombre||'',Cantidad:t.cantidad||1,Precio:(t.precio||0).toFixed(2),Subtotal:((t.precio||0)*(t.cantidad||1)).toFixed(2)})})}const pzs=piezasPorOT[o.id]||[];pzs.forEach(p=>{sheet2.push({Factura:factNum,Folio_OT:o.numero||o.codigo||'',Placa:o.placa||'',Tipo:'Pieza',Descripcion:p.descripcion||'',Cantidad:p.cantidad||1,Precio:(p.precio||0).toFixed(2),Subtotal:((p.precio||0)*(p.cantidad||1)).toFixed(2)})})});
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sheet1),'Facturas');
@@ -1216,14 +1638,29 @@ async function exportarFacturasExcel(){
 }
 
 async function cargarConciliacion(){
-  const c=document.getElementById('conciliacion-tbody');if(!c)return;c.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Cargando...</td></tr>';
+  const c=document.getElementById('conciliacion-tbody');if(!c)return;c.innerHTML='<tr><td colspan="7" style="text-align:center;color:#888;padding:20px">Cargando...</td></tr>';
   const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');
   c.innerHTML='';
-  for(const a of ags){const {data:ots}=await sb.from('ot').select('*, facturas(estado_pago)').eq('agencia_id',a.id).eq('estado','completada');if(!ots||ots.length===0)continue;let pend=0,fact=0,cob=0,montoPend=0;ots.forEach(o=>{const monto=o.total_con_iva||o.costo_total||0;if(!o.factura_id){pend++;montoPend+=monto}else if(o.facturas?.estado_pago==='cobrada'){cob++}else{fact++;montoPend+=monto}});c.innerHTML+=`<tr><td>${escHtml(a.nombre)}</td><td>${pend}</td><td>${fact}</td><td>${cob}</td><td>$${montoPend.toFixed(2)}</td></tr>`}
+  for(const a of ags){
+    const {data:ots}=await sb.from('ot').select('*, facturas(estado_pago, fecha_vencimiento)').eq('agencia_id',a.id).eq('estado','completada');
+    if(!ots||ots.length===0)continue;
+    let pend=0,fact=0,cob=0,venc=0,montoPend=0;
+    const hoy=new Date();
+    ots.forEach(o=>{
+      const monto=o.total_con_iva||o.costo_total||0;
+      if(!o.factura_id){pend++;montoPend+=monto}
+      else if(o.facturas?.estado_pago==='cobrada'){cob++}
+      else{
+        fact++;montoPend+=monto;
+        if(o.facturas?.fecha_vencimiento&&new Date(o.facturas.fecha_vencimiento)<hoy)venc++;
+      }
+    });
+    c.innerHTML+=`<tr><td>${escHtml(a.nombre)}</td><td>${a.dias_credito||30}</td><td>${pend}</td><td>${fact}</td><td>${cob}</td><td style="color:var(--sf-error)">${venc}</td><td>$${montoPend.toFixed(2)}</td></tr>`;
+  }
 }
 function exportarConciliacion(){exportarElementoExcel('tbl-conciliacion','Conciliacion')}
 
-// PDF
+// PDF (cotización individual)
 function numeroALetras(n){const u=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];const d=['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];const c=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];function g(x){if(x===0)return'';if(x===100)return'CIEN';let r='';const cc=Math.floor(x/100),dd=Math.floor((x%100)/10),uu=x%10;if(cc)r+=c[cc]+' ';if(x%100<20&&x%100>0)r+=u[x%100];else{if(dd)r+=d[dd]+(uu?' Y ':'');if(uu)r+=u[uu]}return r.trim()}const ent=Math.floor(n),cents=Math.round((n-ent)*100);let t='';const mil=Math.floor(ent/1000000),mi=Math.floor((ent%1000000)/1000),rest=ent%1000;if(ent===0)t='CERO';else{if(mil===1)t+='UN MILLÓN ';else if(mil>1)t+=g(mil)+' MILLONES ';if(mi===1)t+='MIL ';else if(mi>1)t+=g(mi)+' MIL ';if(rest)t+=g(rest)}return`${t.trim()} PESOS ${String(cents).padStart(2,'0')}/100 M.N.`}
 async function imprimirCotizacion(id){
   try{
@@ -1231,40 +1668,20 @@ async function imprimirCotizacion(id){
     const {data:tj}=await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id',id);
     const {data:pz}=await sb.from('ot_piezas').select('*').eq('ot_id',id);
     const cli=ot.cliente_tipo==='agencia'?ot.agencias:ot.clientes;
- const doc=new jspdf.jsPDF('p','mm','a4');const M=15;let y=M;
-
-// --- LOGO a la izquierda ---
-if(CONFIG.logo_base64){
-  try{ doc.addImage(CONFIG.logo_base64,'PNG',M,M,50,18); }
-  catch(err){
-    doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.text(CONFIG.empresa_nombre||'Taller',M,M+10);
-  }
-} else {
-  doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text(CONFIG.empresa_nombre||'Taller',M,M+10);
-}
-
-// --- DATOS DE LA EMPRESA al mismo nivel, alineados al centro-derecha ---
-const infoX = 195; // margen derecho
-doc.setFont('helvetica','bold'); doc.setFontSize(10);
-doc.text(CONFIG.empresa_nombre||'Taller', infoX, M+3, {align:'right'});
-doc.setFont('helvetica','normal'); doc.setFontSize(8);
-doc.text(CONFIG.empresa_rfc||'', infoX, M+8, {align:'right'});
-doc.text(CONFIG.empresa_direccion||'', infoX, M+12, {align:'right'});
-doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`, infoX, M+16, {align:'right'});
-doc.text(CONFIG.empresa_web||'', infoX, M+20, {align:'right'});
-
-// --- Banda COTIZACIÓN debajo de ambos (logo y texto) ---
-y = M + 26;
-doc.setFillColor(10,15,44);
-doc.rect(M,y,180,8,'F');
-doc.setTextColor(255);
-doc.setFontSize(12);
-doc.setFont('helvetica','bold');
-doc.text('COTIZACIÓN',105,y+5.5,{align:'center'});
-doc.setTextColor(0);
-y += 14;
+    const doc=new jspdf.jsPDF('p','mm','a4');const M=15;let y=M;
+    if(CONFIG.logo_base64){try{doc.addImage(CONFIG.logo_base64,'PNG',M,M,50,18)}catch(err){doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+10)}}
+    else{doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+10)}
+    const infoX=195;
+    doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text(CONFIG.empresa_nombre||'Taller',infoX,M+3,{align:'right'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text(CONFIG.empresa_rfc||'',infoX,M+8,{align:'right'});
+    doc.text(CONFIG.empresa_direccion||'',infoX,M+12,{align:'right'});
+    doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`,infoX,M+16,{align:'right'});
+    doc.text(CONFIG.empresa_web||'',infoX,M+20,{align:'right'});
+    y=M+26;
+    doc.setFillColor(10,15,44);doc.rect(M,y,180,8,'F');doc.setTextColor(255);doc.setFontSize(12);doc.setFont('helvetica','bold');
+    doc.text('COTIZACION',105,y+5.5,{align:'center'});doc.setTextColor(0);y+=14;
     doc.setDrawColor(0);doc.roundedRect(M,y,90,32,2,2);doc.roundedRect(105,y,90,32,2,2);
     doc.setFontSize(8);doc.setFont('helvetica','bold');doc.text('CLIENTE',M+2,y+5);doc.text('DATOS',107,y+5);
     doc.setFont('helvetica','normal');
