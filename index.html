@@ -105,6 +105,7 @@ tr:last-child td{border-bottom:none}
 .badge-facturada{background:#0176d3;color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
 .badge-cobrada{background:var(--sf-success);color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
 .iva-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;color:var(--sf-text-secondary)}
+.ots-mini{font-size:11px;font-family:monospace;color:var(--sf-text-secondary);line-height:1.4}
 </style>
 </head>
 <body>
@@ -260,7 +261,7 @@ tr:last-child td{border-bottom:none}
 <!-- TALLER -->
 <div id="view-taller" class="view" style="display:none">
 <h2 class="page-title">Taller — Tablero Kanban</h2>
-<p class="page-desc">Arrastra las tarjetas para cambiar de estado. Usa "Siguiente fase" para avanzar entre Hojalatería y Pintura.</p>
+<p class="page-desc">Arrastra las tarjetas para cambiar de estado. Usa "Siguiente fase" para avanzar entre fases.</p>
 <div class="filtro-kanban">
 <label class="flbl" style="margin:0">Técnico:</label>
 <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()"><option value="">Todos</option></select>
@@ -404,6 +405,7 @@ tr:last-child td{border-bottom:none}
 </div><div class="mof"><button class="btn" onclick="cerrarModalPieza()">Cancelar</button><button class="btn btn-primary" onclick="guardarPieza()">Guardar</button></div></div></div>
 <div class="mov" id="mov-detalle-ot"><div class="mo" style="max-width:750px"><div class="moh" id="detalle-titulo">Detalle</div><div class="mob" id="detalle-contenido"></div><div class="mof"><button class="btn" onclick="cerrarDetalleOT()">Cerrar</button><button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button><button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button></div></div></div>
 <div class="mov" id="mov-editar-flujo"><div class="mo"><div class="moh">Editar trabajos</div><div class="mob" id="editar-flujo-body"></div><div class="mof"><button class="btn" onclick="cerrarEditarFlujo()">Cancelar</button><button class="btn btn-primary" onclick="guardarFlujoOT()">Guardar</button></div></div></div>
+<div class="mov" id="mov-ver-ots-factura"><div class="mo" style="max-width:800px"><div class="moh" id="ver-ots-titulo">OTs de la factura</div><div class="mob" id="ver-ots-contenido"></div><div class="mof"><button class="btn" onclick="cerrarVerOTsFactura()">Cerrar</button></div></div></div>
 <div id="toast"></div>
 
 <script>
@@ -675,9 +677,8 @@ async function guardarCotizacion(){
     const numero='CT-'+codigo;
     const vigencia=new Date(Date.now()+15*86400000).toISOString().split('T')[0];
     let fechaFinal=fE;if(!fechaFinal){const f=sumarDiasHabiles(new Date(),diasEstimados);fechaFinal=f.toISOString().split('T')[0]}
-    // Determinar fase inicial (categoría con orden más bajo)
     let faseInicial=null;
-    if(cats=categoriasCache.length>0&&catConTrabajos.size>0){
+    if(categoriasCache.length>0&&catConTrabajos.size>0){
       const catsOrdenadas=categoriasCache.filter(c=>catConTrabajos.has(c.id)).sort((a,b)=>(a.orden||99)-(b.orden||99));
       if(catsOrdenadas.length>0)faseInicial=catsOrdenadas[0].id;
     }
@@ -733,13 +734,14 @@ async function cargarTaller(){
     const {data:tec}=await sb.from('tecnicos').select('*').eq('activo',true).order('nombre');
     const fT=document.getElementById('filtro-tecnico');fT.innerHTML='<option value="">Todos</option>';tec.forEach(t=>fT.innerHTML+=`<option value="${t.id}">${escHtml(t.nombre)}</option>`);
     const fC=document.getElementById('filtro-categoria');fC.innerHTML='<option value="">Todas</option>';cats.forEach(c=>fC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);
-    const {data:ots,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre), categorias!ot_fase_actual_fkey(nombre,orden), ot_trabajos(trabajos(categoria_id))').in('estado',['aprobada','en_taller','completada','cancelada']).order('updated_at',{ascending:false});
-    if(error){console.warn(error);throw error}
+    const {data:ots,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre), ot_trabajos(trabajos(categoria_id))').in('estado',['aprobada','en_taller','completada','cancelada']).order('updated_at',{ascending:false});
+    if(error)throw error;
+    const catsMap={};cats.forEach(c=>catsMap[c.id]=c);
     const otsC=ots.map(o=>{
       let categoriasOT=new Set();
       const t=o.ot_trabajos||[];
       t.forEach(x=>{const c=x.trabajos?.categoria_id;if(c)categoriasOT.add(c)});
-      return {...o,categorias_ot:Array.from(categoriasOT)};
+      return {...o,categorias_ot:Array.from(categoriasOT),fase_nombre:o.fase_actual?catsMap[o.fase_actual]?.nombre:null};
     });
     window._otsTaller=otsC;aplicarFiltroKanban();
   }catch(e){toast('Error: '+e.message,'err')}
@@ -771,8 +773,7 @@ function generarCardKanban(o){
   const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
   const tn=o.tecnicos?.nombre||'Sin asignar';let info='';
   if(o.fecha_entrega){const hoy=new Date().toISOString().split('T')[0];const r=o.fecha_entrega<hoy&&['aprobada','en_taller'].includes(o.estado);info+=`<div style="font-size:11px;${r?'color:red':'color:green'}">📅 ${o.fecha_entrega} ${r?'⚠️':''}</div>`}
-  const faseNombre=o.categorias?.nombre;
-  if(faseNombre&&o.estado==='en_taller')info+=`<div style="margin-top:4px"><span class="badge-fase">🔧 Fase: ${escHtml(faseNombre)}</span></div>`;
+  if(o.fase_nombre&&o.estado==='en_taller')info+=`<div style="margin-top:4px"><span class="badge-fase">🔧 Fase: ${escHtml(o.fase_nombre)}</span></div>`;
   if(o.esperando_refaccion){info+=`<div style="margin-top:4px"><span class="badge-espera">⚠️ Esperando pieza${o.eta_refaccion?' · ETA '+o.eta_refaccion:''}</span></div>`}
   let acc='';
   if(o.estado==='aprobada'){acc=`<button class="btn btn-sm btn-primary" onclick="moverOT(${o.id},'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${o.id})">Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${o.id})">Editar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`}
@@ -834,7 +835,7 @@ async function verTrabajos(id){
     }
     if(ot.estado==='en_taller'&&ot.esperando_refaccion&&pz.length>0){
       const pend=pz.filter(p=>!p.recibida);
-      if(pend.length===0)h+=`<div style="margin-top:8px;color:#2e844a;font-weight:600">✓ Todas las piezas recibidas — puedes quitar el estado de espera</div>`;
+      if(pend.length===0)h+=`<div style="margin-top:8px;color:#2e844a;font-weight:600">✓ Todas las piezas recibidas</div>`;
       else h+=`<button class="btn btn-sm btn-success" style="margin-top:8px" onclick="marcarTodasRecibidas(${id})">Marcar todas como recibidas</button>`;
     }
     document.getElementById('detalle-titulo').textContent='Detalle '+(ot.numero||ot.codigo);
@@ -845,7 +846,6 @@ async function verTrabajos(id){
 async function marcarPiezaRecibida(piezaId,otId){
   const {error}=await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('id',piezaId);
   if(error){toast('Error: '+error.message,'err');return}
-  // Verificar si todas las piezas están recibidas
   const {data:pz}=await sb.from('ot_piezas').select('recibida').eq('ot_id',otId);
   const pend=pz.filter(p=>!p.recibida);
   if(pend.length===0){
@@ -875,18 +875,107 @@ async function cargarAgenciasFactura(){const {data}=await sb.from('agencias').se
 async function cargarOTsFacturables(){const id=document.getElementById('factura-agencia').value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';if(!id)return;const {data:ots}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre)').eq('agencia_id',id).eq('estado','completada').is('factura_id',null).order('updated_at',{ascending:false});if(ots.length===0){c.innerHTML='<p style="color:#888">No hay OTs completadas sin facturar (Pendientes de facturar).</p>';return}c.innerHTML=`<table><thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead><tbody>${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${(o.total_con_iva||o.costo_total||0).toFixed(2)}</td></tr>`).join('')}</tbody></table>`}
 function toggleAllOT(){const a=document.getElementById('check-all-ot').checked;document.querySelectorAll('.chk-ot-factura').forEach(c=>c.checked=a)}
 async function asignarFactura(){const aId=document.getElementById('factura-agencia').value,num=document.getElementById('factura-numero').value.trim();const sel=Array.from(document.querySelectorAll('.chk-ot-factura:checked')).map(c=>parseInt(c.value));if(!aId||!num||sel.length===0){toast('Completa todos los campos','err');return}const {data:ots}=await sb.from('ot').select('total_con_iva,costo_total').in('id',sel);const mT=ots.reduce((s,o)=>s+(o.total_con_iva||o.costo_total||0),0);const {data:f,error}=await sb.from('facturas').insert({numero:num,agencia_id:aId,monto_total:mT,estado_pago:'facturada'}).select('id').single();if(error){toast('Error: '+error.message,'err');return}await sb.from('ot').update({factura_id:f.id}).in('id',sel);toast('Factura vinculada ✓','ok');document.getElementById('factura-numero').value='';cargarOTsFacturables();cargarFacturasLista();cargarConciliacion()}
+
 async function cargarFacturasLista(){
-  const c=document.getElementById('facturas-lista');if(!c)return;c.innerHTML='<p>Cargando...</p>';
-  const {data:fs}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false}).limit(50);
+  const c=document.getElementById('facturas-lista');
+  if(!c)return;
+  c.innerHTML='<p>Cargando...</p>';
+  const {data:fs,error}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false}).limit(50);
+  if(error){c.innerHTML='<p style="color:red">Error: '+error.message+'</p>';return}
   if(!fs||fs.length===0){c.innerHTML='<p style="color:#888">Sin facturas registradas.</p>';return}
-  let h='<table><thead><tr><th>Número</th><th>Agencia</th><th>Monto</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+
+  const facturaIds=fs.map(f=>f.id);
+  const {data:ots}=await sb.from('ot').select('id, numero, codigo, placa, costo_total, total_con_iva, factura_id').in('factura_id',facturaIds);
+  const otsPorFactura={};
+  (ots||[]).forEach(o=>{
+    if(!otsPorFactura[o.factura_id])otsPorFactura[o.factura_id]=[];
+    otsPorFactura[o.factura_id].push(o);
+  });
+
+  const header=`<div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-excel btn-sm" onclick="exportarFacturasExcel()">📊 Exportar Excel</button>
+  </div>`;
+
+  let h='<table><thead><tr><th>Número</th><th>Agencia</th><th>Monto</th><th>Fecha</th><th>Estado</th><th>OTs vinculadas</th><th>Acciones</th></tr></thead><tbody>';
   fs.forEach(f=>{
     const badge=f.estado_pago==='cobrada'?'<span class="badge-cobrada">Cobrada</span>':'<span class="badge-facturada">Facturada</span>';
-    const btn=f.estado_pago==='cobrada'?'':`<button class="btn btn-sm btn-success" onclick="marcarCobrada(${f.id})">Marcar cobrada</button>`;
-    h+=`<tr><td><strong>${escHtml(f.numero)}</strong></td><td>${escHtml(f.agencias?.nombre||'')}</td><td>$${(f.monto_total||0).toFixed(2)}</td><td>${f.fecha||''}</td><td>${badge}</td><td class="text-right">${btn}</td></tr>`;
+    const btnCobrar=f.estado_pago==='cobrada'?'':`<button class="btn btn-sm btn-success" onclick="marcarCobrada(${f.id})">Marcar cobrada</button>`;
+    const otsF=otsPorFactura[f.id]||[];
+    let otsTxt='';
+    if(otsF.length===0){otsTxt='<span style="color:#888">Sin OTs</span>'}
+    else if(otsF.length<=3){otsTxt=otsF.map(o=>`<div class="ots-mini">${escHtml(o.numero||o.codigo||'')} · ${escHtml(o.placa||'')}</div>`).join('')}
+    else{otsTxt=`<div style="font-size:11px">${otsF.length} OTs vinculadas</div>`}
+    const btnVerOTs=otsF.length>0?`<button class="btn btn-sm" onclick="verOTsFactura(${f.id})">Ver OTs (${otsF.length})</button>`:'';
+    h+=`<tr>
+      <td><strong>${escHtml(f.numero)}</strong></td>
+      <td>${escHtml(f.agencias?.nombre||'')}</td>
+      <td>$${(f.monto_total||0).toFixed(2)}</td>
+      <td>${f.fecha||''}</td>
+      <td>${badge}</td>
+      <td style="max-width:240px">${otsTxt}</td>
+      <td class="text-right"><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap">${btnVerOTs}${btnCobrar}</div></td>
+    </tr>`;
   });
-  h+='</tbody></table>';c.innerHTML=h;
+  h+='</tbody></table>';
+
+  c.innerHTML=header+h;
 }
+
+async function verOTsFactura(facturaId){
+  try{
+    const {data:f}=await sb.from('facturas').select('*, agencias(nombre)').eq('id',facturaId).single();
+    const {data:ots,error}=await sb.from('ot')
+      .select('id, numero, codigo, placa, costo_total, total_con_iva, estado, fecha_entrega, cliente_tipo, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)')
+      .eq('factura_id',facturaId);
+    if(error)throw error;
+
+    document.getElementById('ver-ots-titulo').textContent='Factura '+f.numero+' — '+ots.length+' OTs';
+
+    let h=`<div style="background:var(--sf-blue-light);padding:12px;border-radius:6px;margin-bottom:15px">
+      <div style="display:flex;justify-content:space-between">
+        <div><strong>Agencia:</strong> ${escHtml(f.agencias?.nombre||'')}</div>
+        <div><strong>Monto factura:</strong> $${(f.monto_total||0).toFixed(2)}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <div><strong>Fecha:</strong> ${f.fecha||''}</div>
+        <div><strong>Estado:</strong> ${f.estado_pago==='cobrada'?'Cobrada':'Facturada'}</div>
+      </div>
+    </div>`;
+
+    if(ots.length===0){
+      h+='<p style="color:#888">Esta factura no tiene OTs vinculadas.</p>';
+    } else {
+      h+='<table style="width:100%;font-size:13px"><thead><tr><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Cliente</th><th>Estado</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+      let total=0;
+      ots.forEach(o=>{
+        const clienteN=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
+        const monto=o.total_con_iva||o.costo_total||0;
+        total+=monto;
+        h+=`<tr>
+          <td><strong>${escHtml(o.numero||o.codigo||'')}</strong></td>
+          <td>${escHtml(o.placa||'')}</td>
+          <td>${escHtml((o.marcas?.nombre||'')+' '+(o.modelos?.nombre||''))}</td>
+          <td>${escHtml(clienteN)}</td>
+          <td>${escHtml(o.estado||'')}</td>
+          <td style="text-align:right">$${monto.toFixed(2)}</td>
+        </tr>`;
+      });
+      h+=`<tr style="border-top:2px solid var(--sf-blue);font-weight:700">
+        <td colspan="5" style="text-align:right">TOTAL</td>
+        <td style="text-align:right">$${total.toFixed(2)}</td>
+      </tr>`;
+      h+='</tbody></table>';
+    }
+
+    document.getElementById('ver-ots-contenido').innerHTML=h;
+    document.getElementById('mov-ver-ots-factura').classList.add('open');
+  }catch(e){toast('Error: '+e.message,'err')}
+}
+
+function cerrarVerOTsFactura(){
+  document.getElementById('mov-ver-ots-factura').classList.remove('open');
+}
+
 async function marcarCobrada(fid){
   abrirConfirm('¿Marcar factura como cobrada?',async()=>{
     const {error}=await sb.from('facturas').update({estado_pago:'cobrada',fecha_cobro:new Date().toISOString().split('T')[0]}).eq('id',fid);
@@ -894,6 +983,56 @@ async function marcarCobrada(fid){
     toast('Factura cobrada ✓','ok');cargarFacturasLista();cargarConciliacion();
   },'Sí, cobrada');
 }
+
+async function exportarFacturasExcel(){
+  try{
+    const {data:fs}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false});
+    if(!fs||fs.length===0){toast('Sin facturas para exportar','err');return}
+    const facturaIds=fs.map(f=>f.id);
+    const {data:ots}=await sb.from('ot').select('numero, codigo, placa, total_con_iva, costo_total, factura_id, marcas(nombre), modelos(nombre)').in('factura_id',facturaIds);
+    const otsPorFactura={};
+    (ots||[]).forEach(o=>{if(!otsPorFactura[o.factura_id])otsPorFactura[o.factura_id]=[];otsPorFactura[o.factura_id].push(o)});
+
+    const rows=[];
+    fs.forEach(f=>{
+      const otsF=otsPorFactura[f.id]||[];
+      if(otsF.length===0){
+        rows.push({
+          Factura:f.numero,
+          Agencia:f.agencias?.nombre||'',
+          Monto_factura:(f.monto_total||0).toFixed(2),
+          Fecha:f.fecha||'',
+          Estado:f.estado_pago==='cobrada'?'Cobrada':'Facturada',
+          Folio_OT:'',
+          Placa:'',
+          Marca_Modelo:'',
+          Monto_OT:''
+        });
+      } else {
+        otsF.forEach(o=>{
+          rows.push({
+            Factura:f.numero,
+            Agencia:f.agencias?.nombre||'',
+            Monto_factura:(f.monto_total||0).toFixed(2),
+            Fecha:f.fecha||'',
+            Estado:f.estado_pago==='cobrada'?'Cobrada':'Facturada',
+            Folio_OT:o.numero||o.codigo||'',
+            Placa:o.placa||'',
+            Marca_Modelo:((o.marcas?.nombre||'')+' '+(o.modelos?.nombre||'')).trim(),
+            Monto_OT:(o.total_con_iva||o.costo_total||0).toFixed(2)
+          });
+        });
+      }
+    });
+
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Facturas');
+    XLSX.writeFile(wb,`facturas_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast('Excel exportado ✓','ok');
+  }catch(e){toast('Error exportando: '+e.message,'err')}
+}
+
 async function cargarConciliacion(){
   const c=document.getElementById('conciliacion-tabla');c.innerHTML='<p>Cargando...</p>';
   const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');
