@@ -10,15 +10,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--sf-blue:#0176d3;--sf-blue-dark:#014486;--sf-blue-light:#eaf5fe;--sf-gray-10:#f3f3f3;--sf-gray-20:#e5e5e5;--sf-gray-30:#c9c9c9;--sf-gray-40:#939393;--sf-text:#080707;--sf-text-secondary:#444;--sf-white:#fff;--sf-border:#dddbda;--sf-success:#2e844a;--sf-warning:#fe9339;--sf-error:#ba0517;--acc:#0176d3;--acc2:#eaf5fe;--bg:#f3f3f3;--surface:#fff;--r:8px}
+:root{--sf-blue:#0176d3;--sf-blue-dark:#014486;--sf-blue-light:#eaf5fe;--sf-gray-10:#f3f3f3;--sf-gray-20:#e5e5e5;--sf-gray-30:#c9c9c9;--sf-gray-40:#939393;--sf-text:#080707;--sf-text-secondary:#444;--sf-white:#fff;--sf-border:#dddbda;--sf-success:#2e844a;--sf-warning:#fe9339;--sf-error:#ba0517;--r:8px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--sf-text);font-size:14px;line-height:1.5}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid var(--sf-border);border-radius:var(--r);background:var(--sf-white);color:var(--sf-blue);font-weight:500;cursor:pointer;transition:background .2s,border-color .2s;font-size:14px;min-height:40px}
+body{font-family:'Inter',sans-serif;background:#f3f3f3;color:var(--sf-text);font-size:14px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid var(--sf-border);border-radius:var(--r);background:#fff;color:var(--sf-blue);font-weight:500;cursor:pointer;font-size:14px;min-height:40px}
 .btn:hover{background:var(--sf-blue-light);border-color:var(--sf-blue)}
 .btn-primary{background:var(--sf-blue);color:#fff;border-color:var(--sf-blue)}
-.btn-primary:hover{background:var(--sf-blue-dark);border-color:var(--sf-blue-dark)}
+.btn-primary:hover{background:var(--sf-blue-dark)}
 .btn-danger{background:var(--sf-error);color:#fff;border-color:var(--sf-error)}
-.btn-danger:hover{background:#8e040e}
 .btn-block{width:100%}
 .btn-sm{padding:6px 10px;font-size:12px;min-height:32px}
 .btn-secondary{background:var(--sf-gray-20);color:var(--sf-text)}
@@ -26,9 +25,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--sf-text);fo
 .inp{width:100%;padding:10px 12px;border:1px solid var(--sf-border);border-radius:var(--r);font-size:14px;font-family:inherit;background:#fff}
 .inp:focus{outline:none;border-color:var(--sf-blue);box-shadow:0 0 0 3px rgba(1,118,211,.2)}
 .flbl{display:block;margin-bottom:6px;font-weight:500;color:var(--sf-text-secondary)}
-.card{background:var(--surface);border:1px solid var(--sf-border);border-radius:var(--r);padding:20px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+.card{background:#fff;border:1px solid var(--sf-border);border-radius:var(--r);padding:20px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:24px}
-.stat-card{background:var(--surface);border:1px solid var(--sf-border);border-radius:var(--r);padding:16px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+.stat-card{background:#fff;border:1px solid var(--sf-border);border-radius:var(--r);padding:16px}
 .stat-card .label{font-size:11px;text-transform:uppercase;color:var(--sf-text-secondary)}
 .stat-card .value{font-size:24px;font-weight:700;margin-top:8px;color:var(--sf-blue)}
 .stat-card.warning .value{color:var(--sf-warning)}
@@ -45,7 +44,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--sf-text);fo
 .layout{display:flex;min-height:calc(100vh - 60px)}
 .sidebar{width:220px;background:#fff;border-right:1px solid var(--sf-border);padding:20px 0;flex-shrink:0}
 .sidebar .nav-section{padding:10px 20px 4px;font-size:11px;text-transform:uppercase;color:var(--sf-gray-40);letter-spacing:.5px}
-.sidebar .nav-item{display:block;padding:8px 20px;color:var(--sf-text-secondary);text-decoration:none;transition:background .2s;font-weight:500;cursor:pointer;font-size:14px}
+.sidebar .nav-item{display:block;padding:8px 20px;color:var(--sf-text-secondary);text-decoration:none;font-weight:500;cursor:pointer;font-size:14px}
 .sidebar .nav-item:hover{background:var(--sf-blue-light);color:var(--sf-blue)}
 .sidebar .nav-item.active{background:var(--sf-blue-light);color:var(--sf-blue);border-right:3px solid var(--sf-blue)}
 .main{flex:1;padding:24px;overflow-x:auto}
@@ -64,7 +63,7 @@ tr:last-child td{border-bottom:none}
 #toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:12px 20px;border-radius:8px;opacity:0;transition:opacity .3s;z-index:9999}
 #toast.show{opacity:1}
 .kanban-board{display:flex;gap:16px;overflow-x:auto;padding:20px 0}
-.kanban-col{background:var(--sf-gray-10);border-radius:var(--r);min-width:280px;flex:1;padding:12px;border:2px solid transparent;transition:background .2s,border-color .2s}
+.kanban-col{background:var(--sf-gray-10);border-radius:var(--r);min-width:280px;flex:1;padding:12px;border:2px solid transparent}
 .kanban-col.drag-over{background:var(--sf-blue-light);border-color:var(--sf-blue)}
 .kanban-col-header{font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .kanban-col-header .count{background:#fff;border-radius:20px;padding:2px 8px;font-size:12px}
@@ -72,11 +71,11 @@ tr:last-child td{border-bottom:none}
 .kanban-carril-titulo{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--sf-text-secondary);margin-bottom:6px;padding:4px 8px;background:var(--sf-gray-20);border-radius:4px}
 .kanban-cards{display:flex;flex-direction:column;gap:8px;min-height:50px}
 .kanban-card{background:#fff;border-radius:var(--r);padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);cursor:grab}
-.kanban-card.dragging{opacity:.5;box-shadow:0 4px 8px rgba(0,0,0,.2)}
+.kanban-card.dragging{opacity:.5}
 .kanban-card .card-placa{font-weight:700;font-size:16px}
 .kanban-card .card-cliente{font-size:12px;color:var(--sf-text-secondary);margin:4px 0}
 .kanban-card .card-codigo{font-family:monospace;font-size:11px;color:var(--sf-gray-40);margin-bottom:8px}
-.kanban-card .card-actions{display:flex;gap:4px;flex-wrap:wrap}
+.kanban-card .card-actions{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .filtro-kanban{margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .filtro-dashboard{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:flex-end}
 .filtro-dashboard .inp{max-width:200px}
@@ -92,9 +91,11 @@ tr:last-child td{border-bottom:none}
 .form-col{flex:1}
 .mt-2{margin-top:20px}
 .mis-tarea-item{background:#fff;border:1px solid var(--sf-border);border-radius:var(--r);padding:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.pieza-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px;padding:8px;background:#fafafa;border-radius:6px}
-.pieza-row input{padding:6px 8px;font-size:13px}
-.seccion-titulo{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--sf-text);border-bottom:1px solid var(--sf-border);padding-bottom:6px}
+.pieza-tabla{width:100%;border-collapse:collapse;margin-top:8px;background:#fff;border-radius:6px;overflow:hidden;font-size:13px}
+.pieza-tabla th{background:var(--sf-blue-light);font-size:11px;text-transform:uppercase;padding:6px 8px;color:var(--sf-blue-dark);font-weight:600}
+.pieza-tabla td{padding:4px 6px;border-bottom:1px solid var(--sf-border)}
+.pieza-tabla input,.pieza-tabla select{width:100%;padding:6px 8px;font-size:13px;border:1px solid var(--sf-border);border-radius:4px}
+.seccion-titulo{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--sf-text);border-bottom:1px solid var(--sf-border);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
 .badge-cotizacion{background:var(--sf-warning);color:#fff;padding:4px 8px;border-radius:4px;font-size:12px}
 .badge-espera{background:var(--sf-warning);color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
 .badge-aprobada{background:var(--sf-blue);color:#fff;padding:4px 8px;border-radius:4px;font-size:12px}
@@ -211,18 +212,17 @@ tr:last-child td{border-bottom:none}
 <div class="seccion-titulo">🔧 Trabajos a realizar</div>
 <div id="lista-trabajos"></div>
 
-<div class="seccion-titulo" style="display:flex;justify-content:space-between;align-items:center">
+<div class="seccion-titulo">
 <span>📦 Piezas / Refacciones</span>
 <button type="button" class="btn btn-sm" onclick="agregarPieza()">+ Agregar pieza</button>
 </div>
 <div id="lista-piezas"></div>
-<div id="piezas-total" style="text-align:right;margin-top:8px;color:var(--sf-text-secondary);font-size:13px"></div>
 
 <div style="margin-top:20px;padding:16px;background:var(--sf-blue-light);border-radius:8px">
 <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Subtotal Trabajos:</span><strong id="ot-subtrabajos">$0.00</strong></div>
 <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Subtotal Piezas:</span><strong id="ot-subpiezas">$0.00</strong></div>
 <div style="display:flex;justify-content:space-between;font-size:18px;margin-top:8px;padding-top:8px;border-top:1px solid var(--sf-blue);color:var(--sf-blue)"><strong>TOTAL:</strong><strong id="ot-total">$0.00</strong></div>
-<div style="margin-top:8px;font-size:13px;color:var(--sf-text-secondary)">⏱ Tiempo estimado de reparación: <strong id="ot-tiempo-est">0 días hábiles</strong></div>
+<div style="margin-top:8px;font-size:13px;color:var(--sf-text-secondary)">⏱ Tiempo estimado: <strong id="ot-tiempo-est">0 días hábiles</strong> <span id="ot-tiempo-detalle" style="font-size:11px;color:var(--sf-gray-40)"></span></div>
 </div>
 
 <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
@@ -246,7 +246,7 @@ tr:last-child td{border-bottom:none}
 <!-- TALLER -->
 <div id="view-taller" class="view" style="display:none">
 <h2 class="page-title">Taller — Tablero Kanban</h2>
-<p class="page-desc">Arrastra las tarjetas para cambiar su estado. Las columnas se subdividen por categoría.</p>
+<p class="page-desc">Arrastra las tarjetas para cambiar su estado.</p>
 <div class="filtro-kanban">
 <label class="flbl" style="margin:0">Técnico:</label>
 <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()"><option value="">Todos</option></select>
@@ -264,7 +264,6 @@ tr:last-child td{border-bottom:none}
 <!-- FACTURACIÓN -->
 <div id="view-facturacion" class="view" style="display:none">
 <h2 class="page-title">Facturación</h2>
-<p class="page-desc">Vincular OTs completadas con facturas de agencias.</p>
 <div class="filtro-kanban"><label class="flbl">Agencia:</label><select class="inp" id="factura-agencia" onchange="cargarOTsFacturables()"><option value="">Selecciona...</option></select></div>
 <div class="card" id="factura-ot-lista"></div>
 <div class="card mt-2">
@@ -275,7 +274,7 @@ tr:last-child td{border-bottom:none}
 </div>
 </div>
 <div class="card mt-2">
-<h3>Conciliación por agencia</h3>
+<h3>Conciliación</h3>
 <button class="btn btn-excel btn-sm" onclick="exportarConciliacion()">📊 Exportar Excel</button>
 <div id="conciliacion-tabla" style="margin-top:15px"></div>
 </div>
@@ -284,11 +283,11 @@ tr:last-child td{border-bottom:none}
 <!-- ADMINISTRACIÓN -->
 <div id="view-admin" class="view" style="display:none">
 <h2 class="page-title">Administración</h2>
-<p class="page-desc">Gestiona catálogos, técnicos, usuarios y configuración.</p>
 <div class="tabs">
 <button class="tab-btn active" data-tab="marcas" onclick="cambiarTabAdmin('marcas')">Marcas</button>
 <button class="tab-btn" data-tab="modelos" onclick="cambiarTabAdmin('modelos')">Modelos</button>
 <button class="tab-btn" data-tab="trabajos" onclick="cambiarTabAdmin('trabajos')">Trabajos</button>
+<button class="tab-btn" data-tab="piezas" onclick="cambiarTabAdmin('piezas')">Piezas</button>
 <button class="tab-btn" data-tab="categorias" onclick="cambiarTabAdmin('categorias')">Categorías</button>
 <button class="tab-btn" data-tab="agencias" onclick="cambiarTabAdmin('agencias')">Agencias</button>
 <button class="tab-btn" data-tab="clientes" onclick="cambiarTabAdmin('clientes')">Clientes</button>
@@ -309,7 +308,13 @@ tr:last-child td{border-bottom:none}
 
 <div id="tab-trabajos" class="tab-content">
 <div style="display:flex;justify-content:space-between;align-items:center"><h3>Trabajos</h3><button class="btn btn-primary btn-sm" onclick="abrirModal('trabajo')">+ Nuevo Trabajo</button></div>
-<table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo (días)</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
+<table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Tiempo (d.h.)</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-trabajos"></tbody></table>
+</div>
+
+<div id="tab-piezas" class="tab-content">
+<div style="display:flex;justify-content:space-between;align-items:center"><h3>Catálogo de Piezas / Refacciones</h3><button class="btn btn-primary btn-sm" onclick="abrirModalPieza()">+ Nueva Pieza</button></div>
+<p style="color:var(--sf-text-secondary);font-size:12px;margin:8px 0">Aquí se registran las piezas con su tiempo de surtido en días hábiles. El precio se captura en cada cotización.</p>
+<table><thead><tr><th>ID</th><th>Nombre</th><th>Tiempo surtido (d.h.)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-piezas"></tbody></table>
 </div>
 
 <div id="tab-categorias" class="tab-content">
@@ -369,6 +374,11 @@ tr:last-child td{border-bottom:none}
 <label class="flbl">Rol</label><select class="inp" id="usu-rol"><option value="admin">Administrador</option><option value="recepcionista">Recepcionista</option><option value="jefe_taller">Jefe de Taller</option></select>
 </div><div class="mof"><button type="button" class="btn" onclick="cerrarModalUsuario()">Cancelar</button><button type="button" class="btn btn-primary" onclick="guardarUsuario()">Guardar</button></div></form></div></div>
 <div class="mov" id="mov-categoria"><div class="mo"><div class="moh">Nueva Categoría</div><div class="mob"><label class="flbl">Nombre</label><input class="inp" type="text" id="cat-nombre"></div><div class="mof"><button class="btn" onclick="cerrarModalCategoria()">Cancelar</button><button class="btn btn-primary" onclick="guardarCategoria()">Guardar</button></div></div></div>
+<div class="mov" id="mov-pieza"><div class="mo"><div class="moh">Nueva Pieza / Refacción</div><div class="mob">
+<label class="flbl">Nombre de la pieza</label><input class="inp" type="text" id="pie-nombre" placeholder="Ej. Faro delantero derecho"><br><br>
+<label class="flbl">Tiempo de surtido (días hábiles)</label><input class="inp" type="number" id="pie-tiempo" min="0" step="1" value="0">
+<small style="color:var(--sf-text-secondary);font-size:11px">Días que tarda el proveedor en surtir. Se puede editar en cada cotización.</small>
+</div><div class="mof"><button class="btn" onclick="cerrarModalPieza()">Cancelar</button><button class="btn btn-primary" onclick="guardarPieza()">Guardar</button></div></div></div>
 <div class="mov" id="mov-detalle-ot"><div class="mo" style="max-width:700px"><div class="moh" id="detalle-titulo">Detalle</div><div class="mob" id="detalle-contenido"></div><div class="mof"><button class="btn" onclick="cerrarDetalleOT()">Cerrar</button><button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button><button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button></div></div></div>
 <div class="mov" id="mov-editar-flujo"><div class="mo"><div class="moh">Editar trabajos</div><div class="mob" id="editar-flujo-body"></div><div class="mof"><button class="btn" onclick="cerrarEditarFlujo()">Cancelar</button><button class="btn btn-primary" onclick="guardarFlujoOT()">Guardar</button></div></div></div>
 <div id="toast"></div>
@@ -377,7 +387,7 @@ tr:last-child td{border-bottom:none}
 const SUPABASE_URL='https://jcknyppkhorqgoieafkh.supabase.co';
 const SUPABASE_ANON='sb_publishable_7QNcsHD2ojwIVUCwmuy5gw_1vk9_R-9';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
-let SESSION=null,PERFIL=null,confirmCallback=null,otAsignarId=null,origenTecnico='vista',CONFIG={},detalleOTActual=null,otEditarFlujoId=null,categoriasCache=[],piezasTmp=[];
+let SESSION=null,PERFIL=null,confirmCallback=null,otAsignarId=null,CONFIG={},detalleOTActual=null,otEditarFlujoId=null,categoriasCache=[],piezasCatalogoCache=[],piezasTmp=[];
 
 function escHtml(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 function toast(msg,tipo=''){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(tipo?' '+tipo:'');t.style.background=tipo==='err'?'#ba0517':tipo==='ok'?'#2e844a':'#333';setTimeout(()=>t.className='',3000)}
@@ -386,49 +396,32 @@ function cerrarConfirm(){document.getElementById('mov-confirm').classList.remove
 function ejecutarConfirm(){if(confirmCallback)confirmCallback();cerrarConfirm()}
 document.getElementById('confirm-ok').addEventListener('click',ejecutarConfirm);
 
-// ========== DÍAS HÁBILES ==========
-function sumarDiasHabiles(fechaInicio, dias){
-  let fecha = new Date(fechaInicio);
-  let contados = 0;
-  while(contados < Math.ceil(dias)){
-    fecha.setDate(fecha.getDate() + 1);
-    const dia = fecha.getDay();
-    if(dia !== 0) contados++; // 0=Domingo
-  }
-  return fecha;
-}
-function diasHabilesEntre(fechaIni, fechaFin){
-  let f = new Date(fechaIni); const fin = new Date(fechaFin);
-  let count = 0;
-  while(f < fin){
-    f.setDate(f.getDate() + 1);
-    if(f.getDay() !== 0) count++;
-  }
-  return count;
-}
+// DÍAS HÁBILES
+function sumarDiasHabiles(fechaInicio,dias){let f=new Date(fechaInicio);let c=0;while(c<Math.ceil(dias)){f.setDate(f.getDate()+1);if(f.getDay()!==0)c++}return f}
+function diasHabilesEntre(fIni,fFin){let f=new Date(fIni);const fin=new Date(fFin);let c=0;while(f<fin){f.setDate(f.getDate()+1);if(f.getDay()!==0)c++}return c}
 
-// ========== AUTH ==========
+// AUTH
 async function initSession(userId){
   try{
     const {data,error}=await sb.from('perfiles').select('*').eq('id',userId).single();
     if(error){
-      const {data:userData}=await sb.auth.getUser();
-      const nuevo={id:userId,nombre:userData?.user_metadata?.nombre||'Sin nombre',email:userData?.email||'',rol:userData?.user_metadata?.rol||'recepcionista',activo:true};
-      const {error:insErr}=await sb.from('perfiles').insert(nuevo);
-      if(insErr){toast('Error creando perfil: '+insErr.message,'err');return}
-      const {data:p2}=await sb.from('perfiles').select('*').eq('id',userId).single();
-      PERFIL=p2;
-    } else { PERFIL=data; }
+      const {data:uD}=await sb.auth.getUser();
+      const nuevo={id:userId,nombre:uD?.user_metadata?.nombre||'Sin nombre',email:uD?.email||'',rol:uD?.user_metadata?.rol||'recepcionista',activo:true};
+      const {error:iE}=await sb.from('perfiles').insert(nuevo);
+      if(iE){toast('Error creando perfil: '+iE.message,'err');return}
+      const {data:p2}=await sb.from('perfiles').select('*').eq('id',userId).single();PERFIL=p2;
+    } else {PERFIL=data}
     SESSION={id:userId,email:PERFIL.email,rol:PERFIL.rol};
     await cargarConfiguracion();
     await cargarCategorias();
+    await cargarPiezasCatalogo();
     setTimeout(()=>mostrarApp(),100);
   }catch(e){toast('Error: '+e.message,'err')}
 }
 (async function boot(){
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(session?.user&&!SESSION){await initSession(session.user.id)}
-    else if(!session&&event==='SIGNED_OUT'){SESSION=null;PERFIL=null;CONFIG={};document.getElementById('app').style.display='none';document.getElementById('login-wrap').style.display='flex'}
+  sb.auth.onAuthStateChange(async(ev,ss)=>{
+    if(ss?.user&&!SESSION)await initSession(ss.user.id);
+    else if(!ss&&ev==='SIGNED_OUT'){SESSION=null;PERFIL=null;CONFIG={};document.getElementById('app').style.display='none';document.getElementById('login-wrap').style.display='flex'}
   });
   const {data:{session}}=await sb.auth.getSession();
   if(session?.user)await initSession(session.user.id);
@@ -440,62 +433,35 @@ document.getElementById('login-form').addEventListener('submit',async(e)=>{
   catch(err){toast('❌ '+err.message,'err')}
 });
 
-// ========== CATEGORÍAS ==========
-async function cargarCategorias(){
-  const {data,error}=await sb.from('categorias').select('*').eq('activo',true).order('nombre');
-  if(error){console.warn(error);return[]}
-  categoriasCache=data||[];return categoriasCache;
-}
-async function cargarCategoriasAdmin(){
-  const {data,error}=await sb.from('categorias').select('*').order('nombre');
-  if(error)return;
-  const tbody=document.getElementById('tabla-categorias');tbody.innerHTML='';
-  data.forEach(c=>{tbody.innerHTML+=`<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${c.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarCategoria(${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoCategoria(${c.id},${!c.activo})">${c.activo?'Desactivar':'Activar'}</button></td></tr>`});
-}
+// CATEGORÍAS
+async function cargarCategorias(){const {data,error}=await sb.from('categorias').select('*').eq('activo',true).order('nombre');if(error)return[];categoriasCache=data||[];return categoriasCache}
+async function cargarCategoriasAdmin(){const {data,error}=await sb.from('categorias').select('*').order('nombre');if(error)return;const tb=document.getElementById('tabla-categorias');if(!tb)return;tb.innerHTML='';data.forEach(c=>{tb.innerHTML+=`<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${c.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarCategoria(${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoCategoria(${c.id},${!c.activo})">${c.activo?'Desactivar':'Activar'}</button></td></tr>`})}
 function abrirModalCategoria(){document.getElementById('cat-nombre').value='';document.getElementById('mov-categoria').classList.add('open')}
 function cerrarModalCategoria(){document.getElementById('mov-categoria').classList.remove('open')}
-async function guardarCategoria(){
-  const nombre=document.getElementById('cat-nombre').value.trim();
-  if(!nombre){toast('Nombre obligatorio','err');return}
-  try{const {error}=await sb.from('categorias').insert({nombre,activo:true});if(error)throw error;toast('Categoría creada ✓','ok');cerrarModalCategoria();cargarCategoriasAdmin();await cargarCategorias()}
-  catch(e){toast('Error: '+e.message,'err')}
-}
-async function editarCategoria(id){
-  const {data}=await sb.from('categorias').select('*').eq('id',id).single();if(!data)return;
-  const nuevo=prompt('Nuevo nombre:',data.nombre);
-  if(nuevo&&nuevo.trim()){const {error}=await sb.from('categorias').update({nombre:nuevo.trim()}).eq('id',id);if(error){toast('Error: '+error.message,'err');return}toast('Actualizada ✓','ok');cargarCategoriasAdmin();await cargarCategorias()}
-}
-async function cambiarEstadoCategoria(id,estado){await sb.from('categorias').update({activo:estado}).eq('id',id);cargarCategoriasAdmin();await cargarCategorias()}
+async function guardarCategoria(){const n=document.getElementById('cat-nombre').value.trim();if(!n){toast('Obligatorio','err');return}const {error}=await sb.from('categorias').insert({nombre:n,activo:true});if(error){toast('Error: '+error.message,'err');return}toast('Creada ✓','ok');cerrarModalCategoria();cargarCategoriasAdmin();await cargarCategorias()}
+async function editarCategoria(id){const {data}=await sb.from('categorias').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nuevo nombre:',data.nombre);if(n&&n.trim()){await sb.from('categorias').update({nombre:n.trim()}).eq('id',id);cargarCategoriasAdmin();await cargarCategorias()}}
+async function cambiarEstadoCategoria(id,e){await sb.from('categorias').update({activo:e}).eq('id',id);cargarCategoriasAdmin();await cargarCategorias()}
 
-// ========== CONFIG ==========
-async function cargarConfiguracion(){
-  try{const {data,error}=await sb.from('configuracion_erp').select('*').eq('id',1).single();
-  if(error){CONFIG={};return}
-  CONFIG=data||{};
-  ['nombre','rfc','direccion','telefono','email','web','banco','cuenta','condiciones','terminos'].forEach(k=>{
-    const el=document.getElementById('cfg-'+k);
-    if(el)el.value=data['empresa_'+k]||data[k]||'';
-  });
-  }catch(e){console.warn(e)}
-}
-async function guardarConfig(){
-  const cfg={empresa_nombre:document.getElementById('cfg-nombre').value,empresa_rfc:document.getElementById('cfg-rfc').value,empresa_direccion:document.getElementById('cfg-direccion').value,empresa_telefono:document.getElementById('cfg-telefono').value,empresa_email:document.getElementById('cfg-email').value,empresa_web:document.getElementById('cfg-web').value,banco:document.getElementById('cfg-banco').value,cuenta_bancaria:document.getElementById('cfg-cuenta').value,condiciones_pago:document.getElementById('cfg-condiciones').value,terminos_cotizacion:document.getElementById('cfg-terminos').value};
-  try{const {error}=await sb.from('configuracion_erp').upsert({id:1,...cfg});if(error)throw error;await cargarConfiguracion();toast('Guardado ✓','ok')}catch(e){toast('Error: '+e.message,'err')}
-}
+// CATÁLOGO DE PIEZAS
+async function cargarPiezasCatalogo(){const {data,error}=await sb.from('piezas_catalogo').select('*').eq('activo',true).order('nombre');if(error){console.warn(error);return[]}piezasCatalogoCache=data||[];return piezasCatalogoCache}
+async function cargarPiezasAdmin(){const {data,error}=await sb.from('piezas_catalogo').select('*').order('nombre');if(error)return;const tb=document.getElementById('tabla-piezas');if(!tb)return;tb.innerHTML='';data.forEach(p=>{tb.innerHTML+=`<tr><td>${p.id}</td><td>${escHtml(p.nombre)}</td><td>${p.tiempo_surtido||0}</td><td>${p.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarPieza(${p.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoPieza(${p.id},${!p.activo})">${p.activo?'Desactivar':'Activar'}</button></td></tr>`})}
+function abrirModalPieza(){document.getElementById('pie-nombre').value='';document.getElementById('pie-tiempo').value='0';document.getElementById('mov-pieza').classList.add('open')}
+function cerrarModalPieza(){document.getElementById('mov-pieza').classList.remove('open')}
+async function guardarPieza(){const n=document.getElementById('pie-nombre').value.trim();const t=parseFloat(document.getElementById('pie-tiempo').value)||0;if(!n){toast('Nombre obligatorio','err');return}const {error}=await sb.from('piezas_catalogo').insert({nombre:n,tiempo_surtido:t,activo:true});if(error){toast('Error: '+error.message,'err');return}toast('Pieza creada ✓','ok');cerrarModalPieza();cargarPiezasAdmin();await cargarPiezasCatalogo()}
+async function editarPieza(id){const {data}=await sb.from('piezas_catalogo').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nombre:',data.nombre);if(n===null)return;const t=prompt('Tiempo de surtido (d.h.):',data.tiempo_surtido);if(n&&n.trim()){await sb.from('piezas_catalogo').update({nombre:n.trim(),tiempo_surtido:parseFloat(t)||0}).eq('id',id);cargarPiezasAdmin();await cargarPiezasCatalogo()}}
+async function cambiarEstadoPieza(id,e){await sb.from('piezas_catalogo').update({activo:e}).eq('id',id);cargarPiezasAdmin();await cargarPiezasCatalogo()}
 
-// ========== NAVEGACIÓN ==========
-function mostrarApp(){
-  document.getElementById('login-wrap').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('user-info').textContent='Usuario: '+(PERFIL?.nombre||'');
-  if(PERFIL?.rol==='tecnico'){sb.auth.signOut();return}
-  sv('dashboard');cargarDashboard();
-}
+// CONFIG
+async function cargarConfiguracion(){try{const {data,error}=await sb.from('configuracion_erp').select('*').eq('id',1).single();if(error){CONFIG={};return}CONFIG=data||{};['nombre','rfc','direccion','telefono','email','web','banco','cuenta','condiciones','terminos'].forEach(k=>{const el=document.getElementById('cfg-'+k);if(el)el.value=data['empresa_'+k]||data[k]||''})}catch(e){}}
+async function guardarConfig(){const cfg={empresa_nombre:document.getElementById('cfg-nombre').value,empresa_rfc:document.getElementById('cfg-rfc').value,empresa_direccion:document.getElementById('cfg-direccion').value,empresa_telefono:document.getElementById('cfg-telefono').value,empresa_email:document.getElementById('cfg-email').value,empresa_web:document.getElementById('cfg-web').value,banco:document.getElementById('cfg-banco').value,cuenta_bancaria:document.getElementById('cfg-cuenta').value,condiciones_pago:document.getElementById('cfg-condiciones').value,terminos_cotizacion:document.getElementById('cfg-terminos').value};try{const {error}=await sb.from('configuracion_erp').upsert({id:1,...cfg});if(error)throw error;await cargarConfiguracion();toast('Guardado ✓','ok')}catch(e){toast('Error: '+e.message,'err')}}
+
+// NAV
+function mostrarApp(){document.getElementById('login-wrap').style.display='none';document.getElementById('app').style.display='block';document.getElementById('user-info').textContent='Usuario: '+(PERFIL?.nombre||'');if(PERFIL?.rol==='tecnico'){sb.auth.signOut();return}sv('dashboard');cargarDashboard()}
 function sv(view){
   document.querySelectorAll('.view').forEach(v=>v.style.display='none');
   document.querySelectorAll('.sidebar .nav-item').forEach(n=>n.classList.remove('active'));
-  const target=document.getElementById('view-'+view);if(target)target.style.display='block';
-  const nav=document.querySelector('.sidebar .nav-item[data-view="'+view+'"]');if(nav)nav.classList.add('active');
+  const t=document.getElementById('view-'+view);if(t)t.style.display='block';
+  const n=document.querySelector('.sidebar .nav-item[data-view="'+view+'"]');if(n)n.classList.add('active');
   if(view==='dashboard')cargarDashboard();
   if(view==='nueva-ot')cargarDatosNuevaOT();
   if(view==='cotizaciones')cargarCotizaciones();
@@ -505,15 +471,8 @@ function sv(view){
 }
 document.querySelectorAll('.sidebar .nav-item').forEach(i=>i.addEventListener('click',()=>sv(i.dataset.view)));
 
-// ========== DASHBOARD ==========
-async function cargarDashboard(){
-  try{
-    const [ags,cli]=await Promise.all([sb.from('agencias').select('*').eq('activo',true).order('nombre'),sb.from('clientes').select('*').eq('activo',true).order('nombre')]);
-    const sA=document.getElementById('filtro-agencia');sA.innerHTML='<option value="">Todas</option>';ags.data.forEach(a=>sA.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`);
-    const sC=document.getElementById('filtro-cliente');sC.innerHTML='<option value="">Todos</option>';cli.data.forEach(c=>sC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);
-    await aplicarFiltrosDashboard();
-  }catch(e){console.warn(e)}
-}
+// DASHBOARD
+async function cargarDashboard(){try{const [ags,cli]=await Promise.all([sb.from('agencias').select('*').eq('activo',true).order('nombre'),sb.from('clientes').select('*').eq('activo',true).order('nombre')]);const sA=document.getElementById('filtro-agencia');sA.innerHTML='<option value="">Todas</option>';ags.data.forEach(a=>sA.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`);const sC=document.getElementById('filtro-cliente');sC.innerHTML='<option value="">Todos</option>';cli.data.forEach(c=>sC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);await aplicarFiltrosDashboard()}catch(e){console.warn(e)}}
 async function aplicarFiltrosDashboard(){
   try{
     const aId=document.getElementById('filtro-agencia').value,clId=document.getElementById('filtro-cliente').value,est=document.getElementById('filtro-estado').value;
@@ -521,40 +480,26 @@ async function aplicarFiltrosDashboard(){
     if(aId)q=q.eq('agencia_id',aId);if(clId)q=q.eq('cliente_id',clId);if(est)q=q.eq('estado',est);
     const {data:ots,error}=await q.order('created_at',{ascending:false});if(error)throw error;
     const hoy=new Date(),hoyISO=hoy.toISOString().split('T')[0];
-    const {count:tC}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('estado','en_taller');
-    document.getElementById('stat-taller').textContent=tC||0;
-    const {count:eH}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('estado','completada').gte('updated_at',hoyISO+'T00:00:00').lt('updated_at',hoyISO+'T23:59:59');
-    document.getElementById('stat-entregas').textContent=eH||0;
-    const {count:fP}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('estado','completada').is('factura_id',null);
-    document.getElementById('stat-facturas').textContent=fP||0;
-    const prox=ots.filter(o=>{if(!o.fecha_entrega)return false;const d=diasHabilesEntre(hoy,new Date(o.fecha_entrega));return d>=0&&d<=2&&['aprobada','en_taller'].includes(o.estado)});
-    document.getElementById('stat-proximos').textContent=prox.length;
-    const retr=ots.filter(o=>{if(!o.fecha_entrega)return false;return new Date(o.fecha_entrega)<hoy&&['aprobada','en_taller'].includes(o.estado)});
-    document.getElementById('stat-retrasados').textContent=retr.length;
-    const eHoy=ots.filter(o=>o.estado==='completada'&&o.fecha_entrega===hoyISO);
-    document.getElementById('stat-entregados-hoy').textContent=eHoy.length;
-    const enProc=ots.filter(o=>['aprobada','en_taller'].includes(o.estado)&&o.fecha_entrega).length;
-    document.getElementById('kpi-tasa-retraso').textContent=(enProc>0?Math.round(retr.length/enProc*100):0)+'%';
-    const {data:tec}=await sb.from('tecnicos').select('*').order('nombre');
-    let maxT='—',maxC=0;
+    const {count:tC}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('estado','en_taller');document.getElementById('stat-taller').textContent=tC||0;
+    const {count:eH}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('estado','completada').gte('updated_at',hoyISO+'T00:00:00').lt('updated_at',hoyISO+'T23:59:59');document.getElementById('stat-entregas').textContent=eH||0;
+    const {count:fP}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('estado','completada').is('factura_id',null);document.getElementById('stat-facturas').textContent=fP||0;
+    const prox=ots.filter(o=>{if(!o.fecha_entrega)return false;const d=diasHabilesEntre(hoy,new Date(o.fecha_entrega));return d>=0&&d<=2&&['aprobada','en_taller'].includes(o.estado)});document.getElementById('stat-proximos').textContent=prox.length;
+    const retr=ots.filter(o=>{if(!o.fecha_entrega)return false;return new Date(o.fecha_entrega)<hoy&&['aprobada','en_taller'].includes(o.estado)});document.getElementById('stat-retrasados').textContent=retr.length;
+    const eHoy=ots.filter(o=>o.estado==='completada'&&o.fecha_entrega===hoyISO);document.getElementById('stat-entregados-hoy').textContent=eHoy.length;
+    const enProc=ots.filter(o=>['aprobada','en_taller'].includes(o.estado)&&o.fecha_entrega).length;document.getElementById('kpi-tasa-retraso').textContent=(enProc>0?Math.round(retr.length/enProc*100):0)+'%';
+    const {data:tec}=await sb.from('tecnicos').select('*').order('nombre');let maxT='—',maxC=0;
     for(const t of tec||[]){const {count}=await sb.from('ot').select('*',{count:'exact',head:true}).eq('tecnico_id',t.id).eq('estado','completada').gte('updated_at',hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01T00:00:00');if(count>maxC){maxC=count;maxT=t.nombre}}
     document.getElementById('kpi-tecnico-mes').textContent=maxT;
-    let totD=0,totO=0;
-    const {data:ags2}=await sb.from('agencias').select('*').eq('activo',true);
+    let totD=0,totO=0;const {data:ags2}=await sb.from('agencias').select('*').eq('activo',true);
     for(const a of ags2||[]){const {data:ao}=await sb.from('ot').select('fecha_aprobacion,updated_at').eq('agencia_id',a.id).eq('estado','completada').not('fecha_aprobacion','is',null);if(ao)ao.forEach(o=>{if(o.fecha_aprobacion&&o.updated_at){totD+=diasHabilesEntre(new Date(o.fecha_aprobacion),new Date(o.updated_at));totO++}})}
     document.getElementById('kpi-dias-promedio').textContent=totO>0?(totD/totO).toFixed(1):0;
     const tb=document.getElementById('tbody-dashboard');tb.innerHTML='';
-    ots.forEach(o=>{
-      const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
-      let dr='—';
-      if(o.fecha_entrega){const d=diasHabilesEntre(hoy,new Date(o.fecha_entrega));dr=d<0?`<span style="color:red">${d} d.h.</span>`:`${d} d.h.`}
-      tb.innerHTML+=`<tr><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>${escHtml(o.estado||'')}</td><td>${o.fecha_entrega||'—'}</td><td>${dr}</td></tr>`;
-    });
+    ots.forEach(o=>{const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');let dr='—';if(o.fecha_entrega){const d=diasHabilesEntre(hoy,new Date(o.fecha_entrega));dr=d<0?`<span style="color:red">${d} d.h.</span>`:`${d} d.h.`}tb.innerHTML+=`<tr><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>${escHtml(o.estado||'')}</td><td>${o.fecha_entrega||'—'}</td><td>${dr}</td></tr>`});
   }catch(e){toast('Error dashboard: '+e.message,'err')}
 }
 function limpiarFiltrosDashboard(){document.getElementById('filtro-agencia').value='';document.getElementById('filtro-cliente').value='';document.getElementById('filtro-estado').value='';aplicarFiltrosDashboard()}
 
-// ========== CRUD CATÁLOGOS ==========
+// CRUD CATÁLOGOS
 const configs={
   marca:{tabla:'marcas',title:'Marca',fields:[{name:'nombre',label:'Nombre',type:'text',required:true}]},
   modelo:{tabla:'modelos',title:'Modelo',fields:[{name:'nombre',label:'Nombre',type:'text',required:true},{name:'marca_id',label:'Marca',type:'select',options:'marcas'}]},
@@ -567,16 +512,13 @@ async function abrirModal(tipo,id=null){
   const cfg=configs[tipo];if(!cfg)return;currentModal=tipo;currentEditId=id;
   document.getElementById('crud-title').textContent=id?'Editar '+cfg.title:'Nuevo '+cfg.title;
   let html='';
-  cfg.fields.forEach(f=>{
-    html+=`<div style="margin-bottom:12px"><label class="flbl">${f.label}</label>`;
+  cfg.fields.forEach(f=>{html+=`<div style="margin-bottom:12px"><label class="flbl">${f.label}</label>`;
     if(f.type==='select')html+=`<select class="inp" name="${f.name}" ${f.required?'required':''}><option value="">Selecciona...</option></select>`;
     else if(f.type==='number')html+=`<input class="inp" type="number" name="${f.name}" ${f.step?'step="'+f.step+'"':''} ${f.required?'required':''}>`;
     else html+=`<input class="inp" type="${f.type||'text'}" name="${f.name}" ${f.required?'required':''}>`;
-    html+='</div>';
-  });
+    html+='</div>'});
   document.getElementById('crud-body').innerHTML=html;
-  if(id){try{const {data,error}=await sb.from(cfg.tabla).select('*').eq('id',id).single();if(error)throw error;
-    cfg.fields.forEach(f=>{const inp=document.querySelector(`#crud-body [name="${f.name}"]`);if(inp)inp.value=data[f.name]||''})}catch(e){toast('Error: '+e.message,'err');return}}
+  if(id){try{const {data,error}=await sb.from(cfg.tabla).select('*').eq('id',id).single();if(error)throw error;cfg.fields.forEach(f=>{const inp=document.querySelector(`#crud-body [name="${f.name}"]`);if(inp)inp.value=data[f.name]||''})}catch(e){toast('Error: '+e.message,'err');return}}
   if(tipo==='modelo'){const {data:m}=await sb.from('marcas').select('*').eq('activo',true);const s=document.querySelector('#crud-body [name="marca_id"]');if(s&&m)m.forEach(x=>s.innerHTML+=`<option value="${x.id}">${escHtml(x.nombre)}</option>`)}
   if(tipo==='trabajo'){const {data:c}=await sb.from('categorias').select('*').eq('activo',true);const s=document.querySelector('#crud-body [name="categoria_id"]');if(s&&c)c.forEach(x=>s.innerHTML+=`<option value="${x.id}">${escHtml(x.nombre)}</option>`)}
   document.getElementById('mov-crud').classList.add('open');
@@ -586,26 +528,23 @@ document.getElementById('crud-save').addEventListener('click',async()=>{
   if(!currentModal)return;const cfg=configs[currentModal];const form=document.getElementById('crud-body');
   const datos={};cfg.fields.forEach(f=>{const inp=form.querySelector(`[name="${f.name}"]`);datos[f.name]=inp?inp.value:''});
   for(const f of cfg.fields)if(f.required&&!datos[f.name]){toast('Campo '+f.label+' obligatorio','err');return}
-  const vistaActual=currentModal;
-  try{
-    if(currentEditId){const {error}=await sb.from(cfg.tabla).update(datos).eq('id',currentEditId);if(error)throw error;toast('Actualizado ✓','ok')}
-    else{const {error}=await sb.from(cfg.tabla).insert(datos);if(error)throw error;toast('Creado ✓','ok')}
-    cerrarModal();
-    if(document.getElementById('view-admin').style.display!=='none')cargarAdmin();else sv(vistaActual);
-  }catch(e){toast('Error: '+e.message,'err')}
+  try{if(currentEditId){const {error}=await sb.from(cfg.tabla).update(datos).eq('id',currentEditId);if(error)throw error;toast('Actualizado ✓','ok')}
+  else{const {error}=await sb.from(cfg.tabla).insert(datos);if(error)throw error;toast('Creado ✓','ok')}
+  cerrarModal();if(document.getElementById('view-admin').style.display!=='none')cargarAdmin();else sv(currentModal);}
+  catch(e){toast('Error: '+e.message,'err')}
 });
 async function cargarMarcas(){const {data}=await sb.from('marcas').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-marcas');if(!tb)return;tb.innerHTML='';data.forEach(m=>tb.innerHTML+=`<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${m.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('marca',${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('marcas',${m.id},'${escHtml(m.nombre)}')">Eliminar</button></td></tr>`)}
 async function cargarModelos(){const {data}=await sb.from('modelos').select('*, marcas(nombre)').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-modelos');if(!tb)return;tb.innerHTML='';data.forEach(m=>tb.innerHTML+=`<tr><td>${m.id}</td><td>${escHtml(m.nombre)}</td><td>${escHtml(m.marcas?.nombre||'')}</td><td>${m.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('modelo',${m.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('modelos',${m.id},'${escHtml(m.nombre)}')">Eliminar</button></td></tr>`)}
-async function cargarTrabajos(){const {data}=await sb.from('trabajos').select('*, categorias(nombre)').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-trabajos');if(!tb)return;tb.innerHTML='';data.forEach(t=>tb.innerHTML+=`<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base||0}</td><td>${t.tiempo_est||0} d.</td><td>${escHtml(t.categorias?.nombre||'Sin cat.')}</td><td>${t.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo',${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos',${t.id},'${escHtml(t.nombre)}')">Eliminar</button></td></tr>`)}
+async function cargarTrabajos(){const {data}=await sb.from('trabajos').select('*, categorias(nombre)').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-trabajos');if(!tb)return;tb.innerHTML='';data.forEach(t=>tb.innerHTML+=`<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>$${t.precio_base||0}</td><td>${t.tiempo_est||0}</td><td>${escHtml(t.categorias?.nombre||'Sin cat.')}</td><td>${t.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('trabajo',${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('trabajos',${t.id},'${escHtml(t.nombre)}')">Eliminar</button></td></tr>`)}
 async function cargarAgencias(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-agencias');if(!tb)return;tb.innerHTML='';data.forEach(a=>tb.innerHTML+=`<tr><td>${a.id}</td><td>${escHtml(a.nombre)}</td><td>${escHtml(a.rfc||'')}</td><td>${escHtml(a.contacto||'')}</td><td>${a.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('agencia',${a.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('agencias',${a.id},'${escHtml(a.nombre)}')">Eliminar</button></td></tr>`)}
 async function cargarClientes(){const {data}=await sb.from('clientes').select('*').eq('activo',true).order('nombre');const tb=document.getElementById('tabla-clientes');if(!tb)return;tb.innerHTML='';data.forEach(c=>tb.innerHTML+=`<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${escHtml(c.telefono||'')}</td><td>${escHtml(c.email||'')}</td><td>${c.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="abrirModal('cliente',${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="eliminarRegistro('clientes',${c.id},'${escHtml(c.nombre)}')">Eliminar</button></td></tr>`)}
 async function eliminarRegistro(tabla,id,desc){abrirConfirm(`¿Eliminar "${desc}"?`,async()=>{const {error}=await sb.from(tabla).update({activo:false}).eq('id',id);if(error){toast('Error','err');return}toast('Eliminado ✓','ok');cargarAdmin()},'Sí, eliminar')}
-async function cargarAdmin(){const t=document.querySelector('.tab-btn.active')?.dataset.tab||'marcas';await Promise.all([cargarMarcas(),cargarModelos(),cargarTrabajos(),cargarAgencias(),cargarClientes(),cargarTecnicos(),cargarUsuarios(),cargarCategoriasAdmin()]);cambiarTabAdmin(t)}
-function cambiarTabAdmin(tab){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));const b=document.querySelector(`.tab-btn[data-tab="${tab}"]`);if(b)b.classList.add('active');const c=document.getElementById('tab-'+tab);if(c)c.classList.add('active');if(tab==='categorias')cargarCategoriasAdmin()}
+async function cargarAdmin(){const t=document.querySelector('.tab-btn.active')?.dataset.tab||'marcas';await Promise.all([cargarMarcas(),cargarModelos(),cargarTrabajos(),cargarPiezasAdmin(),cargarCategoriasAdmin(),cargarAgencias(),cargarClientes(),cargarTecnicos(),cargarUsuarios()]);cambiarTabAdmin(t)}
+function cambiarTabAdmin(tab){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));const b=document.querySelector(`.tab-btn[data-tab="${tab}"]`);if(b)b.classList.add('active');const c=document.getElementById('tab-'+tab);if(c)c.classList.add('active');if(tab==='categorias')cargarCategoriasAdmin();if(tab==='piezas')cargarPiezasAdmin()}
 
 // TÉCNICOS
 async function cargarTecnicos(){const {data}=await sb.from('tecnicos').select('*').order('nombre');const tb=document.getElementById('tabla-tecnicos');if(!tb)return;tb.innerHTML='';data.forEach(t=>tb.innerHTML+=`<tr><td>${t.id}</td><td>${escHtml(t.nombre)}</td><td>${t.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarTecnico(${t.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoTecnico(${t.id},${!t.activo})">${t.activo?'Desactivar':'Activar'}</button></td></tr>`)}
-function abrirModalTecnico(){origenTecnico='vista';document.getElementById('tec-nombre').value='';document.getElementById('mov-tecnico').classList.add('open')}
+function abrirModalTecnico(){document.getElementById('tec-nombre').value='';document.getElementById('mov-tecnico').classList.add('open')}
 function cerrarModalTecnico(){document.getElementById('mov-tecnico').classList.remove('open')}
 async function guardarTecnico(){const n=document.getElementById('tec-nombre').value.trim();if(!n){toast('Obligatorio','err');return}const {error}=await sb.from('tecnicos').insert({nombre:n,activo:true});if(error){toast('Error','err');return}toast('Creado ✓','ok');cerrarModalTecnico();cargarTecnicos()}
 async function editarTecnico(id){const {data}=await sb.from('tecnicos').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nuevo nombre:',data.nombre);if(n&&n.trim()){await sb.from('tecnicos').update({nombre:n.trim()}).eq('id',id);cargarTecnicos()}}
@@ -615,87 +554,72 @@ async function cambiarEstadoTecnico(id,e){await sb.from('tecnicos').update({acti
 async function cargarUsuarios(){const {data}=await sb.from('perfiles').select('*').order('nombre');const tb=document.getElementById('tabla-usuarios');if(!tb)return;tb.innerHTML='';data.forEach(u=>{if(u.rol==='tecnico')return;tb.innerHTML+=`<tr><td>${u.id}</td><td>${escHtml(u.nombre)}</td><td>${escHtml(u.email||'')}</td><td>${u.rol}</td><td>${u.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="cambiarEstadoUsuario('${u.id}',${!u.activo})">${u.activo?'Desactivar':'Activar'}</button></td></tr>`})}
 function abrirModalUsuario(){document.getElementById('usu-nombre').value='';document.getElementById('usu-email').value='';document.getElementById('usu-pass').value='';document.getElementById('usu-rol').value='recepcionista';document.getElementById('mov-usuario').classList.add('open')}
 function cerrarModalUsuario(){document.getElementById('mov-usuario').classList.remove('open')}
-async function guardarUsuario(){
-  const n=document.getElementById('usu-nombre').value.trim(),e=document.getElementById('usu-email').value.trim(),p=document.getElementById('usu-pass').value,r=document.getElementById('usu-rol').value;
-  if(!n||!e||!p){toast('Todos obligatorios','err');return}
-  if(p.length<8){toast('Contraseña mínima 8 chars','err');return}
-  try{const {data:user,error}=await sb.auth.signUp({email:e,password:p,options:{data:{nombre:n,rol:r}}});if(error)throw error;toast('Usuario creado ✓','ok');cerrarModalUsuario();cargarUsuarios()}
-  catch(err){toast('Error: '+err.message,'err')}
-}
+async function guardarUsuario(){const n=document.getElementById('usu-nombre').value.trim(),e=document.getElementById('usu-email').value.trim(),p=document.getElementById('usu-pass').value,r=document.getElementById('usu-rol').value;if(!n||!e||!p){toast('Todos obligatorios','err');return}if(p.length<8){toast('Mínimo 8 chars','err');return}try{const {data:user,error}=await sb.auth.signUp({email:e,password:p,options:{data:{nombre:n,rol:r}}});if(error)throw error;toast('Usuario creado ✓','ok');cerrarModalUsuario();cargarUsuarios()}catch(err){toast('Error: '+err.message,'err')}}
 async function cambiarEstadoUsuario(id,e){await sb.from('perfiles').update({activo:e}).eq('id',id);cargarUsuarios()}
 
-// ========== NUEVA COTIZACIÓN ==========
+// NUEVA COTIZACIÓN
 async function cargarDatosNuevaOT(){
   try{
     const {data:marcas}=await sb.from('marcas').select('*').eq('activo',true).order('nombre');
     const sM=document.getElementById('ot-marca');sM.innerHTML='<option value="">Selecciona...</option>';marcas.forEach(m=>sM.innerHTML+=`<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
     document.getElementById('ot-modelo').innerHTML='<option value="">Primero marca</option>';
-    const {data:cli}=await sb.from('clientes').select('*').eq('activo',true).order('nombre');
-    const sC=document.getElementById('ot-cliente-particular');sC.innerHTML='<option value="">Selecciona...</option>';cli.forEach(c=>sC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);
-    const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');
-    const sA=document.getElementById('ot-cliente-agencia');sA.innerHTML='<option value="">Selecciona...</option>';ags.forEach(a=>sA.innerHTML+=`<option value="${a.id}" data-nombre="${escHtml(a.nombre)}">${escHtml(a.nombre)}</option>`);
+    const {data:cli}=await sb.from('clientes').select('*').eq('activo',true).order('nombre');const sC=document.getElementById('ot-cliente-particular');sC.innerHTML='<option value="">Selecciona...</option>';cli.forEach(c=>sC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);
+    const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const sA=document.getElementById('ot-cliente-agencia');sA.innerHTML='<option value="">Selecciona...</option>';ags.forEach(a=>sA.innerHTML+=`<option value="${a.id}" data-nombre="${escHtml(a.nombre)}">${escHtml(a.nombre)}</option>`);
     const cats=await cargarCategorias();
     const {data:trabajos}=await sb.from('trabajos').select('*, categorias(nombre)').eq('activo',true).order('nombre');
     const cont=document.getElementById('lista-trabajos');cont.innerHTML='';
-    if(cats&&cats.length>0){
-      cats.forEach(cat=>{
-        const tc=trabajos.filter(t=>t.categoria_id===cat.id);
-        if(tc.length>0){
-          cont.innerHTML+=`<div style="margin-top:10px;font-weight:600;color:var(--sf-text-secondary);font-size:12px;text-transform:uppercase">${escHtml(cat.nombre)}</div>`;
-          tc.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`});
-        }
-      });
-    } else {
-      trabajos.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`});
-    }
-    sM.addEventListener('change',async()=>{
-      const {data:mods}=await sb.from('modelos').select('*').eq('marca_id',sM.value).eq('activo',true).order('nombre');
-      const sMo=document.getElementById('ot-modelo');sMo.innerHTML='<option value="">Selecciona...</option>';mods.forEach(m=>sMo.innerHTML+=`<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`);
-    });
+    if(cats&&cats.length>0){cats.forEach(cat=>{const tc=trabajos.filter(t=>t.categoria_id===cat.id);if(tc.length>0){cont.innerHTML+=`<div style="margin-top:10px;font-weight:600;color:var(--sf-text-secondary);font-size:12px;text-transform:uppercase">${escHtml(cat.nombre)}</div>`;tc.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`})}})}
+    else{trabajos.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`})}
+    sM.addEventListener('change',async()=>{const {data:mods}=await sb.from('modelos').select('*').eq('marca_id',sM.value).eq('activo',true).order('nombre');const sMo=document.getElementById('ot-modelo');sMo.innerHTML='<option value="">Selecciona...</option>';mods.forEach(m=>sMo.innerHTML+=`<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`)});
+    await cargarPiezasCatalogo();
     piezasTmp=[];renderPiezas();
     document.getElementById('ot-total').textContent='$0.00';
   }catch(e){toast('Error: '+e.message,'err')}
 }
-function agregarPieza(){piezasTmp.push({descripcion:'',cantidad:1,precio:0,tiempo_entrega:0});renderPiezas()}
+function agregarPieza(){piezasTmp.push({pieza_catalogo_id:'',descripcion:'',cantidad:1,precio:0,tiempo_entrega:0});renderPiezas()}
 function eliminarPieza(i){piezasTmp.splice(i,1);renderPiezas()}
+function onSelectPiezaCat(i,sel){
+  const pid=sel.value;piezasTmp[i].pieza_catalogo_id=pid?parseInt(pid):null;
+  if(pid){const p=piezasCatalogoCache.find(x=>String(x.id)===pid);if(p){piezasTmp[i].descripcion=p.nombre;piezasTmp[i].tiempo_entrega=p.tiempo_surtido||0}}
+  renderPiezas();
+}
 function renderPiezas(){
   const cont=document.getElementById('lista-piezas');cont.innerHTML='';
-  if(piezasTmp.length===0){cont.innerHTML='<p style="color:#888;font-size:13px;margin:8px 0">Sin piezas. Puedes agregar refacciones con su tiempo de entrega.</p>';document.getElementById('piezas-total').innerHTML='';return}
+  if(piezasTmp.length===0){cont.innerHTML='<p style="color:#888;font-size:13px;margin:8px 0">Sin piezas. Puedes agregar refacciones del catálogo o piezas libres.</p>';calcularTotal();return}
+  let h='<table class="pieza-tabla"><thead><tr><th style="width:22%">Del catálogo</th><th style="width:24%">Descripción</th><th style="width:10%">Cant.</th><th style="width:14%">P. Unitario</th><th style="width:12%">Surtido (d.h.)</th><th style="width:14%">Subtotal</th><th style="width:4%"></th></tr></thead><tbody>';
   piezasTmp.forEach((p,i)=>{
-    cont.innerHTML+=`<div class="pieza-row">
-      <input type="text" placeholder="Descripción" value="${escHtml(p.descripcion)}" onchange="piezasTmp[${i}].descripcion=this.value;calcularTotal()">
-      <input type="number" placeholder="Cant" min="1" value="${p.cantidad}" onchange="piezasTmp[${i}].cantidad=parseInt(this.value)||1;calcularTotal()">
-      <input type="number" placeholder="Precio" step="0.01" value="${p.precio}" onchange="piezasTmp[${i}].precio=parseFloat(this.value)||0;calcularTotal()">
-      <input type="number" placeholder="Días" min="0" value="${p.tiempo_entrega}" onchange="piezasTmp[${i}].tiempo_entrega=parseFloat(this.value)||0;calcularTotal()">
-      <button class="btn btn-sm btn-danger" onclick="eliminarPieza(${i})">×</button>
-    </div>`;
+    const opts='<option value="">— Libre —</option>'+piezasCatalogoCache.map(x=>`<option value="${x.id}" ${String(x.id)===String(p.pieza_catalogo_id)?'selected':''}>${escHtml(x.nombre)}</option>`).join('');
+    h+=`<tr>
+      <td><select onchange="onSelectPiezaCat(${i},this)">${opts}</select></td>
+      <td><input type="text" value="${escHtml(p.descripcion)}" placeholder="Descripción" onchange="piezasTmp[${i}].descripcion=this.value;calcularTotal()"></td>
+      <td><input type="number" min="1" value="${p.cantidad}" onchange="piezasTmp[${i}].cantidad=parseInt(this.value)||1;calcularTotal()"></td>
+      <td><input type="number" step="0.01" min="0" value="${p.precio}" onchange="piezasTmp[${i}].precio=parseFloat(this.value)||0;calcularTotal()"></td>
+      <td><input type="number" min="0" step="1" value="${p.tiempo_entrega}" onchange="piezasTmp[${i}].tiempo_entrega=parseFloat(this.value)||0;calcularTotal()"></td>
+      <td style="text-align:right;font-weight:600">$${(p.cantidad*p.precio).toFixed(2)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="eliminarPieza(${i})">×</button></td>
+    </tr>`;
   });
-  const tot=piezasTmp.reduce((s,p)=>s+(p.cantidad*p.precio),0);
-  document.getElementById('piezas-total').textContent='Subtotal piezas: $'+tot.toFixed(2);
+  h+='</tbody></table>';
+  cont.innerHTML=h;
   calcularTotal();
 }
 function calcularTotal(){
   let subT=0,tDias=0;
   document.querySelectorAll('.chk-trabajo:checked').forEach(c=>{subT+=parseFloat(c.dataset.precio||0);tDias+=parseFloat(c.dataset.tiempo||0)});
   const subP=piezasTmp.reduce((s,p)=>s+(p.cantidad*p.precio),0);
-  const tPiezas=piezasTmp.reduce((s,p)=>s+p.tiempo_entrega,0);
+  const maxTP=piezasTmp.length>0?Math.max(...piezasTmp.map(p=>p.tiempo_entrega||0)):0;
   document.getElementById('ot-subtrabajos').textContent='$'+subT.toFixed(2);
   document.getElementById('ot-subpiezas').textContent='$'+subP.toFixed(2);
   document.getElementById('ot-total').textContent='$'+(subT+subP).toFixed(2);
   const diasManual=parseFloat(document.getElementById('ot-dias-manual').value)||0;
-  const diasFinal=diasManual>0?diasManual:(tDias+tPiezas||1);
+  const diasAuto=tDias+maxTP;
+  const diasFinal=diasManual>0?diasManual:(diasAuto||1);
   document.getElementById('ot-tiempo-est').textContent=diasFinal+' días hábiles';
+  document.getElementById('ot-tiempo-detalle').textContent=diasManual>0?'(manual)':`(trabajos ${tDias} + piezas ${maxTP})`;
 }
 document.getElementById('ot-dias-manual')?.addEventListener('input',calcularTotal);
 function cambiarTipoCliente(){const t=document.getElementById('ot-tipo-cliente').value;document.getElementById('div-cliente-particular').style.display=t==='particular'?'block':'none';document.getElementById('div-cliente-agencia').style.display=t==='agencia'?'block':'none'}
-function generarCodigoOT(){
-  const tC=document.getElementById('ot-tipo-cliente').value;let aC='PAR';
-  if(tC==='agencia'){const s=document.getElementById('ot-cliente-agencia');const n=s.options[s.selectedIndex]?.dataset?.nombre||'';aC=n.replace(/[^a-zA-Z]/g,'').substring(0,3).toUpperCase();if(aC.length<3)aC=aC.padEnd(3,'X')}
-  const hoy=new Date();const dd=String(hoy.getDate()).padStart(2,'0'),mm=String(hoy.getMonth()+1).padStart(2,'0'),aa=String(hoy.getFullYear()).slice(-2);
-  const sM=document.getElementById('ot-marca');const mN=sM.options[sM.selectedIndex]?.dataset?.nombre||'';const mC=mN.replace(/[^a-zA-Z]/g,'').substring(0,2).toUpperCase();
-  const sMo=document.getElementById('ot-modelo');const moN=sMo.options[sMo.selectedIndex]?.dataset?.nombre||'';const moC=moN.replace(/[^a-zA-Z]/g,'').substring(0,2).toUpperCase();
-  return aC+dd+mm+aa+mC+moC;
-}
+function generarCodigoOT(){const tC=document.getElementById('ot-tipo-cliente').value;let aC='PAR';if(tC==='agencia'){const s=document.getElementById('ot-cliente-agencia');const n=s.options[s.selectedIndex]?.dataset?.nombre||'';aC=n.replace(/[^a-zA-Z]/g,'').substring(0,3).toUpperCase();if(aC.length<3)aC=aC.padEnd(3,'X')}const hoy=new Date();const dd=String(hoy.getDate()).padStart(2,'0'),mm=String(hoy.getMonth()+1).padStart(2,'0'),aa=String(hoy.getFullYear()).slice(-2);const sM=document.getElementById('ot-marca');const mN=sM.options[sM.selectedIndex]?.dataset?.nombre||'';const mC=mN.replace(/[^a-zA-Z]/g,'').substring(0,2).toUpperCase();const sMo=document.getElementById('ot-modelo');const moN=sMo.options[sMo.selectedIndex]?.dataset?.nombre||'';const moC=moN.replace(/[^a-zA-Z]/g,'').substring(0,2).toUpperCase();return aC+dd+mm+aa+mC+moC}
 async function guardarCotizacion(){
   try{
     const placa=document.getElementById('ot-placa').value.trim(),anio=document.getElementById('ot-anio').value||null;
@@ -707,55 +631,38 @@ async function guardarCotizacion(){
     const tSel=[];let cT=0,tD=0;
     document.querySelectorAll('.chk-trabajo:checked').forEach(c=>{const p=parseFloat(c.dataset.precio||0),ti=parseFloat(c.dataset.tiempo||0);tSel.push({trabajo_id:parseInt(c.value),precio:p});cT+=p;tD+=ti});
     if(tSel.length===0){toast('Selecciona al menos un trabajo','err');return}
-    const tPz=piezasTmp.reduce((s,p)=>s+p.tiempo_entrega,0);
-    const subP=piezasTmp.reduce((s,p)=>s+(p.cantidad*p.precio),0);
-    cT+=subP;
-    const diasEstimados=dM>0?dM:(tD+tPz||1);
+    const subP=piezasTmp.reduce((s,p)=>s+(p.cantidad*p.precio),0);cT+=subP;
+    const maxTP=piezasTmp.length>0?Math.max(...piezasTmp.map(p=>p.tiempo_entrega||0)):0;
+    const diasEstimados=dM>0?dM:(tD+maxTP||1);
     const cBase=generarCodigoOT();
     const {data:ex}=await sb.from('ot').select('codigo').like('codigo',cBase+'%').order('codigo',{ascending:false}).limit(1);
-    let codigo=cBase;
-    if(ex&&ex.length>0){const u=ex[0].codigo.replace(cBase,'');codigo=cBase+(u?parseInt(u)+1:1)}
+    let codigo=cBase;if(ex&&ex.length>0){const u=ex[0].codigo.replace(cBase,'');codigo=cBase+(u?parseInt(u)+1:1)}
     const numero='CT-'+codigo;
     const vigencia=new Date(Date.now()+15*86400000).toISOString().split('T')[0];
-    // Si tiene fecha_entrega vacía y hay días estimados, calcular con días hábiles
-    let fechaFinal=fE;
-    if(!fechaFinal){const f=sumarDiasHabiles(new Date(),diasEstimados);fechaFinal=f.toISOString().split('T')[0]}
+    let fechaFinal=fE;if(!fechaFinal){const f=sumarDiasHabiles(new Date(),diasEstimados);fechaFinal=f.toISOString().split('T')[0]}
     const otData={placa,anio:anio||null,marca_id:mId,modelo_id:moId,cliente_tipo:tC,agencia_id:tC==='agencia'?cA:null,cliente_id:tC==='particular'?cP:null,costo_total:cT,tiempo_est:tD,dias_estimados:diasEstimados,fecha_entrega:fechaFinal,estado:'cotizacion',flujo_trabajo:JSON.stringify(tSel.map(t=>t.trabajo_id)),numero,vigencia,codigo};
     const {data,error}=await sb.from('ot').insert(otData).select().single();if(error)throw error;
     for(const t of tSel){await sb.from('ot_trabajos').insert({ot_id:data.id,trabajo_id:t.trabajo_id,precio:t.precio})}
-    for(const p of piezasTmp){if(p.descripcion.trim())await sb.from('ot_piezas').insert({ot_id:data.id,descripcion:p.descripcion,cantidad:p.cantidad,precio:p.precio,tiempo_entrega:p.tiempo_entrega})}
+    for(const p of piezasTmp){if(p.descripcion.trim()||p.precio>0)await sb.from('ot_piezas').insert({ot_id:data.id,pieza_catalogo_id:p.pieza_catalogo_id||null,descripcion:p.descripcion,cantidad:p.cantidad,precio:p.precio,tiempo_entrega:p.tiempo_entrega})}
     toast('Cotización '+numero+' creada ✓','ok');
     document.getElementById('form-nueva-ot').reset();piezasTmp=[];renderPiezas();sv('cotizaciones');
   }catch(e){toast('Error: '+e.message,'err')}
 }
 
-// ========== COTIZACIONES ==========
-async function cargarCotizaciones(){
-  try{
-    const {data,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('estado','cotizacion').order('created_at',{ascending:false});
-    if(error)throw error;
-    const tb=document.getElementById('tabla-cotizaciones');tb.innerHTML='';
-    data.forEach(o=>{
-      const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
-      tb.innerHTML+=`<tr><td><input type="checkbox" class="chk-ot" value="${o.id}"></td><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>$${o.costo_total||0}</td><td>${o.dias_estimados||1} d.h.</td><td><span class="badge-cotizacion">Cotización</span></td><td class="text-right"><button class="btn btn-sm btn-primary" onclick="aprobarOT(${o.id})">Aprobar</button><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})">📄</button></td></tr>`;
-    });
-  }catch(e){toast('Error: '+e.message,'err')}
-}
+// COTIZACIONES
+async function cargarCotizaciones(){try{const {data,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('estado','cotizacion').order('created_at',{ascending:false});if(error)throw error;const tb=document.getElementById('tabla-cotizaciones');tb.innerHTML='';data.forEach(o=>{const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');tb.innerHTML+=`<tr><td><input type="checkbox" class="chk-ot" value="${o.id}"></td><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>$${o.costo_total||0}</td><td>${o.dias_estimados||1} d.h.</td><td><span class="badge-cotizacion">Cotización</span></td><td class="text-right"><button class="btn btn-sm btn-primary" onclick="aprobarOT(${o.id})">Aprobar</button><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})">📄</button></td></tr>`})}catch(e){toast('Error: '+e.message,'err')}}
 function toggleAll(){const c=document.getElementById('check-all');document.querySelectorAll('.chk-ot').forEach(x=>x.checked=c.checked)}
 async function aprobarOT(id){
-  abrirConfirm('¿Aprobar esta cotización? Se convertirá en OT.',async()=>{
+  abrirConfirm('¿Aprobar esta cotización?',async()=>{
     try{
       const {data:ot}=await sb.from('ot').select('*').eq('id',id).single();
       const nuevoNumero='OT-'+(ot.codigo||'');
       const fechaAp=new Date().toISOString();
-      let fE=ot.fecha_entrega;
-      if(!fE){const f=sumarDiasHabiles(new Date(),ot.dias_estimados||1);fE=f.toISOString().split('T')[0]}
-      // Verificar si tiene piezas con tiempo de entrega
+      let fE=ot.fecha_entrega;if(!fE){const f=sumarDiasHabiles(new Date(),ot.dias_estimados||1);fE=f.toISOString().split('T')[0]}
       const {data:pzs}=await sb.from('ot_piezas').select('tiempo_entrega').eq('ot_id',id);
       const maxTP=pzs&&pzs.length>0?Math.max(...pzs.map(p=>p.tiempo_entrega||0)):0;
-      let esperando=false,etaR=null;
-      if(maxTP>0){esperando=true;const f=sumarDiasHabiles(new Date(),maxTP);etaR=f.toISOString().split('T')[0]}
-      const {error}=await sb.from('ot').update({estado:'aprobada',numero:nuevoNumero,fecha_aprobacion:fechaAp,fecha_entrega:fE,esperando_refaccion:esperando,eta_refaccion:etaR}).eq('id',id);
+      let esp=false,eta=null;if(maxTP>0){esp=true;const f=sumarDiasHabiles(new Date(),maxTP);eta=f.toISOString().split('T')[0]}
+      const {error}=await sb.from('ot').update({estado:'aprobada',numero:nuevoNumero,fecha_aprobacion:fechaAp,fecha_entrega:fE,esperando_refaccion:esp,eta_refaccion:eta}).eq('id',id);
       if(error)throw error;
       toast('Aprobada → '+nuevoNumero+' ✓','ok');cargarCotizaciones();
     }catch(e){toast('Error: '+e.message,'err')}
@@ -767,21 +674,18 @@ async function aprobarSeleccionadas(){
   abrirConfirm(`¿Aprobar ${s.length} cotizaciones?`,async()=>{
     for(const id of s){
       const {data:ot}=await sb.from('ot').select('*').eq('id',id).single();
-      const nuevo='OT-'+(ot?.codigo||'');
-      const fAp=new Date().toISOString();
-      let fE=ot?.fecha_entrega;
-      if(!fE){const f=sumarDiasHabiles(new Date(),ot?.dias_estimados||1);fE=f.toISOString().split('T')[0]}
+      const nuevo='OT-'+(ot?.codigo||'');const fAp=new Date().toISOString();
+      let fE=ot?.fecha_entrega;if(!fE){const f=sumarDiasHabiles(new Date(),ot?.dias_estimados||1);fE=f.toISOString().split('T')[0]}
       const {data:pzs}=await sb.from('ot_piezas').select('tiempo_entrega').eq('ot_id',id);
       const maxTP=pzs&&pzs.length>0?Math.max(...pzs.map(p=>p.tiempo_entrega||0)):0;
-      let esp=false,eta=null;
-      if(maxTP>0){esp=true;const f=sumarDiasHabiles(new Date(),maxTP);eta=f.toISOString().split('T')[0]}
+      let esp=false,eta=null;if(maxTP>0){esp=true;const f=sumarDiasHabiles(new Date(),maxTP);eta=f.toISOString().split('T')[0]}
       await sb.from('ot').update({estado:'aprobada',numero:nuevo,fecha_aprobacion:fAp,fecha_entrega:fE,esperando_refaccion:esp,eta_refaccion:eta}).eq('id',id);
     }
     toast('Aprobadas ✓','ok');cargarCotizaciones();
   },'Sí, aprobar');
 }
 
-// ========== TALLER ==========
+// TALLER
 async function cargarTaller(){
   try{
     const cats=await cargarCategorias();
@@ -790,11 +694,7 @@ async function cargarTaller(){
     const fC=document.getElementById('filtro-categoria');fC.innerHTML='<option value="">Todas</option>';cats.forEach(c=>fC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);
     const {data:ots,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre), ot_trabajos(trabajos(categoria_id))').in('estado',['aprobada','en_taller','completada','cancelada']).order('updated_at',{ascending:false});
     if(error)throw error;
-    const otsC=ots.map(o=>{
-      let cid=null;const t=o.ot_trabajos||[];
-      if(t.length>0){const cnt={};t.forEach(x=>{const c=x.trabajos?.categoria_id;if(c)cnt[c]=(cnt[c]||0)+1});const e=Object.entries(cnt);if(e.length>0){e.sort((a,b)=>b[1]-a[1]);cid=parseInt(e[0][0])}}
-      return {...o,categoria_id:cid};
-    });
+    const otsC=ots.map(o=>{let cid=null;const t=o.ot_trabajos||[];if(t.length>0){const cnt={};t.forEach(x=>{const c=x.trabajos?.categoria_id;if(c)cnt[c]=(cnt[c]||0)+1});const e=Object.entries(cnt);if(e.length>0){e.sort((a,b)=>b[1]-a[1]);cid=parseInt(e[0][0])}}return{...o,categoria_id:cid}});
     window._otsTaller=otsC;aplicarFiltroKanban();
   }catch(e){toast('Error: '+e.message,'err')}
 }
@@ -804,34 +704,24 @@ function aplicarFiltroKanban(){
   let fil=fT?data.filter(o=>String(o.tecnico_id)===fT):data;
   if(fC)fil=fil.filter(o=>String(o.categoria_id)===fC);
   ['aprobada','en_taller','completada','cancelada'].forEach(est=>{
-    const carr=document.getElementById('carriles-'+est);carr.innerHTML='';document.getElementById('count-'+est).textContent=0;
-    let total=0;
+    const carr=document.getElementById('carriles-'+est);carr.innerHTML='';document.getElementById('count-'+est).textContent=0;let total=0;
     cats.forEach(c=>{
       const tj=fil.filter(o=>o.estado===est&&o.categoria_id===c.id);
       if(tj.length>0||est==='aprobada'||est==='en_taller'){
         const cD=document.createElement('div');cD.className='kanban-carril';
         cD.innerHTML=`<div class="kanban-carril-titulo">${escHtml(c.nombre)} (${tj.length})</div><div class="kanban-cards"></div>`;
-        carr.appendChild(cD);
-        const cont=cD.querySelector('.kanban-cards');
-        tj.forEach(o=>cont.innerHTML+=generarCardKanban(o));
-        total+=tj.length;
+        carr.appendChild(cD);const cont=cD.querySelector('.kanban-cards');
+        tj.forEach(o=>cont.innerHTML+=generarCardKanban(o));total+=tj.length;
       }
     });
     const sC=fil.filter(o=>o.estado===est&&!o.categoria_id);
-    if(sC.length>0){
-      const cD=document.createElement('div');cD.className='kanban-carril';
-      cD.innerHTML=`<div class="kanban-carril-titulo">Otros (${sC.length})</div><div class="kanban-cards"></div>`;
-      carr.appendChild(cD);
-      sC.forEach(o=>cD.querySelector('.kanban-cards').innerHTML+=generarCardKanban(o));
-      total+=sC.length;
-    }
+    if(sC.length>0){const cD=document.createElement('div');cD.className='kanban-carril';cD.innerHTML=`<div class="kanban-carril-titulo">Otros (${sC.length})</div><div class="kanban-cards"></div>`;carr.appendChild(cD);sC.forEach(o=>cD.querySelector('.kanban-cards').innerHTML+=generarCardKanban(o));total+=sC.length}
     document.getElementById('count-'+est).textContent=total;
   });
 }
 function generarCardKanban(o){
   const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
-  const tn=o.tecnicos?.nombre||'Sin asignar';
-  let info='';
+  const tn=o.tecnicos?.nombre||'Sin asignar';let info='';
   if(o.fecha_entrega){const hoy=new Date().toISOString().split('T')[0];const r=o.fecha_entrega<hoy&&['aprobada','en_taller'].includes(o.estado);info+=`<div style="font-size:11px;${r?'color:red':'color:green'}">📅 ${o.fecha_entrega} ${r?'⚠️':''}</div>`}
   if(o.esperando_refaccion){info+=`<div style="margin-top:4px"><span class="badge-espera">⚠️ Esperando pieza${o.eta_refaccion?' · ETA '+o.eta_refaccion:''}</span></div>`}
   let acc='';
@@ -839,7 +729,7 @@ function generarCardKanban(o){
   else if(o.estado==='en_taller')acc=`<button class="btn btn-sm btn-primary" onclick="moverOT(${o.id},'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${o.id})">Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${o.id})">Editar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
   else if(o.estado==='completada')acc=`<span style="font-size:12px;color:var(--sf-text-secondary)">Completada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
   else acc=`<span style="font-size:12px;color:var(--sf-error)">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
-  return `<div class="kanban-card" data-ot-id="${o.id}" draggable="true"><div class="card-placa">${escHtml(o.placa)}</div><div class="card-cliente">${escHtml(cn)}</div><div class="card-codigo">${escHtml(o.numero||o.codigo||'')} · Téc: ${escHtml(tn)}</div>${info}<div class="card-actions" style="margin-top:6px">${acc}</div></div>`;
+  return `<div class="kanban-card" data-ot-id="${o.id}" draggable="true"><div class="card-placa">${escHtml(o.placa)}</div><div class="card-cliente">${escHtml(cn)}</div><div class="card-codigo">${escHtml(o.numero||o.codigo||'')} · Téc: ${escHtml(tn)}</div>${info}<div class="card-actions">${acc}</div></div>`;
 }
 document.addEventListener('dragstart',e=>{const c=e.target.closest('.kanban-card');if(!c)return;e.dataTransfer.setData('text/plain',c.dataset.otId);c.classList.add('dragging')});
 document.addEventListener('dragover',e=>{const col=e.target.closest('.kanban-col');if(col){e.preventDefault();col.classList.add('drag-over')}});
@@ -878,7 +768,7 @@ function abrirEditarFlujo(id){otEditarFlujoId=id;sb.from('ot_trabajos').select('
 function cerrarEditarFlujo(){document.getElementById('mov-editar-flujo').classList.remove('open');otEditarFlujoId=null}
 async function guardarFlujoOT(){const id=otEditarFlujoId;const sel=Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(c=>({trabajo_id:parseInt(c.value),precio:parseFloat(c.dataset.precio||0)}));if(sel.length===0){toast('Selecciona al menos 1','err');return}await sb.from('ot_trabajos').delete().eq('ot_id',id);for(const t of sel)await sb.from('ot_trabajos').insert({ot_id:id,trabajo_id:t.trabajo_id,precio:t.precio});const cT=sel.reduce((s,t)=>s+t.precio,0);await sb.from('ot').update({costo_total:cT}).eq('id',id);toast('Actualizado ✓','ok');cerrarEditarFlujo();cargarTaller()}
 
-// ========== FACTURACIÓN ==========
+// FACTURACIÓN
 async function cargarAgenciasFactura(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');s.innerHTML='<option value="">Selecciona...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`)}
 async function cargarOTsFacturables(){const id=document.getElementById('factura-agencia').value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';if(!id)return;const {data:ots}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre)').eq('agencia_id',id).eq('estado','completada').is('factura_id',null).order('updated_at',{ascending:false});if(ots.length===0){c.innerHTML='<p style="color:#888">No hay OTs completadas sin facturar.</p>';return}c.innerHTML=`<table><thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead><tbody>${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${o.costo_total||0}</td></tr>`).join('')}</tbody></table>`}
 function toggleAllOT(){const a=document.getElementById('check-all-ot').checked;document.querySelectorAll('.chk-ot-factura').forEach(c=>c.checked=a)}
@@ -886,17 +776,8 @@ async function asignarFactura(){const aId=document.getElementById('factura-agenc
 async function cargarConciliacion(){const c=document.getElementById('conciliacion-tabla');c.innerHTML='<p>Cargando...</p>';const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');let h='<table><thead><tr><th>Agencia</th><th>Folio</th><th>Placa</th><th>Estado</th><th>Total</th><th>Factura</th></tr></thead><tbody>';for(const a of ags){const {data:ots}=await sb.from('ot').select('*, facturas(numero)').eq('agencia_id',a.id).neq('estado','cancelada');if(!ots||ots.length===0)continue;ots.forEach(o=>{h+=`<tr><td>${escHtml(a.nombre)}</td><td>${escHtml(o.numero||o.codigo||'')}</td><td>${escHtml(o.placa||'')}</td><td>${escHtml(o.estado||'')}</td><td>$${o.costo_total||0}</td><td>${o.facturas?.numero?escHtml(o.facturas.numero):'<span style="color:#888">Pendiente</span>'}</td></tr>`})}h+='</tbody></table>';c.innerHTML=h}
 function exportarConciliacion(){const rows=[];document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr=>{const c=Array.from(tr.children).map(td=>td.textContent.trim());rows.push({Agencia:c[0],Folio:c[1],Placa:c[2],Estado:c[3],Total:c[4],Factura:c[5]})});const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Conciliación');XLSX.writeFile(wb,`conciliacion_${new Date().toISOString().split('T')[0]}.xlsx`)}
 
-// ========== PDF ==========
-function numeroALetras(n){
-  const u=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
-  const d=['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
-  const c=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
-  function g(x){if(x===0)return'';if(x===100)return'CIEN';let r='';const cc=Math.floor(x/100),dd=Math.floor((x%100)/10),uu=x%10;if(cc)r+=c[cc]+' ';if(x%100<20&&x%100>0)r+=u[x%100];else{if(dd)r+=d[dd]+(uu?' Y ':'');if(uu)r+=u[uu]}return r.trim()}
-  const ent=Math.floor(n),cents=Math.round((n-ent)*100);let t='';
-  const mil=Math.floor(ent/1000000),mi=Math.floor((ent%1000000)/1000),rest=ent%1000;
-  if(ent===0)t='CERO';else{if(mil===1)t+='UN MILLÓN ';else if(mil>1)t+=g(mil)+' MILLONES ';if(mi===1)t+='MIL ';else if(mi>1)t+=g(mi)+' MIL ';if(rest)t+=g(rest)}
-  return `${t.trim()} PESOS ${String(cents).padStart(2,'0')}/100 M.N.`;
-}
+// PDF
+function numeroALetras(n){const u=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];const d=['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];const c=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];function g(x){if(x===0)return'';if(x===100)return'CIEN';let r='';const cc=Math.floor(x/100),dd=Math.floor((x%100)/10),uu=x%10;if(cc)r+=c[cc]+' ';if(x%100<20&&x%100>0)r+=u[x%100];else{if(dd)r+=d[dd]+(uu?' Y ':'');if(uu)r+=u[uu]}return r.trim()}const ent=Math.floor(n),cents=Math.round((n-ent)*100);let t='';const mil=Math.floor(ent/1000000),mi=Math.floor((ent%1000000)/1000),rest=ent%1000;if(ent===0)t='CERO';else{if(mil===1)t+='UN MILLÓN ';else if(mil>1)t+=g(mil)+' MILLONES ';if(mi===1)t+='MIL ';else if(mi>1)t+=g(mi)+' MIL ';if(rest)t+=g(rest)}return`${t.trim()} PESOS ${String(cents).padStart(2,'0')}/100 M.N.`}
 async function imprimirCotizacion(id){
   try{
     const {data:ot}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('id',id).single();
@@ -907,10 +788,8 @@ async function imprimirCotizacion(id){
     if(CONFIG.logo_base64){doc.addImage(CONFIG.logo_base64,'PNG',M,M,55,18);y=M+22}
     else{doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+8);y=M+14}
     doc.setFontSize(9);doc.setFont('helvetica','normal');
-    doc.text(CONFIG.empresa_rfc||'',M,y);y+=4;
-    doc.text(CONFIG.empresa_direccion||'',M,y);y+=4;
-    doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`,M,y);y+=4;
-    doc.text(CONFIG.empresa_web||'',M,y);
+    doc.text(CONFIG.empresa_rfc||'',M,y);y+=4;doc.text(CONFIG.empresa_direccion||'',M,y);y+=4;
+    doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`,M,y);y+=4;doc.text(CONFIG.empresa_web||'',M,y);
     y=M+30;doc.setFillColor(10,15,44);doc.rect(M,y,180,8,'F');doc.setTextColor(255);doc.setFontSize(12);doc.setFont('helvetica','bold');
     doc.text('COTIZACIÓN',M+2,y+5.5);doc.setTextColor(0);y+=14;
     doc.setDrawColor(0);doc.roundedRect(M,y,90,32,2,2);doc.roundedRect(105,y,90,32,2,2);
@@ -927,12 +806,11 @@ async function imprimirCotizacion(id){
     doc.text('VEHÍCULO',M+2,y+5);y+=11;doc.setFont('helvetica','normal');
     doc.text('Placa: '+(ot.placa||''),M+2,y);doc.text('Marca: '+(ot.marcas?.nombre||''),M+55,y);doc.text('Modelo: '+(ot.modelos?.nombre||''),M+110,y);y+=5;
     doc.text('Año: '+(ot.anio||''),M+2,y);y+=8;
-    // Tabla trabajos
+    // Trabajos
     doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('TRABAJOS',M,y);y+=2;
     const tBody=tj.map((t,i)=>[i+1,t.trabajos?.nombre||'',t.cantidad||1,t.precio||0,t.precio||0]);
     doc.autoTable({startY:y+2,head:[['#','Descripción','Cant.','P.U.','Total']],body:tBody,theme:'striped',headStyles:{fillColor:[10,15,44]},styles:{fontSize:9},margin:{left:M,right:M}});
     y=doc.lastAutoTable.finalY+8;
-    // Tabla piezas
     if(pz&&pz.length>0){
       doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('PIEZAS / REFACCIONES',M,y);y+=2;
       const pBody=pz.map((p,i)=>[i+1,p.descripcion,p.cantidad,p.precio,p.cantidad*p.precio]);
@@ -957,7 +835,7 @@ async function imprimirCotizacion(id){
 }
 function copiarResumenWhatsApp(){if(!detalleOTActual)return;const o=detalleOTActual;let t=`*${o.numero||o.codigo}*\nPlaca: ${o.placa}\nTotal: $${o.costo_total||0}\nTiempo: ${o.dias_estimados||1} días hábiles\nEstado: ${o.estado}`;if(o.esperando_refaccion)t+=`\n⚠️ Esperando pieza${o.eta_refaccion?' (ETA '+o.eta_refaccion+')':''}`;navigator.clipboard.writeText(t);toast('Copiado ✓','ok')}
 
-// ========== CONSULTA TÉCNICO ==========
+// CONSULTA TÉCNICO
 async function abrirConsultaTecnico(){document.getElementById('login-wrap').style.display='none';document.getElementById('consulta-tecnico-wrap').style.display='block';const {data}=await sb.from('tecnicos').select('*').eq('activo',true).order('nombre');const s=document.getElementById('select-consulta-tecnico');s.innerHTML='<option value="">Selecciona...</option>';data.forEach(t=>s.innerHTML+=`<option value="${t.id}">${escHtml(t.nombre)}</option>`);document.getElementById('consulta-tareas-lista').innerHTML=''}
 function cerrarConsultaTecnico(){document.getElementById('consulta-tecnico-wrap').style.display='none';document.getElementById('login-wrap').style.display='flex'}
 async function cargarTareasConsulta(){const id=document.getElementById('select-consulta-tecnico').value;const c=document.getElementById('consulta-tareas-lista');c.innerHTML='';if(!id)return;const {data}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('tecnico_id',id).in('estado',['aprobada','en_taller']).order('updated_at',{ascending:false});if(data.length===0){c.innerHTML='<p style="text-align:center;color:#888">Sin tareas.</p>';return}data.forEach(o=>{const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');let b=o.estado==='aprobada'?'<span class="badge-aprobada">Pendiente</span>':'<span class="badge-en-taller">En proceso</span>';c.innerHTML+=`<div class="mis-tarea-item"><div><strong>${escHtml(o.placa)}</strong> — ${escHtml(cn)}<br><small class="card-codigo">${escHtml(o.numero||o.codigo||'')} · ${o.dias_estimados||1} d.h.</small></div><div>${b}</div></div>`})}
