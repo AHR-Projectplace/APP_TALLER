@@ -148,7 +148,7 @@ tr:last-child td{border-bottom:none}
 .badge-fase{background:#4A2A8A;color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
 .badge-aprobada{background:var(--sf-blue);color:#fff;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block}
 .badge-en-taller{background:var(--sf-success);color:#fff;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block}
-.badge-facturada{background:var(--sf-blue);color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
+.badge-facturada{background:#FF9500;color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
 .badge-cobrada{background:var(--sf-success);color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
 .badge-pendiente{background:var(--sf-gray-40);color:#fff;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block}
 .badge-vigente{background:#E8F5EE;color:var(--sf-success);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block;border:1px solid var(--sf-success)}
@@ -404,7 +404,11 @@ tr:last-child td{border-bottom:none}
 <div class="card mt-2">
 <h3 style="font-weight:700;margin-bottom:14px">Datos de la factura</h3>
 <div class="form-row">
-<div class="form-col"><label class="flbl">Número de factura</label><input class="inp" type="text" id="factura-numero" placeholder="A-1234"></div>
+<div class="form-col">
+<label class="flbl">Número de factura</label>
+<input class="inp" type="text" id="factura-numero" placeholder="A-1234" oninput="this.dataset.userEdited='true'">
+<small style="color:var(--sf-text-secondary);font-size:11px">Por default se sugiere el folio de la OT (editable). Puedes agrupar varias OTs en una sola factura.</small>
+</div>
 <div class="form-col"><label class="flbl">Días de crédito</label><input class="inp" type="number" id="factura-dias-credito" value="30" min="0"><small style="color:var(--sf-text-secondary);font-size:11px">Se autocompleta con el crédito de la agencia</small></div>
 </div>
 <div class="form-row">
@@ -624,12 +628,12 @@ function fmt$(n){return'$'+Number(n||0).toFixed(2)}
 function calcEstatusFactura(f){
   if(f.estado_pago==='cobrada')return{tipo:'cobrada',label:'Cobrada',badge:'badge-cobrada'};
   if(f.estado_pago==='disputa')return{tipo:'disputa',label:'En disputa',badge:'badge-disputa'};
-  if(!f.fecha_vencimiento)return{tipo:'vigente',label:'Vigente',badge:'badge-vigente'};
+  if(!f.fecha_vencimiento)return{tipo:'vigente',label:'Pendiente de pago',badge:'badge-facturada'};
   const hoy=new Date();const vence=new Date(f.fecha_vencimiento);
   const diff=Math.ceil((vence-hoy)/(1000*60*60*24));
   if(diff<0)return{tipo:'vencida',label:`Vencida ${Math.abs(diff)}d`,badge:'badge-vencida',dias:diff};
   if(diff<=5)return{tipo:'porvencer',label:`Por vencer (${diff}d)`,badge:'badge-porvencer',dias:diff};
-  return{tipo:'vigente',label:`Vigente (${diff}d)`,badge:'badge-vigente',dias:diff};
+  return{tipo:'vigente',label:`Pendiente de pago (${diff}d)`,badge:'badge-facturada',dias:diff};
 }
 function calcAging(fechaVencimiento){
   if(!fechaVencimiento)return'corriente';
@@ -736,7 +740,6 @@ function exportarElementoExcel2(table,nombre){
   const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,nombre.substring(0,30));XLSX.writeFile(wb,`${nombre}_${new Date().toISOString().split('T')[0]}.xlsx`);toast('Excel exportado ✓','ok');
 }
 
-// DÍAS HÁBILES
 function sumarDiasHabiles(fechaInicio,dias){let f=new Date(fechaInicio);let c=0;while(c<Math.ceil(dias)){f.setDate(f.getDate()+1);if(f.getDay()!==0)c++}return f}
 function diasHabilesEntre(fIni,fFin){let f=new Date(fIni);const fin=new Date(fFin);let c=0;while(f<fin){f.setDate(f.getDate()+1);if(f.getDay()!==0)c++}return c}
 
@@ -848,7 +851,7 @@ function sv(view){
   if(view==='nueva-ot')cargarDatosNuevaOT();
   if(view==='cotizaciones')cargarCotizaciones();
   if(view==='taller')cargarTaller();
-  if(view==='facturacion'){cambiarSubtab('facturas');cargarFacturasLista();cargarAgenciasFactura();cargarAgenciasEstadoCuenta();cargarAgenciasCredito()}
+  if(view==='facturacion'){cambiarSubtab('facturas');cargarFacturasLista();cargarAgenciasFactura();cargarAgenciasEstadoCuenta()}
   if(view==='admin')cargarAdmin();
 }
 document.querySelectorAll('.sidebar .nav-item').forEach(i=>i.addEventListener('click',()=>sv(i.dataset.view)));
@@ -863,9 +866,8 @@ function cambiarSubtab(tab){
   if(tab==='asignar')cargarAgenciasFactura();
 }
 
-// NOTIFICACIONES (incluye facturas vencidas)
+// NOTIFICACIONES
 async function actualizarNotifDot(){
-  const hoy=new Date().toISOString().split('T')[0];
   const {data:ots}=await sb.from('ot').select('fecha_entrega').in('estado',['aprobada','en_taller']).not('fecha_entrega','is',null);
   const {data:fs}=await sb.from('facturas').select('fecha_vencimiento').neq('estado_pago','cobrada').not('fecha_vencimiento','is',null);
   const notifOTs=ots?ots.filter(o=>{const d=diasHabilesEntre(new Date(),new Date(o.fecha_entrega));return d>=0&&d<=2}).length+ots.filter(o=>new Date(o.fecha_entrega)<new Date()).length:0;
@@ -916,7 +918,8 @@ async function aplicarFiltrosDashboard(){
     ots.forEach(o=>{
       const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
       let dr='—';if(o.fecha_entrega){const d=diasHabilesEntre(hoy,new Date(o.fecha_entrega));dr=d<0?`<span style="color:var(--sf-error)">${d} d.h.</span>`:`${d} d.h.`}
-      const estatusCot=!o.factura_id?'<span class="badge-pendiente">Sin facturar</span>':(o.facturas?.estado_pago==='cobrada'?'<span class="badge-cobrada">Cobrada</span>':'<span class="badge-facturada">Facturada</span>');
+      // PATCH 1: label correcto "Pendiente de pago"
+      const estatusCot=!o.factura_id?'<span class="badge-pendiente">Sin facturar</span>':(o.facturas?.estado_pago==='cobrada'?'<span class="badge-cobrada">Cobrada</span>':(o.facturas?.estado_pago==='disputa'?'<span class="badge-disputa">En disputa</span>':'<span class="badge-facturada">Pendiente de pago</span>'));
       tb.innerHTML+=`<tr><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>${escHtml(o.estado||'')}</td><td>${estatusCot}</td><td>${o.fecha_entrega||'—'}</td><td>${dr}</td><td class="text-right"><button class="btn btn-sm" onclick="verTrabajos(${o.id})">Ver trabajos</button></td></tr>`;
     });
   }catch(e){toast('Error dashboard: '+e.message,'err')}
@@ -1206,7 +1209,8 @@ async function verTrabajos(id){
     h+=`<div style="font-size:13px"><div class="iva-row"><span>Subtotal:</span><span>$${((ot.total_con_iva||0)-(ot.iva_monto||0)).toFixed(2)}</span></div>`;
     if(ot.iva_monto>0)h+=`<div class="iva-row"><span>IVA (${ot.iva_porcentaje}%):</span><span>$${(ot.iva_monto||0).toFixed(2)}</span></div>`;
     h+=`<div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-top:8px;padding-top:8px;border-top:2px solid var(--sf-blue);color:var(--sf-blue)"><span>TOTAL:</span><span>$${(ot.total_con_iva||ot.costo_total||0).toFixed(2)}</span></div></div>`;
-    let estatusFact = !ot.factura_id ? '<span class="badge-pendiente">Sin facturar</span>' : (ot.facturas?.estado_pago==='cobrada' ? '<span class="badge-cobrada">Cobrada</span>' : '<span class="badge-facturada">Facturada</span>');
+    // PATCH 1: label correcto
+    let estatusFact = !ot.factura_id ? '<span class="badge-pendiente">Sin facturar</span>' : (ot.facturas?.estado_pago==='cobrada' ? '<span class="badge-cobrada">Cobrada</span>' : (ot.facturas?.estado_pago==='disputa' ? '<span class="badge-disputa">En disputa</span>' : '<span class="badge-facturada">Pendiente de pago</span>'));
     h+=`<div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--sf-border)"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--sf-text-secondary)">Estatus factura:</span>${estatusFact}</div>${ot.facturas?.numero?`<div style="font-size:12px;color:var(--sf-text-secondary);margin-top:4px">Factura #${escHtml(ot.facturas.numero)}</div>`:''}</div>`;
     document.getElementById('detalle-titulo').textContent='Detalle '+(ot.numero||ot.codigo);
     document.getElementById('detalle-contenido').innerHTML=h;
@@ -1223,7 +1227,6 @@ async function guardarFlujoOT(){const id=otEditarFlujoId;const sel=Array.from(do
 
 // FACTURACIÓN
 async function cargarAgenciasFactura(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');s.innerHTML='<option value="">Selecciona agencia...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}" data-dias="${a.dias_credito||30}">${escHtml(a.nombre)}</option>`)}
-async function cargarAgenciasCredito(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');if(s)s.innerHTML='<option value="">Selecciona agencia...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}" data-dias="${a.dias_credito||30}">${escHtml(a.nombre)}</option>`)}
 async function cargarAgenciasEstadoCuenta(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('ec-agencia');s.innerHTML='<option value="">Todas (consolidado)</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`)}
 async function cargarOTsFacturables(){
   const sel=document.getElementById('factura-agencia');const id=sel.value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';
@@ -1234,9 +1237,24 @@ async function cargarOTsFacturables(){
   if(!id){c.innerHTML='<p style="color:#888;padding:12px">Selecciona una agencia para ver sus OTs pendientes.</p>';return}
   const {data:ots}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre)').eq('agencia_id',id).eq('estado','completada').is('factura_id',null).order('updated_at',{ascending:false});
   if(ots.length===0){c.innerHTML='<p style="color:#888;padding:12px">No hay OTs completadas sin facturar.</p>';return}
-  c.innerHTML=`<table><thead><tr><th style="width:40px"><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th><th class="text-right">Acciones</th></tr></thead><tbody id="tbody-facturables">${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${(o.total_con_iva||o.costo_total||0).toFixed(2)}</td><td class="text-right"><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})" title="Descargar PDF">📄 PDF</button></td></tr>`).join('')}</tbody></table>`;
+  // PATCH 2: autocompletar número de factura con data-numero
+  c.innerHTML=`<table><thead><tr><th style="width:40px"><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio OT</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th><th class="text-right">Acciones</th></tr></thead><tbody id="tbody-facturables">${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}" data-numero="${escHtml((o.numero||o.codigo||'').replace(/^(OT|CT)-/,''))}" onchange="onOTChecked()"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${(o.total_con_iva||o.costo_total||0).toFixed(2)}</td><td class="text-right"><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})" title="Descargar PDF">📄 PDF</button></td></tr>`).join('')}</tbody></table>`;
 }
-function toggleAllOT(){const a=document.getElementById('check-all-ot').checked;document.querySelectorAll('.chk-ot-factura').forEach(c=>c.checked=a)}
+function toggleAllOT(){
+  const a=document.getElementById('check-all-ot').checked;
+  document.querySelectorAll('.chk-ot-factura').forEach(c=>c.checked=a);
+  onOTChecked();
+}
+// PATCH 2: autocompletar número de factura
+function onOTChecked(){
+  const numInput=document.getElementById('factura-numero');
+  if(!numInput)return;
+  if(numInput.dataset.userEdited==='true')return;
+  const checked=Array.from(document.querySelectorAll('.chk-ot-factura:checked'));
+  if(checked.length===0){numInput.value='';return}
+  const num=checked[0].dataset.numero||'';
+  numInput.value=num;
+}
 async function asignarFactura(){
   const aId=document.getElementById('factura-agencia').value;
   const num=document.getElementById('factura-numero').value.trim();
@@ -1255,8 +1273,10 @@ async function asignarFactura(){
   }).select('id').single();
   if(error){toast('Error: '+error.message,'err');return}
   await sb.from('ot').update({factura_id:f.id}).in('id',sel);
-  toast('Factura vinculada ✓ — Vence '+vence.toISOString().split('T')[0],'ok');
-  document.getElementById('factura-numero').value='';document.getElementById('factura-notas').value='';
+  toast('Factura '+num+' vinculada ✓ — Vence '+vence.toISOString().split('T')[0],'ok');
+  document.getElementById('factura-numero').value='';
+  document.getElementById('factura-notas').value='';
+  delete document.getElementById('factura-numero').dataset.userEdited;
   cargarOTsFacturables();cargarFacturasLista();cargarConciliacion();cargarDashboard();
 }
 
@@ -1293,27 +1313,18 @@ async function guardarNotasFactura(){const t=document.getElementById('notas-text
 
 // CAMBIAR ESTATUS (disputa / facturada)
 async function cambiarEstatusFactura(id,estatus){
-  abrirConfirm('¿Marcar esta factura como EN DISPUTA?','Sí, marcar',async()=>{
-    const {error}=await sb.from('facturas').update({estado_pago:estatus}).eq('id',id);
-    if(error){toast('Error','err');return}
-    toast('Estatus actualizado ✓','ok');cargarFacturasLista();cargarConciliacion();
-  });
-}
-// Reestructurar para pasar callback correcto
-cambiarEstatusFactura=async function(id,estatus){
-  abrirConfirm(`¿Marcar esta factura como "${estatus}"?`,async()=>{
+  abrirConfirm(`¿Marcar esta factura como "${estatus==='disputa'?'EN DISPUTA':'pendiente de pago'}"?`,async()=>{
     const {error}=await sb.from('facturas').update({estado_pago:estatus}).eq('id',id);
     if(error){toast('Error: '+error.message,'err');return}
-    toast('Estatus actualizado ✓','ok');cargarFacturasLista();cargarConciliacion();
+    toast('Estatus actualizado ✓','ok');cargarFacturasLista();cargarConciliacion();cargarDashboard();
   },'Sí, cambiar');
-};
+}
 
 // RECORDATORIO WHATSAPP
 async function recordatorioWhatsApp(id){
   const {data:f}=await sb.from('facturas').select('*, agencias(nombre)').eq('id',id).single();
   if(!f)return;
   const est=calcEstatusFactura(f);
-  const hoy=new Date().toISOString().split('T')[0];
   let txt=`*RECORDATORIO DE PAGO*\n${CONFIG.empresa_nombre||'Taller H&P'}\n\n`;
   txt+=`Factura: ${f.numero}\nMonto: $${(f.monto_total||0).toFixed(2)}\n`;
   txt+=`Fecha: ${f.fecha}\nVence: ${f.fecha_vencimiento}\n`;
@@ -1332,10 +1343,12 @@ async function verOTsFactura(facturaId){
     const {data:ots,error}=await sb.from('ot').select(`id, numero, codigo, placa, costo_total, total_con_iva, iva_monto, iva_porcentaje, estado, fecha_entrega, cliente_tipo, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), ot_trabajos(precio, cantidad, trabajos(nombre)), ot_piezas(descripcion, cantidad, precio, tiempo_entrega)`).eq('factura_id',facturaId).order('id');
     if(error)throw error;
     document.getElementById('ver-ots-titulo').textContent='Factura '+f.numero+' — '+ots.length+' OTs';
+    // PATCH 1: label correcto
+    const estLabel=f.estado_pago==='cobrada'?'Cobrada':f.estado_pago==='disputa'?'En disputa':'Pendiente de pago';
     let h=`<div style="background:var(--sf-blue-light);padding:16px;border-radius:var(--rs);margin-bottom:18px">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><strong>Agencia:</strong> ${escHtml(f.agencias?.nombre||'')}</div><div><strong>Monto factura:</strong> $${(f.monto_total||0).toFixed(2)}</div></div>
       <div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><strong>Fecha:</strong> ${f.fecha||''}</div><div><strong>Vence:</strong> ${f.fecha_vencimiento||'—'}</div></div>
-      <div style="display:flex;justify-content:space-between"><div><strong>Días crédito:</strong> ${f.dias_credito||30}</div><div><strong>Estatus:</strong> ${f.estado_pago==='cobrada'?'Cobrada':f.estado_pago==='disputa'?'En disputa':'Facturada'}</div></div>
+      <div style="display:flex;justify-content:space-between"><div><strong>Días crédito:</strong> ${f.dias_credito||30}</div><div><strong>Estatus:</strong> ${estLabel}</div></div>
       ${f.notas?`<div class="nota-card" style="margin-top:10px">📝 ${escHtml(f.notas)}</div>`:''}
     </div>`;
     if(ots.length===0){h+='<p style="color:#888">Esta factura no tiene OTs vinculadas.</p>'}
@@ -1386,14 +1399,12 @@ async function cargarEstadoCuenta(){
   const {data:fs,error}=await q.order('fecha',{ascending:false});
   if(error){toast('Error: '+error.message,'err');return}
 
-  // Cargar OTs pendientes de facturar (también van al estado de cuenta si es una agencia específica)
   let otsSinFacturar=[];
   if(agId){
     const {data:otsPend}=await sb.from('ot').select('id, numero, codigo, placa, total_con_iva, costo_total, fecha_entrega, marcas(nombre), modelos(nombre)').eq('agencia_id',agId).eq('estado','completada').is('factura_id',null);
     otsSinFacturar=otsPend||[];
   }
 
-  // Calcular KPIs
   let totalFacturado=0,totalCobrado=0,totalPendiente=0,totalVencido=0;
   const aging={corriente:{monto:0,count:0},r1_30:{monto:0,count:0},r31_60:{monto:0,count:0},r61_90:{monto:0,count:0},r90_mas:{monto:0,count:0}};
   const filtradas=[];
@@ -1403,23 +1414,19 @@ async function cargarEstadoCuenta(){
     if(est.tipo==='cobrada'){totalCobrado+=(f.monto_total||0)}
     else if(est.tipo==='vencida'){totalVencido+=(f.monto_total||0);totalPendiente+=(f.monto_total||0)}
     else if(est.tipo==='vigente'||est.tipo==='porvencer'){totalPendiente+=(f.monto_total||0)}
-    // Aging solo para no cobradas
     if(est.tipo!=='cobrada'){
       const ag=calcAging(f.fecha_vencimiento);
       aging[ag].monto+=(f.monto_total||0);
       aging[ag].count++;
     }
-    // Aplicar filtro de estatus
     if(!estatusFiltro||est.tipo===estatusFiltro)filtradas.push({...f,est});
   });
 
-  // Pintar KPIs
   document.getElementById('ec-total-facturado').textContent=fmt$(totalFacturado);
   document.getElementById('ec-total-cobrado').textContent=fmt$(totalCobrado);
   document.getElementById('ec-total-pendiente').textContent=fmt$(totalPendiente);
   document.getElementById('ec-total-vencido').textContent=fmt$(totalVencido);
 
-  // Aging
   document.getElementById('aging-corriente').textContent=fmt$(aging.corriente.monto);
   document.getElementById('aging-corriente-count').textContent=aging.corriente.count+' facturas';
   document.getElementById('aging-1-30').textContent=fmt$(aging.r1_30.monto);
@@ -1431,10 +1438,8 @@ async function cargarEstadoCuenta(){
   document.getElementById('aging-90-mas').textContent=fmt$(aging.r90_mas.monto);
   document.getElementById('aging-90-mas-count').textContent=aging.r90_mas.count+' facturas';
 
-  // Guardar para exportación
   estadoCuentaData={facturas:filtradas,otsSinFacturar,agId,desde,hasta,estatusFiltro,totales:{totalFacturado,totalCobrado,totalPendiente,totalVencido,aging}};
 
-  // Pintar tabla
   const tb=document.getElementById('ec-tbody');tb.innerHTML='';
   if(filtradas.length===0&&otsSinFacturar.length===0){
     tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:#888">Sin facturas en el periodo seleccionado.</td></tr>';
@@ -1461,7 +1466,6 @@ async function cargarEstadoCuenta(){
         </td>
       </tr>`;
     });
-    // Añadir OTs pendientes de facturar
     otsSinFacturar.forEach(o=>{
       const monto=o.total_con_iva||o.costo_total||0;
       tb.innerHTML+=`<tr style="background:#FFF9E6">
@@ -1486,14 +1490,12 @@ function limpiarEstadoCuenta(){
   cargarEstadoCuenta();
 }
 
-// PDF de Estado de Cuenta
 function descargarEstadoCuentaPDF(){
   if(!estadoCuentaData.facturas){toast('Primero carga el estado de cuenta','err');return}
   const {facturas,otsSinFacturar,agId,totales}=estadoCuentaData;
   const agNombre=agId?document.getElementById('ec-agencia').selectedOptions[0]?.textContent:'Consolidado';
   const doc=new jspdf.jsPDF('p','mm','a4');
   const M=15;let y=M;
-  // Header
   if(CONFIG.logo_base64){try{doc.addImage(CONFIG.logo_base64,'PNG',M,M,50,18)}catch(e){}}
   else{doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+10)}
   doc.setFont('helvetica','bold');doc.setFontSize(10);
@@ -1505,20 +1507,17 @@ function descargarEstadoCuentaPDF(){
   y=M+26;
   doc.setFillColor(10,15,44);doc.rect(M,y,180,8,'F');doc.setTextColor(255);doc.setFontSize(12);doc.setFont('helvetica','bold');
   doc.text('ESTADO DE CUENTA',105,y+5.5,{align:'center'});doc.setTextColor(0);y+=14;
-  // Info
   doc.setFontSize(10);doc.setFont('helvetica','normal');
   doc.text('Cliente: '+agNombre,M,y);y+=6;
   doc.text('Fecha de emisión: '+new Date().toLocaleDateString(),M,y);y+=6;
   if(estadoCuentaData.desde||estadoCuentaData.hasta){doc.text(`Periodo: ${estadoCuentaData.desde||'—'} a ${estadoCuentaData.hasta||'—'}`,M,y);y+=6}
   y+=4;
-  // KPIs
   doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Resumen',M,y);y+=6;
   doc.setFontSize(9);doc.setFont('helvetica','normal');
   doc.text(`Total facturado: ${fmt$(totales.totalFacturado)}`,M,y);y+=5;
   doc.text(`Total cobrado: ${fmt$(totales.totalCobrado)}`,M,y);y+=5;
   doc.text(`Pendiente de pago: ${fmt$(totales.totalPendiente)}`,M,y);y+=5;
   doc.setTextColor(165,42,42);doc.text(`Vencido: ${fmt$(totales.totalVencido)}`,M,y);y+=6;doc.setTextColor(0);
-  // Aging
   doc.setFont('helvetica','bold');doc.text('Aging de saldos',M,y);y+=5;
   doc.setFont('helvetica','normal');doc.setFontSize(8);
   const ag=totales.aging;
@@ -1527,30 +1526,25 @@ function descargarEstadoCuentaPDF(){
   doc.text(`31-60 días: ${fmt$(ag.r31_60.monto)} (${ag.r31_60.count})`,M,y);y+=4;
   doc.text(`61-90 días: ${fmt$(ag.r61_90.monto)} (${ag.r61_90.count})`,M,y);y+=4;
   doc.text(`+90 días: ${fmt$(ag.r90_mas.monto)} (${ag.r90_mas.count})`,M,y);y+=6;
-  // Tabla facturas
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Detalle de facturas',M,y);y+=2;
   const tBody=facturas.map(f=>[f.numero,f.agencias?.nombre||'',f.fecha||'',f.fecha_vencimiento||'',fmt$(f.monto_total||0),f.est.label]);
   doc.autoTable({startY:y+2,head:[['Factura','Agencia','Fecha','Vence','Monto','Estatus']],body:tBody,theme:'striped',headStyles:{fillColor:[10,15,44]},styles:{fontSize:8},margin:{left:M,right:M}});
   y=doc.lastAutoTable.finalY+6;
-  // OTs pendientes de facturar
   if(otsSinFacturar&&otsSinFacturar.length>0){
     doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('OTs pendientes de facturar',M,y);y+=2;
     const oBody=otsSinFacturar.map(o=>[o.numero||o.codigo||'',o.placa||'',fmt$(o.total_con_iva||o.costo_total||0)]);
     doc.autoTable({startY:y+2,head:[['OT','Placa','Monto']],body:oBody,theme:'striped',headStyles:{fillColor:[254,147,57]},styles:{fontSize:8},margin:{left:M,right:M}});
     y=doc.lastAutoTable.finalY+6;
   }
-  // Footer
   doc.setFillColor(10,15,44);doc.rect(0,285,210,12,'F');doc.setTextColor(255);
   doc.setFontSize(8);doc.text(CONFIG.empresa_nombre||'Taller',105,293,{align:'center'});
   doc.save('EstadoCuenta_'+agNombre.replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.pdf');
   toast('PDF generado ✓','ok');
 }
 
-// Excel de Estado de Cuenta
 function descargarEstadoCuentaExcel(){
   if(!estadoCuentaData.facturas){toast('Primero carga el estado de cuenta','err');return}
   const {facturas,otsSinFacturar,totales}=estadoCuentaData;
-  // Hoja 1: Resumen
   const resumen=[
     ['RESUMEN ESTADO DE CUENTA'],
     ['Agencia',document.getElementById('ec-agencia').selectedOptions[0]?.textContent||'Consolidado'],
@@ -1569,17 +1563,14 @@ function descargarEstadoCuentaExcel(){
     ['61-90 días',totales.aging.r61_90.monto.toFixed(2),totales.aging.r61_90.count+' facturas'],
     ['+90 días',totales.aging.r90_mas.monto.toFixed(2),totales.aging.r90_mas.count+' facturas']
   ];
-  // Hoja 2: Facturas
   const fs=[['Factura','Agencia','Fecha','Días crédito','Vence','Días restantes','Monto','Estatus','Notas']];
   facturas.forEach(f=>{
     let dr='';
     if(f.fecha_vencimiento&&f.est.tipo!=='cobrada'){const d=Math.ceil((new Date(f.fecha_vencimiento)-new Date())/(1000*60*60*24));dr=d}
     fs.push([f.numero,f.agencias?.nombre||'',f.fecha||'',f.dias_credito||30,f.fecha_vencimiento||'',dr,(f.monto_total||0).toFixed(2),f.est.label,f.notas||'']);
   });
-  // Hoja 3: OTs pendientes
   const ots=[['OT','Placa','Marca/Modelo','Monto']];
   (otsSinFacturar||[]).forEach(o=>{ots.push([o.numero||o.codigo||'',o.placa||'',((o.marcas?.nombre||'')+' '+(o.modelos?.nombre||'')).trim(),(o.total_con_iva||o.costo_total||0).toFixed(2)])});
-
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(resumen),'Resumen');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(fs),'Facturas');
@@ -1589,7 +1580,6 @@ function descargarEstadoCuentaExcel(){
   toast('Excel generado ✓ (3 hojas)','ok');
 }
 
-// WhatsApp Estado de Cuenta
 function copiarEstadoCuentaWA(){
   if(!estadoCuentaData.facturas){toast('Primero carga el estado de cuenta','err');return}
   const {facturas,totales,agId}=estadoCuentaData;
@@ -1660,7 +1650,7 @@ async function cargarConciliacion(){
 }
 function exportarConciliacion(){exportarElementoExcel('tbl-conciliacion','Conciliacion')}
 
-// PDF (cotización individual)
+// PDF
 function numeroALetras(n){const u=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];const d=['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];const c=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];function g(x){if(x===0)return'';if(x===100)return'CIEN';let r='';const cc=Math.floor(x/100),dd=Math.floor((x%100)/10),uu=x%10;if(cc)r+=c[cc]+' ';if(x%100<20&&x%100>0)r+=u[x%100];else{if(dd)r+=d[dd]+(uu?' Y ':'');if(uu)r+=u[uu]}return r.trim()}const ent=Math.floor(n),cents=Math.round((n-ent)*100);let t='';const mil=Math.floor(ent/1000000),mi=Math.floor((ent%1000000)/1000),rest=ent%1000;if(ent===0)t='CERO';else{if(mil===1)t+='UN MILLÓN ';else if(mil>1)t+=g(mil)+' MILLONES ';if(mi===1)t+='MIL ';else if(mi>1)t+=g(mi)+' MIL ';if(rest)t+=g(rest)}return`${t.trim()} PESOS ${String(cents).padStart(2,'0')}/100 M.N.`}
 async function imprimirCotizacion(id){
   try{
