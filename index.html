@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--sf-blue:#0176d3;--sf-blue-dark:#014486;--sf-blue-light:#eaf5fe;--sf-gray-10:#f3f3f3;--sf-gray-20:#e5e5e5;--sf-gray-30:#c9c9c9;--sf-gray-40:#939393;--sf-text:#080707;--sf-text-secondary:#444;--sf-white:#fff;--sf-border:#dddbda;--sf-success:#2e844a;--sf-warning:#fe9339;--sf-error:#ba0517;--r:8px}
+:root{--sf-blue:#0176d3;--sf-blue-dark:#014486;--sf-blue-light:#eaf5fe;--sf-gray-10:#f3f3f3;--sf-gray-20:#e5e5e5;--sf-gray-40:#939393;--sf-text:#080707;--sf-text-secondary:#444;--sf-border:#dddbda;--sf-success:#2e844a;--sf-warning:#fe9339;--sf-error:#ba0517;--r:8px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#f3f3f3;color:var(--sf-text);font-size:14px;line-height:1.5}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid var(--sf-border);border-radius:var(--r);background:#fff;color:var(--sf-blue);font-weight:500;cursor:pointer;font-size:14px;min-height:40px}
@@ -21,6 +21,7 @@ body{font-family:'Inter',sans-serif;background:#f3f3f3;color:var(--sf-text);font
 .btn-block{width:100%}
 .btn-sm{padding:6px 10px;font-size:12px;min-height:32px}
 .btn-secondary{background:var(--sf-gray-20);color:var(--sf-text)}
+.btn-success{background:var(--sf-success);color:#fff;border-color:var(--sf-success)}
 .btn-excel{background:#28a745;color:#fff}
 .inp{width:100%;padding:10px 12px;border:1px solid var(--sf-border);border-radius:var(--r);font-size:14px;font-family:inherit;background:#fff}
 .inp:focus{outline:none;border-color:var(--sf-blue);box-shadow:0 0 0 3px rgba(1,118,211,.2)}
@@ -98,8 +99,12 @@ tr:last-child td{border-bottom:none}
 .seccion-titulo{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--sf-text);border-bottom:1px solid var(--sf-border);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
 .badge-cotizacion{background:var(--sf-warning);color:#fff;padding:4px 8px;border-radius:4px;font-size:12px}
 .badge-espera{background:var(--sf-warning);color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.badge-fase{background:#4A2A8A;color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
 .badge-aprobada{background:var(--sf-blue);color:#fff;padding:4px 8px;border-radius:4px;font-size:12px}
 .badge-en-taller{background:var(--sf-success);color:#fff;padding:4px 8px;border-radius:4px;font-size:12px}
+.badge-facturada{background:#0176d3;color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.badge-cobrada{background:var(--sf-success);color:#fff;padding:3px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.iva-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;color:var(--sf-text-secondary)}
 </style>
 </head>
 <body>
@@ -198,7 +203,7 @@ tr:last-child td{border-bottom:none}
 
 <h3 style="margin:20px 0 12px">Tiempo estimado de entrega</h3>
 <div class="form-row">
-<div class="form-col"><label class="flbl">Días hábiles (manual, opcional)</label><input class="inp" type="number" id="ot-dias-manual" min="0" step="1" placeholder="Si vacío se calcula automático"><small style="color:var(--sf-text-secondary);font-size:11px">Días hábiles (L-V, excluye domingos)</small></div>
+<div class="form-col"><label class="flbl">Días hábiles (manual, opcional)</label><input class="inp" type="number" id="ot-dias-manual" min="0" step="1" placeholder="Automático si vacío"><small style="color:var(--sf-text-secondary);font-size:11px">Días hábiles (L-V, excluye domingos)</small></div>
 <div class="form-col"><label class="flbl">Fecha entrega compromiso (opcional)</label><input class="inp" type="date" id="ot-fecha-entrega"></div>
 </div>
 
@@ -221,6 +226,15 @@ tr:last-child td{border-bottom:none}
 <div style="margin-top:20px;padding:16px;background:var(--sf-blue-light);border-radius:8px">
 <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Subtotal Trabajos:</span><strong id="ot-subtrabajos">$0.00</strong></div>
 <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Subtotal Piezas:</span><strong id="ot-subpiezas">$0.00</strong></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--sf-blue);font-size:14px">
+<span>IVA:</span>
+<div style="display:flex;align-items:center;gap:6px">
+<input type="checkbox" id="ot-iva-aplicar" onchange="calcularTotal()">
+<input class="inp" type="number" id="ot-iva-pct" value="16" step="0.01" min="0" style="width:70px;padding:4px 6px" onchange="calcularTotal()">
+<span>%</span>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--sf-text-secondary)" class="iva-row"><span>Monto IVA:</span><span id="ot-iva-monto">$0.00</span></div>
 <div style="display:flex;justify-content:space-between;font-size:18px;margin-top:8px;padding-top:8px;border-top:1px solid var(--sf-blue);color:var(--sf-blue)"><strong>TOTAL:</strong><strong id="ot-total">$0.00</strong></div>
 <div style="margin-top:8px;font-size:13px;color:var(--sf-text-secondary)">⏱ Tiempo estimado: <strong id="ot-tiempo-est">0 días hábiles</strong> <span id="ot-tiempo-detalle" style="font-size:11px;color:var(--sf-gray-40)"></span></div>
 </div>
@@ -240,17 +254,17 @@ tr:last-child td{border-bottom:none}
 <div><button class="btn btn-primary btn-sm" onclick="aprobarSeleccionadas()">Aprobar Seleccionadas</button>
 <button class="btn btn-sm" onclick="sv('nueva-ot')">+ Nueva</button></div>
 </div>
-<table><thead><tr><th><input type="checkbox" id="check-all" onchange="toggleAll()"></th><th>Folio</th><th>Placa</th><th>Cliente</th><th>Total</th><th>Tiempo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-cotizaciones"></tbody></table>
+<table><thead><tr><th><input type="checkbox" id="check-all" onchange="toggleAll()"></th><th>Folio</th><th>Placa</th><th>Cliente</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Tiempo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-cotizaciones"></tbody></table>
 </div>
 
 <!-- TALLER -->
 <div id="view-taller" class="view" style="display:none">
 <h2 class="page-title">Taller — Tablero Kanban</h2>
-<p class="page-desc">Arrastra las tarjetas para cambiar su estado.</p>
+<p class="page-desc">Arrastra las tarjetas para cambiar de estado. Usa "Siguiente fase" para avanzar entre Hojalatería y Pintura.</p>
 <div class="filtro-kanban">
 <label class="flbl" style="margin:0">Técnico:</label>
 <select class="inp" id="filtro-tecnico" onchange="aplicarFiltroKanban()"><option value="">Todos</option></select>
-<label class="flbl" style="margin:0">Categoría:</label>
+<label class="flbl" style="margin:0">Fase:</label>
 <select class="inp" id="filtro-categoria" onchange="aplicarFiltroKanban()"><option value="">Todas</option></select>
 </div>
 <div class="kanban-board">
@@ -264,6 +278,7 @@ tr:last-child td{border-bottom:none}
 <!-- FACTURACIÓN -->
 <div id="view-facturacion" class="view" style="display:none">
 <h2 class="page-title">Facturación</h2>
+<p class="page-desc">Flujo B2B: Pendiente de facturar → Facturada → Cobrada.</p>
 <div class="filtro-kanban"><label class="flbl">Agencia:</label><select class="inp" id="factura-agencia" onchange="cargarOTsFacturables()"><option value="">Selecciona...</option></select></div>
 <div class="card" id="factura-ot-lista"></div>
 <div class="card mt-2">
@@ -274,7 +289,11 @@ tr:last-child td{border-bottom:none}
 </div>
 </div>
 <div class="card mt-2">
-<h3>Conciliación</h3>
+<h3>Facturas emitidas</h3>
+<div id="facturas-lista"></div>
+</div>
+<div class="card mt-2">
+<h3>Conciliación por agencia</h3>
 <button class="btn btn-excel btn-sm" onclick="exportarConciliacion()">📊 Exportar Excel</button>
 <div id="conciliacion-tabla" style="margin-top:15px"></div>
 </div>
@@ -312,14 +331,15 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div id="tab-piezas" class="tab-content">
-<div style="display:flex;justify-content:space-between;align-items:center"><h3>Catálogo de Piezas / Refacciones</h3><button class="btn btn-primary btn-sm" onclick="abrirModalPieza()">+ Nueva Pieza</button></div>
-<p style="color:var(--sf-text-secondary);font-size:12px;margin:8px 0">Aquí se registran las piezas con su tiempo de surtido en días hábiles. El precio se captura en cada cotización.</p>
+<div style="display:flex;justify-content:space-between;align-items:center"><h3>Catálogo de Piezas</h3><button class="btn btn-primary btn-sm" onclick="abrirModalPieza()">+ Nueva Pieza</button></div>
+<p style="color:var(--sf-text-secondary);font-size:12px;margin:8px 0">Piezas con tiempo de surtido en días hábiles. El precio se captura en cada cotización.</p>
 <table><thead><tr><th>ID</th><th>Nombre</th><th>Tiempo surtido (d.h.)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-piezas"></tbody></table>
 </div>
 
 <div id="tab-categorias" class="tab-content">
-<div style="display:flex;justify-content:space-between;align-items:center"><h3>Categorías</h3><button class="btn btn-primary btn-sm" onclick="abrirModalCategoria()">+ Nueva Categoría</button></div>
-<table><thead><tr><th>ID</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-categorias"></tbody></table>
+<div style="display:flex;justify-content:space-between;align-items:center"><h3>Categorías (fases de taller)</h3><button class="btn btn-primary btn-sm" onclick="abrirModalCategoria()">+ Nueva Categoría</button></div>
+<p style="color:var(--sf-text-secondary);font-size:12px;margin:8px 0">El orden define la secuencia de fases en el Kanban. Ej: Hojalatería (1) → Pintura (2).</p>
+<table><thead><tr><th>ID</th><th>Nombre</th><th>Orden</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-categorias"></tbody></table>
 </div>
 
 <div id="tab-agencias" class="tab-content">
@@ -373,13 +393,16 @@ tr:last-child td{border-bottom:none}
 <label class="flbl">Contraseña</label><input class="inp" type="password" id="usu-pass" autocomplete="new-password"><br><br>
 <label class="flbl">Rol</label><select class="inp" id="usu-rol"><option value="admin">Administrador</option><option value="recepcionista">Recepcionista</option><option value="jefe_taller">Jefe de Taller</option></select>
 </div><div class="mof"><button type="button" class="btn" onclick="cerrarModalUsuario()">Cancelar</button><button type="button" class="btn btn-primary" onclick="guardarUsuario()">Guardar</button></div></form></div></div>
-<div class="mov" id="mov-categoria"><div class="mo"><div class="moh">Nueva Categoría</div><div class="mob"><label class="flbl">Nombre</label><input class="inp" type="text" id="cat-nombre"></div><div class="mof"><button class="btn" onclick="cerrarModalCategoria()">Cancelar</button><button class="btn btn-primary" onclick="guardarCategoria()">Guardar</button></div></div></div>
+<div class="mov" id="mov-categoria"><div class="mo"><div class="moh">Categoría</div><div class="mob">
+<label class="flbl">Nombre</label><input class="inp" type="text" id="cat-nombre"><br><br>
+<label class="flbl">Orden (secuencia de fases)</label><input class="inp" type="number" id="cat-orden" value="99" min="1">
+<small style="color:var(--sf-text-secondary);font-size:11px">Ej: Hojalatería=1, Pintura=2, Mecánica=3</small>
+</div><div class="mof"><button class="btn" onclick="cerrarModalCategoria()">Cancelar</button><button class="btn btn-primary" onclick="guardarCategoria()">Guardar</button></div></div></div>
 <div class="mov" id="mov-pieza"><div class="mo"><div class="moh">Nueva Pieza / Refacción</div><div class="mob">
 <label class="flbl">Nombre de la pieza</label><input class="inp" type="text" id="pie-nombre" placeholder="Ej. Faro delantero derecho"><br><br>
 <label class="flbl">Tiempo de surtido (días hábiles)</label><input class="inp" type="number" id="pie-tiempo" min="0" step="1" value="0">
-<small style="color:var(--sf-text-secondary);font-size:11px">Días que tarda el proveedor en surtir. Se puede editar en cada cotización.</small>
 </div><div class="mof"><button class="btn" onclick="cerrarModalPieza()">Cancelar</button><button class="btn btn-primary" onclick="guardarPieza()">Guardar</button></div></div></div>
-<div class="mov" id="mov-detalle-ot"><div class="mo" style="max-width:700px"><div class="moh" id="detalle-titulo">Detalle</div><div class="mob" id="detalle-contenido"></div><div class="mof"><button class="btn" onclick="cerrarDetalleOT()">Cerrar</button><button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button><button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button></div></div></div>
+<div class="mov" id="mov-detalle-ot"><div class="mo" style="max-width:750px"><div class="moh" id="detalle-titulo">Detalle</div><div class="mob" id="detalle-contenido"></div><div class="mof"><button class="btn" onclick="cerrarDetalleOT()">Cerrar</button><button class="btn btn-primary" onclick="imprimirCotizacionDesdeDetalle()">📄 PDF</button><button class="btn btn-secondary" onclick="copiarResumenWhatsApp()">📋 WhatsApp</button></div></div></div>
 <div class="mov" id="mov-editar-flujo"><div class="mo"><div class="moh">Editar trabajos</div><div class="mob" id="editar-flujo-body"></div><div class="mof"><button class="btn" onclick="cerrarEditarFlujo()">Cancelar</button><button class="btn btn-primary" onclick="guardarFlujoOT()">Guardar</button></div></div></div>
 <div id="toast"></div>
 
@@ -434,21 +457,21 @@ document.getElementById('login-form').addEventListener('submit',async(e)=>{
 });
 
 // CATEGORÍAS
-async function cargarCategorias(){const {data,error}=await sb.from('categorias').select('*').eq('activo',true).order('nombre');if(error)return[];categoriasCache=data||[];return categoriasCache}
-async function cargarCategoriasAdmin(){const {data,error}=await sb.from('categorias').select('*').order('nombre');if(error)return;const tb=document.getElementById('tabla-categorias');if(!tb)return;tb.innerHTML='';data.forEach(c=>{tb.innerHTML+=`<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${c.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarCategoria(${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoCategoria(${c.id},${!c.activo})">${c.activo?'Desactivar':'Activar'}</button></td></tr>`})}
-function abrirModalCategoria(){document.getElementById('cat-nombre').value='';document.getElementById('mov-categoria').classList.add('open')}
+async function cargarCategorias(){const {data,error}=await sb.from('categorias').select('*').eq('activo',true).order('orden').order('nombre');if(error)return[];categoriasCache=data||[];return categoriasCache}
+async function cargarCategoriasAdmin(){const {data,error}=await sb.from('categorias').select('*').order('orden').order('nombre');if(error)return;const tb=document.getElementById('tabla-categorias');if(!tb)return;tb.innerHTML='';data.forEach(c=>{tb.innerHTML+=`<tr><td>${c.id}</td><td>${escHtml(c.nombre)}</td><td>${c.orden||99}</td><td>${c.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarCategoria(${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoCategoria(${c.id},${!c.activo})">${c.activo?'Desactivar':'Activar'}</button></td></tr>`})}
+function abrirModalCategoria(){document.getElementById('cat-nombre').value='';document.getElementById('cat-orden').value='99';document.getElementById('mov-categoria').classList.add('open')}
 function cerrarModalCategoria(){document.getElementById('mov-categoria').classList.remove('open')}
-async function guardarCategoria(){const n=document.getElementById('cat-nombre').value.trim();if(!n){toast('Obligatorio','err');return}const {error}=await sb.from('categorias').insert({nombre:n,activo:true});if(error){toast('Error: '+error.message,'err');return}toast('Creada ✓','ok');cerrarModalCategoria();cargarCategoriasAdmin();await cargarCategorias()}
-async function editarCategoria(id){const {data}=await sb.from('categorias').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nuevo nombre:',data.nombre);if(n&&n.trim()){await sb.from('categorias').update({nombre:n.trim()}).eq('id',id);cargarCategoriasAdmin();await cargarCategorias()}}
+async function guardarCategoria(){const n=document.getElementById('cat-nombre').value.trim();const o=parseInt(document.getElementById('cat-orden').value)||99;if(!n){toast('Nombre obligatorio','err');return}const {error}=await sb.from('categorias').insert({nombre:n,orden:o,activo:true});if(error){toast('Error: '+error.message,'err');return}toast('Creada ✓','ok');cerrarModalCategoria();cargarCategoriasAdmin();await cargarCategorias()}
+async function editarCategoria(id){const {data}=await sb.from('categorias').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nombre:',data.nombre);if(n===null)return;const o=prompt('Orden:',data.orden||99);if(o===null)return;if(n&&n.trim()){await sb.from('categorias').update({nombre:n.trim(),orden:parseInt(o)||99}).eq('id',id);cargarCategoriasAdmin();await cargarCategorias()}}
 async function cambiarEstadoCategoria(id,e){await sb.from('categorias').update({activo:e}).eq('id',id);cargarCategoriasAdmin();await cargarCategorias()}
 
 // CATÁLOGO DE PIEZAS
-async function cargarPiezasCatalogo(){const {data,error}=await sb.from('piezas_catalogo').select('*').eq('activo',true).order('nombre');if(error){console.warn(error);return[]}piezasCatalogoCache=data||[];return piezasCatalogoCache}
+async function cargarPiezasCatalogo(){const {data,error}=await sb.from('piezas_catalogo').select('*').eq('activo',true).order('nombre');if(error)return[];piezasCatalogoCache=data||[];return piezasCatalogoCache}
 async function cargarPiezasAdmin(){const {data,error}=await sb.from('piezas_catalogo').select('*').order('nombre');if(error)return;const tb=document.getElementById('tabla-piezas');if(!tb)return;tb.innerHTML='';data.forEach(p=>{tb.innerHTML+=`<tr><td>${p.id}</td><td>${escHtml(p.nombre)}</td><td>${p.tiempo_surtido||0}</td><td>${p.activo?'Activo':'Inactivo'}</td><td class="text-right"><button class="btn btn-sm" onclick="editarPieza(${p.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="cambiarEstadoPieza(${p.id},${!p.activo})">${p.activo?'Desactivar':'Activar'}</button></td></tr>`})}
 function abrirModalPieza(){document.getElementById('pie-nombre').value='';document.getElementById('pie-tiempo').value='0';document.getElementById('mov-pieza').classList.add('open')}
 function cerrarModalPieza(){document.getElementById('mov-pieza').classList.remove('open')}
 async function guardarPieza(){const n=document.getElementById('pie-nombre').value.trim();const t=parseFloat(document.getElementById('pie-tiempo').value)||0;if(!n){toast('Nombre obligatorio','err');return}const {error}=await sb.from('piezas_catalogo').insert({nombre:n,tiempo_surtido:t,activo:true});if(error){toast('Error: '+error.message,'err');return}toast('Pieza creada ✓','ok');cerrarModalPieza();cargarPiezasAdmin();await cargarPiezasCatalogo()}
-async function editarPieza(id){const {data}=await sb.from('piezas_catalogo').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nombre:',data.nombre);if(n===null)return;const t=prompt('Tiempo de surtido (d.h.):',data.tiempo_surtido);if(n&&n.trim()){await sb.from('piezas_catalogo').update({nombre:n.trim(),tiempo_surtido:parseFloat(t)||0}).eq('id',id);cargarPiezasAdmin();await cargarPiezasCatalogo()}}
+async function editarPieza(id){const {data}=await sb.from('piezas_catalogo').select('*').eq('id',id).single();if(!data)return;const n=prompt('Nombre:',data.nombre);if(n===null)return;const t=prompt('Tiempo surtido (d.h.):',data.tiempo_surtido);if(n&&n.trim()){await sb.from('piezas_catalogo').update({nombre:n.trim(),tiempo_surtido:parseFloat(t)||0}).eq('id',id);cargarPiezasAdmin();await cargarPiezasCatalogo()}}
 async function cambiarEstadoPieza(id,e){await sb.from('piezas_catalogo').update({activo:e}).eq('id',id);cargarPiezasAdmin();await cargarPiezasCatalogo()}
 
 // CONFIG
@@ -466,7 +489,7 @@ function sv(view){
   if(view==='nueva-ot')cargarDatosNuevaOT();
   if(view==='cotizaciones')cargarCotizaciones();
   if(view==='taller')cargarTaller();
-  if(view==='facturacion'){cargarAgenciasFactura();cargarConciliacion()}
+  if(view==='facturacion'){cargarAgenciasFactura();cargarFacturasLista();cargarConciliacion()}
   if(view==='admin')cargarAdmin();
 }
 document.querySelectorAll('.sidebar .nav-item').forEach(i=>i.addEventListener('click',()=>sv(i.dataset.view)));
@@ -520,7 +543,7 @@ async function abrirModal(tipo,id=null){
   document.getElementById('crud-body').innerHTML=html;
   if(id){try{const {data,error}=await sb.from(cfg.tabla).select('*').eq('id',id).single();if(error)throw error;cfg.fields.forEach(f=>{const inp=document.querySelector(`#crud-body [name="${f.name}"]`);if(inp)inp.value=data[f.name]||''})}catch(e){toast('Error: '+e.message,'err');return}}
   if(tipo==='modelo'){const {data:m}=await sb.from('marcas').select('*').eq('activo',true);const s=document.querySelector('#crud-body [name="marca_id"]');if(s&&m)m.forEach(x=>s.innerHTML+=`<option value="${x.id}">${escHtml(x.nombre)}</option>`)}
-  if(tipo==='trabajo'){const {data:c}=await sb.from('categorias').select('*').eq('activo',true);const s=document.querySelector('#crud-body [name="categoria_id"]');if(s&&c)c.forEach(x=>s.innerHTML+=`<option value="${x.id}">${escHtml(x.nombre)}</option>`)}
+  if(tipo==='trabajo'){const {data:c}=await sb.from('categorias').select('*').eq('activo',true).order('orden');const s=document.querySelector('#crud-body [name="categoria_id"]');if(s&&c)c.forEach(x=>s.innerHTML+=`<option value="${x.id}">${escHtml(x.nombre)}</option>`)}
   document.getElementById('mov-crud').classList.add('open');
 }
 function cerrarModal(){document.getElementById('mov-crud').classList.remove('open');currentModal=null;currentEditId=null}
@@ -568,11 +591,13 @@ async function cargarDatosNuevaOT(){
     const cats=await cargarCategorias();
     const {data:trabajos}=await sb.from('trabajos').select('*, categorias(nombre)').eq('activo',true).order('nombre');
     const cont=document.getElementById('lista-trabajos');cont.innerHTML='';
-    if(cats&&cats.length>0){cats.forEach(cat=>{const tc=trabajos.filter(t=>t.categoria_id===cat.id);if(tc.length>0){cont.innerHTML+=`<div style="margin-top:10px;font-weight:600;color:var(--sf-text-secondary);font-size:12px;text-transform:uppercase">${escHtml(cat.nombre)}</div>`;tc.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`})}})}
+    if(cats&&cats.length>0){cats.forEach(cat=>{const tc=trabajos.filter(t=>t.categoria_id===cat.id);if(tc.length>0){cont.innerHTML+=`<div style="margin-top:10px;font-weight:600;color:var(--sf-text-secondary);font-size:12px;text-transform:uppercase">${escHtml(cat.nombre)}</div>`;tc.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" data-categoria="${t.categoria_id||''}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`})}})}
     else{trabajos.forEach(t=>{cont.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid var(--sf-border)"><input type="checkbox" class="chk-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" data-tiempo="${t.tiempo_est||0}" onchange="calcularTotal()"><span style="flex:1">${escHtml(t.nombre)}</span><span style="color:var(--sf-text-secondary);font-size:12px">$${t.precio_base||0} | ${t.tiempo_est||0} d.h.</span></div>`})}
     sM.addEventListener('change',async()=>{const {data:mods}=await sb.from('modelos').select('*').eq('marca_id',sM.value).eq('activo',true).order('nombre');const sMo=document.getElementById('ot-modelo');sMo.innerHTML='<option value="">Selecciona...</option>';mods.forEach(m=>sMo.innerHTML+=`<option value="${m.id}" data-nombre="${escHtml(m.nombre)}">${escHtml(m.nombre)}</option>`)});
     await cargarPiezasCatalogo();
     piezasTmp=[];renderPiezas();
+    document.getElementById('ot-iva-aplicar').checked=false;
+    document.getElementById('ot-iva-pct').value=16;
     document.getElementById('ot-total').textContent='$0.00';
   }catch(e){toast('Error: '+e.message,'err')}
 }
@@ -585,7 +610,7 @@ function onSelectPiezaCat(i,sel){
 }
 function renderPiezas(){
   const cont=document.getElementById('lista-piezas');cont.innerHTML='';
-  if(piezasTmp.length===0){cont.innerHTML='<p style="color:#888;font-size:13px;margin:8px 0">Sin piezas. Puedes agregar refacciones del catálogo o piezas libres.</p>';calcularTotal();return}
+  if(piezasTmp.length===0){cont.innerHTML='<p style="color:#888;font-size:13px;margin:8px 0">Sin piezas.</p>';calcularTotal();return}
   let h='<table class="pieza-tabla"><thead><tr><th style="width:22%">Del catálogo</th><th style="width:24%">Descripción</th><th style="width:10%">Cant.</th><th style="width:14%">P. Unitario</th><th style="width:12%">Surtido (d.h.)</th><th style="width:14%">Subtotal</th><th style="width:4%"></th></tr></thead><tbody>';
   piezasTmp.forEach((p,i)=>{
     const opts='<option value="">— Libre —</option>'+piezasCatalogoCache.map(x=>`<option value="${x.id}" ${String(x.id)===String(p.pieza_catalogo_id)?'selected':''}>${escHtml(x.nombre)}</option>`).join('');
@@ -610,7 +635,12 @@ function calcularTotal(){
   const maxTP=piezasTmp.length>0?Math.max(...piezasTmp.map(p=>p.tiempo_entrega||0)):0;
   document.getElementById('ot-subtrabajos').textContent='$'+subT.toFixed(2);
   document.getElementById('ot-subpiezas').textContent='$'+subP.toFixed(2);
-  document.getElementById('ot-total').textContent='$'+(subT+subP).toFixed(2);
+  const subtotal=subT+subP;
+  const ivaAplicar=document.getElementById('ot-iva-aplicar').checked;
+  const ivaPct=parseFloat(document.getElementById('ot-iva-pct').value)||0;
+  const ivaMonto=ivaAplicar?subtotal*ivaPct/100:0;
+  document.getElementById('ot-iva-monto').textContent='$'+ivaMonto.toFixed(2);
+  document.getElementById('ot-total').textContent='$'+(subtotal+ivaMonto).toFixed(2);
   const diasManual=parseFloat(document.getElementById('ot-dias-manual').value)||0;
   const diasAuto=tDias+maxTP;
   const diasFinal=diasManual>0?diasManual:(diasAuto||1);
@@ -628,19 +658,30 @@ async function guardarCotizacion(){
     const fE=document.getElementById('ot-fecha-entrega').value||null,dM=parseFloat(document.getElementById('ot-dias-manual').value)||0;
     if(!placa){toast('Ingresa placa','err');return}if(!mId){toast('Selecciona marca','err');return}if(!moId){toast('Selecciona modelo','err');return}
     if(tC==='particular'&&!cP){toast('Selecciona cliente','err');return}if(tC==='agencia'&&!cA){toast('Selecciona agencia','err');return}
-    const tSel=[];let cT=0,tD=0;
-    document.querySelectorAll('.chk-trabajo:checked').forEach(c=>{const p=parseFloat(c.dataset.precio||0),ti=parseFloat(c.dataset.tiempo||0);tSel.push({trabajo_id:parseInt(c.value),precio:p});cT+=p;tD+=ti});
+    const tSel=[];let cT=0,tD=0;const catConTrabajos=new Set();
+    document.querySelectorAll('.chk-trabajo:checked').forEach(c=>{const p=parseFloat(c.dataset.precio||0),ti=parseFloat(c.dataset.tiempo||0);tSel.push({trabajo_id:parseInt(c.value),precio:p,categoria:c.dataset.categoria});cT+=p;tD+=ti;if(c.dataset.categoria)catConTrabajos.add(parseInt(c.dataset.categoria))});
     if(tSel.length===0){toast('Selecciona al menos un trabajo','err');return}
-    const subP=piezasTmp.reduce((s,p)=>s+(p.cantidad*p.precio),0);cT+=subP;
+    const subP=piezasTmp.reduce((s,p)=>s+(p.cantidad*p.precio),0);
     const maxTP=piezasTmp.length>0?Math.max(...piezasTmp.map(p=>p.tiempo_entrega||0)):0;
     const diasEstimados=dM>0?dM:(tD+maxTP||1);
+    const ivaAplicar=document.getElementById('ot-iva-aplicar').checked;
+    const ivaPct=parseFloat(document.getElementById('ot-iva-pct').value)||0;
+    const subtotal=cT+subP;
+    const ivaMonto=ivaAplicar?subtotal*ivaPct/100:0;
+    const totalFinal=subtotal+ivaMonto;
     const cBase=generarCodigoOT();
     const {data:ex}=await sb.from('ot').select('codigo').like('codigo',cBase+'%').order('codigo',{ascending:false}).limit(1);
     let codigo=cBase;if(ex&&ex.length>0){const u=ex[0].codigo.replace(cBase,'');codigo=cBase+(u?parseInt(u)+1:1)}
     const numero='CT-'+codigo;
     const vigencia=new Date(Date.now()+15*86400000).toISOString().split('T')[0];
     let fechaFinal=fE;if(!fechaFinal){const f=sumarDiasHabiles(new Date(),diasEstimados);fechaFinal=f.toISOString().split('T')[0]}
-    const otData={placa,anio:anio||null,marca_id:mId,modelo_id:moId,cliente_tipo:tC,agencia_id:tC==='agencia'?cA:null,cliente_id:tC==='particular'?cP:null,costo_total:cT,tiempo_est:tD,dias_estimados:diasEstimados,fecha_entrega:fechaFinal,estado:'cotizacion',flujo_trabajo:JSON.stringify(tSel.map(t=>t.trabajo_id)),numero,vigencia,codigo};
+    // Determinar fase inicial (categoría con orden más bajo)
+    let faseInicial=null;
+    if(cats=categoriasCache.length>0&&catConTrabajos.size>0){
+      const catsOrdenadas=categoriasCache.filter(c=>catConTrabajos.has(c.id)).sort((a,b)=>(a.orden||99)-(b.orden||99));
+      if(catsOrdenadas.length>0)faseInicial=catsOrdenadas[0].id;
+    }
+    const otData={placa,anio:anio||null,marca_id:mId,modelo_id:moId,cliente_tipo:tC,agencia_id:tC==='agencia'?cA:null,cliente_id:tC==='particular'?cP:null,costo_total:totalFinal,tiempo_est:tD,dias_estimados:diasEstimados,fecha_entrega:fechaFinal,estado:'cotizacion',fase_actual:faseInicial,iva_porcentaje:ivaAplicar?ivaPct:0,iva_monto:ivaMonto,total_con_iva:totalFinal,flujo_trabajo:JSON.stringify(tSel.map(t=>t.trabajo_id)),numero,vigencia,codigo};
     const {data,error}=await sb.from('ot').insert(otData).select().single();if(error)throw error;
     for(const t of tSel){await sb.from('ot_trabajos').insert({ot_id:data.id,trabajo_id:t.trabajo_id,precio:t.precio})}
     for(const p of piezasTmp){if(p.descripcion.trim()||p.precio>0)await sb.from('ot_piezas').insert({ot_id:data.id,pieza_catalogo_id:p.pieza_catalogo_id||null,descripcion:p.descripcion,cantidad:p.cantidad,precio:p.precio,tiempo_entrega:p.tiempo_entrega})}
@@ -650,7 +691,7 @@ async function guardarCotizacion(){
 }
 
 // COTIZACIONES
-async function cargarCotizaciones(){try{const {data,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('estado','cotizacion').order('created_at',{ascending:false});if(error)throw error;const tb=document.getElementById('tabla-cotizaciones');tb.innerHTML='';data.forEach(o=>{const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');tb.innerHTML+=`<tr><td><input type="checkbox" class="chk-ot" value="${o.id}"></td><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>$${o.costo_total||0}</td><td>${o.dias_estimados||1} d.h.</td><td><span class="badge-cotizacion">Cotización</span></td><td class="text-right"><button class="btn btn-sm btn-primary" onclick="aprobarOT(${o.id})">Aprobar</button><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})">📄</button></td></tr>`})}catch(e){toast('Error: '+e.message,'err')}}
+async function cargarCotizaciones(){try{const {data,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre)').eq('estado','cotizacion').order('created_at',{ascending:false});if(error)throw error;const tb=document.getElementById('tabla-cotizaciones');tb.innerHTML='';data.forEach(o=>{const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');const sub=(o.total_con_iva||o.costo_total||0)-(o.iva_monto||0);tb.innerHTML+=`<tr><td><input type="checkbox" class="chk-ot" value="${o.id}"></td><td><strong>${escHtml(o.numero||o.codigo||o.id)}</strong></td><td>${escHtml(o.placa)}</td><td>${escHtml(cn)}</td><td>$${sub.toFixed(2)}</td><td>$${(o.iva_monto||0).toFixed(2)}</td><td>$${(o.total_con_iva||o.costo_total||0).toFixed(2)}</td><td>${o.dias_estimados||1} d.h.</td><td><span class="badge-cotizacion">Cotización</span></td><td class="text-right"><button class="btn btn-sm btn-primary" onclick="aprobarOT(${o.id})">Aprobar</button><button class="btn btn-sm" onclick="imprimirCotizacion(${o.id})">📄</button></td></tr>`})}catch(e){toast('Error: '+e.message,'err')}}
 function toggleAll(){const c=document.getElementById('check-all');document.querySelectorAll('.chk-ot').forEach(x=>x.checked=c.checked)}
 async function aprobarOT(id){
   abrirConfirm('¿Aprobar esta cotización?',async()=>{
@@ -692,9 +733,14 @@ async function cargarTaller(){
     const {data:tec}=await sb.from('tecnicos').select('*').eq('activo',true).order('nombre');
     const fT=document.getElementById('filtro-tecnico');fT.innerHTML='<option value="">Todos</option>';tec.forEach(t=>fT.innerHTML+=`<option value="${t.id}">${escHtml(t.nombre)}</option>`);
     const fC=document.getElementById('filtro-categoria');fC.innerHTML='<option value="">Todas</option>';cats.forEach(c=>fC.innerHTML+=`<option value="${c.id}">${escHtml(c.nombre)}</option>`);
-    const {data:ots,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre), ot_trabajos(trabajos(categoria_id))').in('estado',['aprobada','en_taller','completada','cancelada']).order('updated_at',{ascending:false});
-    if(error)throw error;
-    const otsC=ots.map(o=>{let cid=null;const t=o.ot_trabajos||[];if(t.length>0){const cnt={};t.forEach(x=>{const c=x.trabajos?.categoria_id;if(c)cnt[c]=(cnt[c]||0)+1});const e=Object.entries(cnt);if(e.length>0){e.sort((a,b)=>b[1]-a[1]);cid=parseInt(e[0][0])}}return{...o,categoria_id:cid}});
+    const {data:ots,error}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre), clientes(nombre), agencias(nombre), tecnicos(nombre), categorias!ot_fase_actual_fkey(nombre,orden), ot_trabajos(trabajos(categoria_id))').in('estado',['aprobada','en_taller','completada','cancelada']).order('updated_at',{ascending:false});
+    if(error){console.warn(error);throw error}
+    const otsC=ots.map(o=>{
+      let categoriasOT=new Set();
+      const t=o.ot_trabajos||[];
+      t.forEach(x=>{const c=x.trabajos?.categoria_id;if(c)categoriasOT.add(c)});
+      return {...o,categorias_ot:Array.from(categoriasOT)};
+    });
     window._otsTaller=otsC;aplicarFiltroKanban();
   }catch(e){toast('Error: '+e.message,'err')}
 }
@@ -702,19 +748,21 @@ function aplicarFiltroKanban(){
   const fT=document.getElementById('filtro-tecnico').value,fC=document.getElementById('filtro-categoria').value;
   const data=window._otsTaller||[],cats=categoriasCache;
   let fil=fT?data.filter(o=>String(o.tecnico_id)===fT):data;
-  if(fC)fil=fil.filter(o=>String(o.categoria_id)===fC);
+  if(fC)fil=fil.filter(o=>String(o.fase_actual)===fC||(o.categorias_ot||[]).includes(parseInt(fC)));
   ['aprobada','en_taller','completada','cancelada'].forEach(est=>{
     const carr=document.getElementById('carriles-'+est);carr.innerHTML='';document.getElementById('count-'+est).textContent=0;let total=0;
     cats.forEach(c=>{
-      const tj=fil.filter(o=>o.estado===est&&o.categoria_id===c.id);
-      if(tj.length>0||est==='aprobada'||est==='en_taller'){
+      let tj;
+      if(est==='en_taller'){tj=fil.filter(o=>o.estado===est&&o.fase_actual===c.id)}
+      else{tj=fil.filter(o=>o.estado===est&&(o.categorias_ot||[]).includes(c.id))}
+      if(tj.length>0||(est==='aprobada'&&cats.length>0)||(est==='en_taller'&&cats.length>0)){
         const cD=document.createElement('div');cD.className='kanban-carril';
         cD.innerHTML=`<div class="kanban-carril-titulo">${escHtml(c.nombre)} (${tj.length})</div><div class="kanban-cards"></div>`;
         carr.appendChild(cD);const cont=cD.querySelector('.kanban-cards');
         tj.forEach(o=>cont.innerHTML+=generarCardKanban(o));total+=tj.length;
       }
     });
-    const sC=fil.filter(o=>o.estado===est&&!o.categoria_id);
+    const sC=fil.filter(o=>o.estado===est&&(!o.categorias_ot||o.categorias_ot.length===0)&&(!o.fase_actual));
     if(sC.length>0){const cD=document.createElement('div');cD.className='kanban-carril';cD.innerHTML=`<div class="kanban-carril-titulo">Otros (${sC.length})</div><div class="kanban-cards"></div>`;carr.appendChild(cD);sC.forEach(o=>cD.querySelector('.kanban-cards').innerHTML+=generarCardKanban(o));total+=sC.length}
     document.getElementById('count-'+est).textContent=total;
   });
@@ -723,13 +771,31 @@ function generarCardKanban(o){
   const cn=o.cliente_tipo==='agencia'?(o.agencias?.nombre||''):(o.clientes?.nombre||'');
   const tn=o.tecnicos?.nombre||'Sin asignar';let info='';
   if(o.fecha_entrega){const hoy=new Date().toISOString().split('T')[0];const r=o.fecha_entrega<hoy&&['aprobada','en_taller'].includes(o.estado);info+=`<div style="font-size:11px;${r?'color:red':'color:green'}">📅 ${o.fecha_entrega} ${r?'⚠️':''}</div>`}
+  const faseNombre=o.categorias?.nombre;
+  if(faseNombre&&o.estado==='en_taller')info+=`<div style="margin-top:4px"><span class="badge-fase">🔧 Fase: ${escHtml(faseNombre)}</span></div>`;
   if(o.esperando_refaccion){info+=`<div style="margin-top:4px"><span class="badge-espera">⚠️ Esperando pieza${o.eta_refaccion?' · ETA '+o.eta_refaccion:''}</span></div>`}
   let acc='';
-  if(o.estado==='aprobada')acc=`<button class="btn btn-sm btn-primary" onclick="moverOT(${o.id},'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${o.id})">Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${o.id})">Editar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
-  else if(o.estado==='en_taller')acc=`<button class="btn btn-sm btn-primary" onclick="moverOT(${o.id},'completada')">Terminar</button><button class="btn btn-sm" onclick="abrirAsignar(${o.id})">Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${o.id})">Editar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
+  if(o.estado==='aprobada'){acc=`<button class="btn btn-sm btn-primary" onclick="moverOT(${o.id},'en_taller')">Iniciar</button><button class="btn btn-sm" onclick="abrirAsignar(${o.id})">Técnico</button><button class="btn btn-sm btn-secondary" onclick="abrirEditarFlujo(${o.id})">Editar</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`}
+  else if(o.estado==='en_taller'){
+    const cats=o.categorias_ot||[];const catsOrd=categoriasCache.filter(c=>cats.includes(c.id)).sort((a,b)=>(a.orden||99)-(b.orden||99));
+    const idxActual=catsOrd.findIndex(c=>c.id===o.fase_actual);
+    const esUltima=idxActual===-1||idxActual>=catsOrd.length-1;
+    if(!esUltima){const sig=catsOrd[idxActual+1];acc+=`<button class="btn btn-sm btn-primary" onclick="avanzarFase(${o.id},${sig.id})">→ ${escHtml(sig.nombre)}</button>`}
+    else{acc+=`<button class="btn btn-sm btn-success" onclick="moverOT(${o.id},'completada')">✓ Terminar</button>`}
+    acc+=`<button class="btn btn-sm" onclick="abrirAsignar(${o.id})">Técnico</button><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
+  }
   else if(o.estado==='completada')acc=`<span style="font-size:12px;color:var(--sf-text-secondary)">Completada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
   else acc=`<span style="font-size:12px;color:var(--sf-error)">Cancelada</span><button class="btn btn-sm btn-secondary" onclick="verTrabajos(${o.id})">Ver</button>`;
   return `<div class="kanban-card" data-ot-id="${o.id}" draggable="true"><div class="card-placa">${escHtml(o.placa)}</div><div class="card-cliente">${escHtml(cn)}</div><div class="card-codigo">${escHtml(o.numero||o.codigo||'')} · Téc: ${escHtml(tn)}</div>${info}<div class="card-actions">${acc}</div></div>`;
+}
+async function avanzarFase(id,nuevaFaseId){
+  const cat=categoriasCache.find(c=>c.id===nuevaFaseId);
+  if(!cat)return;
+  abrirConfirm(`¿Avanzar a la fase "${cat.nombre}"?`,async()=>{
+    const {error}=await sb.from('ot').update({fase_actual:nuevaFaseId}).eq('id',id);
+    if(error){toast('Error: '+error.message,'err');return}
+    toast('Fase actualizada ✓','ok');cargarTaller();
+  },'Sí, avanzar');
 }
 document.addEventListener('dragstart',e=>{const c=e.target.closest('.kanban-card');if(!c)return;e.dataTransfer.setData('text/plain',c.dataset.otId);c.classList.add('dragging')});
 document.addEventListener('dragover',e=>{const col=e.target.closest('.kanban-col');if(col){e.preventDefault();col.classList.add('drag-over')}});
@@ -749,32 +815,104 @@ async function verTrabajos(id){
     let h=`<p><strong>Placa:</strong> ${escHtml(ot.placa)}</p><p><strong>Folio:</strong> ${escHtml(ot.numero||ot.codigo||'')}</p>`;
     if(ot.fecha_entrega)h+=`<p><strong>Fecha entrega:</strong> ${ot.fecha_entrega}</p>`;
     h+=`<p><strong>⏱ Tiempo estimado:</strong> ${ot.dias_estimados||1} días hábiles</p>`;
+    if(ot.iva_monto>0)h+=`<p><strong>IVA:</strong> ${ot.iva_porcentaje}% — $${(ot.iva_monto||0).toFixed(2)}</p>`;
+    h+=`<p><strong>Total:</strong> $${(ot.total_con_iva||ot.costo_total||0).toFixed(2)}</p>`;
     if(ot.esperando_refaccion)h+=`<p style="color:#fe9339"><strong>⚠️ Esperando refacción${ot.eta_refaccion?' · ETA: '+ot.eta_refaccion:''}</strong></p>`;
     h+='<hr><h4 style="margin-top:10px">🔧 Trabajos</h4>';
     if(tj.length===0)h+='<p>Sin trabajos.</p>';
     else{h+='<ul style="margin-left:20px">';tj.forEach(t=>h+=`<li>${escHtml(t.trabajos?.nombre||'')} — $${t.precio||0}</li>`);h+='</ul>'}
-    h+='<h4 style="margin-top:10px">📦 Piezas/Refacciones</h4>';
+    h+='<h4 style="margin-top:10px">📦 Piezas / Refacciones</h4>';
     if(pz.length===0)h+='<p>Sin piezas.</p>';
-    else{h+='<ul style="margin-left:20px">';pz.forEach(p=>h+=`<li>${escHtml(p.descripcion)} (x${p.cantidad}) — $${p.precio} · ${p.tiempo_entrega} d.h.</li>`);h+='</ul>'}
-    h+=`<hr><p style="font-size:18px"><strong>Total: $${ot.costo_total||0}</strong></p>`;
+    else{
+      h+='<table style="width:100%;font-size:13px;border-collapse:collapse"><thead><tr style="background:#f3f3f3"><th style="padding:6px;text-align:left">Descripción</th><th style="padding:6px">Cant</th><th style="padding:6px">Precio</th><th style="padding:6px">Surtido</th><th style="padding:6px">Estado</th></tr></thead><tbody>';
+      pz.forEach(p=>{
+        const estadoTxt=p.recibida?'<span style="color:#2e844a;font-weight:600">✓ Recibida</span>':'<span style="color:#fe9339">⏳ Pendiente</span>';
+        const btn=p.recibida?'':` <button class="btn btn-sm btn-success" onclick="marcarPiezaRecibida(${p.id},${id})">Recibir</button>`;
+        h+=`<tr style="border-bottom:1px solid #eee"><td style="padding:6px">${escHtml(p.descripcion)}</td><td style="padding:6px;text-align:center">${p.cantidad}</td><td style="padding:6px;text-align:right">$${p.precio}</td><td style="padding:6px;text-align:center">${p.tiempo_entrega} d.h.</td><td style="padding:6px;text-align:center">${estadoTxt}${btn}</td></tr>`;
+      });
+      h+='</tbody></table>';
+    }
+    if(ot.estado==='en_taller'&&ot.esperando_refaccion&&pz.length>0){
+      const pend=pz.filter(p=>!p.recibida);
+      if(pend.length===0)h+=`<div style="margin-top:8px;color:#2e844a;font-weight:600">✓ Todas las piezas recibidas — puedes quitar el estado de espera</div>`;
+      else h+=`<button class="btn btn-sm btn-success" style="margin-top:8px" onclick="marcarTodasRecibidas(${id})">Marcar todas como recibidas</button>`;
+    }
     document.getElementById('detalle-titulo').textContent='Detalle '+(ot.numero||ot.codigo);
     document.getElementById('detalle-contenido').innerHTML=h;
     document.getElementById('mov-detalle-ot').classList.add('open');
   }catch(e){toast('Error: '+e.message,'err')}
 }
+async function marcarPiezaRecibida(piezaId,otId){
+  const {error}=await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('id',piezaId);
+  if(error){toast('Error: '+error.message,'err');return}
+  // Verificar si todas las piezas están recibidas
+  const {data:pz}=await sb.from('ot_piezas').select('recibida').eq('ot_id',otId);
+  const pend=pz.filter(p=>!p.recibida);
+  if(pend.length===0){
+    await sb.from('ot').update({esperando_refaccion:false,eta_refaccion:null}).eq('id',otId);
+    toast('Pieza recibida ✓ — Todas las piezas en taller','ok');
+  } else {
+    toast('Pieza recibida ✓ ('+pend.length+' pendiente'+(pend.length>1?'s':'')+')','ok');
+  }
+  await verTrabajos(otId);
+  cargarTaller();
+}
+async function marcarTodasRecibidas(otId){
+  await sb.from('ot_piezas').update({recibida:true,fecha_recibida:new Date().toISOString()}).eq('ot_id',otId).eq('recibida',false);
+  await sb.from('ot').update({esperando_refaccion:false,eta_refaccion:null}).eq('id',otId);
+  toast('Todas las piezas recibidas ✓','ok');
+  await verTrabajos(otId);
+  cargarTaller();
+}
 function cerrarDetalleOT(){document.getElementById('mov-detalle-ot').classList.remove('open');detalleOTActual=null}
 function imprimirCotizacionDesdeDetalle(){if(detalleOTActual)imprimirCotizacion(detalleOTActual.id)}
 function abrirEditarFlujo(id){otEditarFlujoId=id;sb.from('ot_trabajos').select('*').eq('ot_id',id).then(async({data:tj})=>{const {data:todos}=await sb.from('trabajos').select('*').eq('activo',true).order('nombre');let h='';todos.forEach(t=>{const sel=tj.some(x=>x.trabajo_id===t.id);h+=`<div class="chk-flujo-item"><input type="checkbox" class="chk-flujo-trabajo" value="${t.id}" data-precio="${t.precio_base||0}" ${sel?'checked':''}><span>${escHtml(t.nombre)} — $${t.precio_base||0}</span></div>`});document.getElementById('editar-flujo-body').innerHTML=h;document.getElementById('mov-editar-flujo').classList.add('open')})}
 function cerrarEditarFlujo(){document.getElementById('mov-editar-flujo').classList.remove('open');otEditarFlujoId=null}
-async function guardarFlujoOT(){const id=otEditarFlujoId;const sel=Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(c=>({trabajo_id:parseInt(c.value),precio:parseFloat(c.dataset.precio||0)}));if(sel.length===0){toast('Selecciona al menos 1','err');return}await sb.from('ot_trabajos').delete().eq('ot_id',id);for(const t of sel)await sb.from('ot_trabajos').insert({ot_id:id,trabajo_id:t.trabajo_id,precio:t.precio});const cT=sel.reduce((s,t)=>s+t.precio,0);await sb.from('ot').update({costo_total:cT}).eq('id',id);toast('Actualizado ✓','ok');cerrarEditarFlujo();cargarTaller()}
+async function guardarFlujoOT(){const id=otEditarFlujoId;const sel=Array.from(document.querySelectorAll('.chk-flujo-trabajo:checked')).map(c=>({trabajo_id:parseInt(c.value),precio:parseFloat(c.dataset.precio||0)}));if(sel.length===0){toast('Selecciona al menos 1','err');return}await sb.from('ot_trabajos').delete().eq('ot_id',id);for(const t of sel)await sb.from('ot_trabajos').insert({ot_id:id,trabajo_id:t.trabajo_id,precio:t.precio});const cT=sel.reduce((s,t)=>s+t.precio,0);const {data:ot}=await sb.from('ot').select('iva_porcentaje,iva_monto').eq('id',id).single();const subtotal=cT;const ivaMonto=(ot?.iva_porcentaje||0)>0?subtotal*(ot.iva_porcentaje/100):(ot?.iva_monto||0);await sb.from('ot').update({costo_total:subtotal+ivaMonto}).eq('id',id);toast('Actualizado ✓','ok');cerrarEditarFlujo();cargarTaller()}
 
 // FACTURACIÓN
 async function cargarAgenciasFactura(){const {data}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');const s=document.getElementById('factura-agencia');s.innerHTML='<option value="">Selecciona...</option>';data.forEach(a=>s.innerHTML+=`<option value="${a.id}">${escHtml(a.nombre)}</option>`)}
-async function cargarOTsFacturables(){const id=document.getElementById('factura-agencia').value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';if(!id)return;const {data:ots}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre)').eq('agencia_id',id).eq('estado','completada').is('factura_id',null).order('updated_at',{ascending:false});if(ots.length===0){c.innerHTML='<p style="color:#888">No hay OTs completadas sin facturar.</p>';return}c.innerHTML=`<table><thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead><tbody>${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${o.costo_total||0}</td></tr>`).join('')}</tbody></table>`}
+async function cargarOTsFacturables(){const id=document.getElementById('factura-agencia').value;const c=document.getElementById('factura-ot-lista');c.innerHTML='';if(!id)return;const {data:ots}=await sb.from('ot').select('*, marcas(nombre), modelos(nombre)').eq('agencia_id',id).eq('estado','completada').is('factura_id',null).order('updated_at',{ascending:false});if(ots.length===0){c.innerHTML='<p style="color:#888">No hay OTs completadas sin facturar (Pendientes de facturar).</p>';return}c.innerHTML=`<table><thead><tr><th><input type="checkbox" id="check-all-ot" onchange="toggleAllOT()"></th><th>Folio</th><th>Placa</th><th>Marca/Modelo</th><th>Total</th></tr></thead><tbody>${ots.map(o=>`<tr><td><input type="checkbox" class="chk-ot-factura" value="${o.id}"></td><td>${escHtml(o.numero||o.codigo)}</td><td>${escHtml(o.placa)}</td><td>${escHtml(o.marcas?.nombre||'')} ${escHtml(o.modelos?.nombre||'')}</td><td>$${(o.total_con_iva||o.costo_total||0).toFixed(2)}</td></tr>`).join('')}</tbody></table>`}
 function toggleAllOT(){const a=document.getElementById('check-all-ot').checked;document.querySelectorAll('.chk-ot-factura').forEach(c=>c.checked=a)}
-async function asignarFactura(){const aId=document.getElementById('factura-agencia').value,num=document.getElementById('factura-numero').value.trim();const sel=Array.from(document.querySelectorAll('.chk-ot-factura:checked')).map(c=>parseInt(c.value));if(!aId||!num||sel.length===0){toast('Completa todos los campos','err');return}const {data:ots}=await sb.from('ot').select('costo_total').in('id',sel);const mT=ots.reduce((s,o)=>s+(o.costo_total||0),0);const {data:f,error}=await sb.from('facturas').insert({numero:num,agencia_id:aId,monto_total:mT}).select('id').single();if(error){toast('Error','err');return}await sb.from('ot').update({factura_id:f.id}).in('id',sel);toast('Vinculada ✓','ok');document.getElementById('factura-numero').value='';cargarOTsFacturables();cargarConciliacion()}
-async function cargarConciliacion(){const c=document.getElementById('conciliacion-tabla');c.innerHTML='<p>Cargando...</p>';const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');let h='<table><thead><tr><th>Agencia</th><th>Folio</th><th>Placa</th><th>Estado</th><th>Total</th><th>Factura</th></tr></thead><tbody>';for(const a of ags){const {data:ots}=await sb.from('ot').select('*, facturas(numero)').eq('agencia_id',a.id).neq('estado','cancelada');if(!ots||ots.length===0)continue;ots.forEach(o=>{h+=`<tr><td>${escHtml(a.nombre)}</td><td>${escHtml(o.numero||o.codigo||'')}</td><td>${escHtml(o.placa||'')}</td><td>${escHtml(o.estado||'')}</td><td>$${o.costo_total||0}</td><td>${o.facturas?.numero?escHtml(o.facturas.numero):'<span style="color:#888">Pendiente</span>'}</td></tr>`})}h+='</tbody></table>';c.innerHTML=h}
-function exportarConciliacion(){const rows=[];document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr=>{const c=Array.from(tr.children).map(td=>td.textContent.trim());rows.push({Agencia:c[0],Folio:c[1],Placa:c[2],Estado:c[3],Total:c[4],Factura:c[5]})});const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Conciliación');XLSX.writeFile(wb,`conciliacion_${new Date().toISOString().split('T')[0]}.xlsx`)}
+async function asignarFactura(){const aId=document.getElementById('factura-agencia').value,num=document.getElementById('factura-numero').value.trim();const sel=Array.from(document.querySelectorAll('.chk-ot-factura:checked')).map(c=>parseInt(c.value));if(!aId||!num||sel.length===0){toast('Completa todos los campos','err');return}const {data:ots}=await sb.from('ot').select('total_con_iva,costo_total').in('id',sel);const mT=ots.reduce((s,o)=>s+(o.total_con_iva||o.costo_total||0),0);const {data:f,error}=await sb.from('facturas').insert({numero:num,agencia_id:aId,monto_total:mT,estado_pago:'facturada'}).select('id').single();if(error){toast('Error: '+error.message,'err');return}await sb.from('ot').update({factura_id:f.id}).in('id',sel);toast('Factura vinculada ✓','ok');document.getElementById('factura-numero').value='';cargarOTsFacturables();cargarFacturasLista();cargarConciliacion()}
+async function cargarFacturasLista(){
+  const c=document.getElementById('facturas-lista');if(!c)return;c.innerHTML='<p>Cargando...</p>';
+  const {data:fs}=await sb.from('facturas').select('*, agencias(nombre)').order('created_at',{ascending:false}).limit(50);
+  if(!fs||fs.length===0){c.innerHTML='<p style="color:#888">Sin facturas registradas.</p>';return}
+  let h='<table><thead><tr><th>Número</th><th>Agencia</th><th>Monto</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+  fs.forEach(f=>{
+    const badge=f.estado_pago==='cobrada'?'<span class="badge-cobrada">Cobrada</span>':'<span class="badge-facturada">Facturada</span>';
+    const btn=f.estado_pago==='cobrada'?'':`<button class="btn btn-sm btn-success" onclick="marcarCobrada(${f.id})">Marcar cobrada</button>`;
+    h+=`<tr><td><strong>${escHtml(f.numero)}</strong></td><td>${escHtml(f.agencias?.nombre||'')}</td><td>$${(f.monto_total||0).toFixed(2)}</td><td>${f.fecha||''}</td><td>${badge}</td><td class="text-right">${btn}</td></tr>`;
+  });
+  h+='</tbody></table>';c.innerHTML=h;
+}
+async function marcarCobrada(fid){
+  abrirConfirm('¿Marcar factura como cobrada?',async()=>{
+    const {error}=await sb.from('facturas').update({estado_pago:'cobrada',fecha_cobro:new Date().toISOString().split('T')[0]}).eq('id',fid);
+    if(error){toast('Error: '+error.message,'err');return}
+    toast('Factura cobrada ✓','ok');cargarFacturasLista();cargarConciliacion();
+  },'Sí, cobrada');
+}
+async function cargarConciliacion(){
+  const c=document.getElementById('conciliacion-tabla');c.innerHTML='<p>Cargando...</p>';
+  const {data:ags}=await sb.from('agencias').select('*').eq('activo',true).order('nombre');
+  let h='<table><thead><tr><th>Agencia</th><th>Pendiente de facturar</th><th>Facturadas</th><th>Cobradas</th><th>Total $ pendiente</th></tr></thead><tbody>';
+  for(const a of ags){
+    const {data:ots}=await sb.from('ot').select('*, facturas(estado_pago)').eq('agencia_id',a.id).eq('estado','completada');
+    if(!ots||ots.length===0)continue;
+    let pend=0,fact=0,cob=0,montoPend=0;
+    ots.forEach(o=>{
+      const monto=o.total_con_iva||o.costo_total||0;
+      if(!o.factura_id){pend++;montoPend+=monto}
+      else if(o.facturas?.estado_pago==='cobrada'){cob++}
+      else{fact++;montoPend+=monto}
+    });
+    h+=`<tr><td>${escHtml(a.nombre)}</td><td>${pend}</td><td>${fact}</td><td>${cob}</td><td>$${montoPend.toFixed(2)}</td></tr>`;
+  }
+  h+='</tbody></table>';c.innerHTML=h;
+}
+function exportarConciliacion(){const rows=[];document.querySelectorAll('#conciliacion-tabla table tbody tr').forEach(tr=>{const c=Array.from(tr.children).map(td=>td.textContent.trim());rows.push({Agencia:c[0],'Pendiente de facturar':c[1],Facturadas:c[2],Cobradas:c[3],'Total pendiente $':c[4]})});const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Conciliación');XLSX.writeFile(wb,`conciliacion_${new Date().toISOString().split('T')[0]}.xlsx`)}
 
 // PDF
 function numeroALetras(n){const u=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];const d=['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];const c=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];function g(x){if(x===0)return'';if(x===100)return'CIEN';let r='';const cc=Math.floor(x/100),dd=Math.floor((x%100)/10),uu=x%10;if(cc)r+=c[cc]+' ';if(x%100<20&&x%100>0)r+=u[x%100];else{if(dd)r+=d[dd]+(uu?' Y ':'');if(uu)r+=u[uu]}return r.trim()}const ent=Math.floor(n),cents=Math.round((n-ent)*100);let t='';const mil=Math.floor(ent/1000000),mi=Math.floor((ent%1000000)/1000),rest=ent%1000;if(ent===0)t='CERO';else{if(mil===1)t+='UN MILLÓN ';else if(mil>1)t+=g(mil)+' MILLONES ';if(mi===1)t+='MIL ';else if(mi>1)t+=g(mi)+' MIL ';if(rest)t+=g(rest)}return`${t.trim()} PESOS ${String(cents).padStart(2,'0')}/100 M.N.`}
@@ -806,7 +944,6 @@ async function imprimirCotizacion(id){
     doc.text('VEHÍCULO',M+2,y+5);y+=11;doc.setFont('helvetica','normal');
     doc.text('Placa: '+(ot.placa||''),M+2,y);doc.text('Marca: '+(ot.marcas?.nombre||''),M+55,y);doc.text('Modelo: '+(ot.modelos?.nombre||''),M+110,y);y+=5;
     doc.text('Año: '+(ot.anio||''),M+2,y);y+=8;
-    // Trabajos
     doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('TRABAJOS',M,y);y+=2;
     const tBody=tj.map((t,i)=>[i+1,t.trabajos?.nombre||'',t.cantidad||1,t.precio||0,t.precio||0]);
     doc.autoTable({startY:y+2,head:[['#','Descripción','Cant.','P.U.','Total']],body:tBody,theme:'striped',headStyles:{fillColor:[10,15,44]},styles:{fontSize:9},margin:{left:M,right:M}});
@@ -819,13 +956,14 @@ async function imprimirCotizacion(id){
     }
     const subT=tj.reduce((s,t)=>s+(t.precio||0),0);
     const subP=(pz||[]).reduce((s,p)=>s+(p.cantidad*p.precio),0);
+    const subtotal=subT+subP;
     doc.setFontSize(10);doc.setFont('helvetica','normal');
-    doc.text('Subtotal Trabajos: $'+subT.toFixed(2),130,y);y+=5;
-    if(pz&&pz.length>0){doc.text('Subtotal Piezas: $'+subP.toFixed(2),130,y);y+=5}
+    doc.text('Subtotal: $'+subtotal.toFixed(2),130,y);y+=5;
+    if((ot.iva_monto||0)>0){doc.text('IVA '+ot.iva_porcentaje+'%: $'+(ot.iva_monto||0).toFixed(2),130,y);y+=5}
     doc.setFont('helvetica','bold');doc.setFontSize(12);
-    doc.text('TOTAL: $'+(subT+subP).toFixed(2),130,y);y+=8;
+    doc.text('TOTAL: $'+(ot.total_con_iva||ot.costo_total||0).toFixed(2),130,y);y+=8;
     doc.setFont('helvetica','italic');doc.setFontSize(9);
-    doc.text('Son: '+numeroALetras(subT+subP),M,y);y+=6;
+    doc.text('Son: '+numeroALetras(ot.total_con_iva||ot.costo_total||0),M,y);y+=6;
     doc.setFont('helvetica','normal');doc.text('Tiempo estimado de reparación: '+(ot.dias_estimados||1)+' días hábiles',M,y);y+=10;
     doc.setFontSize(8);doc.text(CONFIG.terminos_cotizacion||'',M,y,{maxWidth:180});
     doc.setFillColor(10,15,44);doc.rect(0,285,210,12,'F');doc.setTextColor(255);
@@ -833,7 +971,7 @@ async function imprimirCotizacion(id){
     doc.save((ot.numero||'cotizacion')+'.pdf');
   }catch(e){toast('Error PDF: '+e.message,'err')}
 }
-function copiarResumenWhatsApp(){if(!detalleOTActual)return;const o=detalleOTActual;let t=`*${o.numero||o.codigo}*\nPlaca: ${o.placa}\nTotal: $${o.costo_total||0}\nTiempo: ${o.dias_estimados||1} días hábiles\nEstado: ${o.estado}`;if(o.esperando_refaccion)t+=`\n⚠️ Esperando pieza${o.eta_refaccion?' (ETA '+o.eta_refaccion+')':''}`;navigator.clipboard.writeText(t);toast('Copiado ✓','ok')}
+function copiarResumenWhatsApp(){if(!detalleOTActual)return;const o=detalleOTActual;let t=`*${o.numero||o.codigo}*\nPlaca: ${o.placa}\nTotal: $${(o.total_con_iva||o.costo_total||0).toFixed(2)}\nTiempo: ${o.dias_estimados||1} días hábiles\nEstado: ${o.estado}`;if(o.esperando_refaccion)t+=`\n⚠️ Esperando pieza${o.eta_refaccion?' (ETA '+o.eta_refaccion+')':''}`;navigator.clipboard.writeText(t);toast('Copiado ✓','ok')}
 
 // CONSULTA TÉCNICO
 async function abrirConsultaTecnico(){document.getElementById('login-wrap').style.display='none';document.getElementById('consulta-tecnico-wrap').style.display='block';const {data}=await sb.from('tecnicos').select('*').eq('activo',true).order('nombre');const s=document.getElementById('select-consulta-tecnico');s.innerHTML='<option value="">Selecciona...</option>';data.forEach(t=>s.innerHTML+=`<option value="${t.id}">${escHtml(t.nombre)}</option>`);document.getElementById('consulta-tareas-lista').innerHTML=''}
