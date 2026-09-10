@@ -1231,14 +1231,40 @@ async function imprimirCotizacion(id){
     const {data:tj}=await sb.from('ot_trabajos').select('*, trabajos(nombre)').eq('ot_id',id);
     const {data:pz}=await sb.from('ot_piezas').select('*').eq('ot_id',id);
     const cli=ot.cliente_tipo==='agencia'?ot.agencias:ot.clientes;
-    const doc=new jspdf.jsPDF('p','mm','a4');const M=15;let y=M;
-    if(CONFIG.logo_base64){try{doc.addImage(CONFIG.logo_base64,'PNG',M,M,55,18);y=M+22}catch(err){doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+8);y=M+14}}
-    else{doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text(CONFIG.empresa_nombre||'Taller',M,M+8);y=M+14}
-    doc.setFontSize(9);doc.setFont('helvetica','normal');
-    doc.text(CONFIG.empresa_rfc||'',M,y);y+=4;doc.text(CONFIG.empresa_direccion||'',M,y);y+=4;
-    doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`,M,y);y+=4;doc.text(CONFIG.empresa_web||'',M,y);
-    y=M+30;doc.setFillColor(10,15,44);doc.rect(M,y,180,8,'F');doc.setTextColor(255);doc.setFontSize(12);doc.setFont('helvetica','bold');
-    doc.text('COTIZACIÓN',M+2,y+5.5);doc.setTextColor(0);y+=14;
+ const doc=new jspdf.jsPDF('p','mm','a4');const M=15;let y=M;
+
+// --- LOGO a la izquierda ---
+if(CONFIG.logo_base64){
+  try{ doc.addImage(CONFIG.logo_base64,'PNG',M,M,50,18); }
+  catch(err){
+    doc.setFontSize(14); doc.setFont('helvetica','bold');
+    doc.text(CONFIG.empresa_nombre||'Taller',M,M+10);
+  }
+} else {
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text(CONFIG.empresa_nombre||'Taller',M,M+10);
+}
+
+// --- DATOS DE LA EMPRESA al mismo nivel, alineados al centro-derecha ---
+const infoX = 195; // margen derecho
+doc.setFont('helvetica','bold'); doc.setFontSize(10);
+doc.text(CONFIG.empresa_nombre||'Taller', infoX, M+3, {align:'right'});
+doc.setFont('helvetica','normal'); doc.setFontSize(8);
+doc.text(CONFIG.empresa_rfc||'', infoX, M+8, {align:'right'});
+doc.text(CONFIG.empresa_direccion||'', infoX, M+12, {align:'right'});
+doc.text(`${CONFIG.empresa_telefono||''} · ${CONFIG.empresa_email||''}`, infoX, M+16, {align:'right'});
+doc.text(CONFIG.empresa_web||'', infoX, M+20, {align:'right'});
+
+// --- Banda COTIZACIÓN debajo de ambos (logo y texto) ---
+y = M + 26;
+doc.setFillColor(10,15,44);
+doc.rect(M,y,180,8,'F');
+doc.setTextColor(255);
+doc.setFontSize(12);
+doc.setFont('helvetica','bold');
+doc.text('COTIZACIÓN',M+2,y+5.5);
+doc.setTextColor(0);
+y += 14;
     doc.setDrawColor(0);doc.roundedRect(M,y,90,32,2,2);doc.roundedRect(105,y,90,32,2,2);
     doc.setFontSize(8);doc.setFont('helvetica','bold');doc.text('CLIENTE',M+2,y+5);doc.text('DATOS',107,y+5);
     doc.setFont('helvetica','normal');
